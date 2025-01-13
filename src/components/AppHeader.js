@@ -83,9 +83,9 @@ const AppHeader = () => {
             </CNavLink>
           </CNavItem>
         </CHeaderNav>
-        <li className="nav-item py-1" style={{ textDecoration: 'none', display: 'none' }}>
-          <div className="vr h-100 mx-2 text-body text-opacity-75"></div>
-        </li>
+        <div className="nav-item py-0 d-flex align-items-center" style={{ textDecoration: 'none', display: '' }}>
+          <div className="vr h-100 mx-2 text-body text-opacity-100"></div>
+        </div>
         <CHeaderNav>
           <CNavItem className="d-flex align-items-center">
             <CNavLink style={{ textDecoration: 'none' }}>
@@ -101,9 +101,9 @@ const AppHeader = () => {
                 <CIcon icon={icon.cilUser} />
               </div>
             </CNavLink>
-            <CNavLink className="d-flex flex-column" style={{ textDecoration: 'none' }}>
-              <p style={{ fontSize: '12' }}>Username</p>
-              <p style={{ fontSize: '8px', marginTop: '0px' }}>ROLE USER</p>
+            <CNavLink className="d-flex flex-column justify-content-center h-100" style={{ textDecoration: 'non' }}>
+              <span style={{ fontSize: '', marginTop: '0px'}}>Username</span>
+              <span style={{ fontSize: '10px', marginTop: '0px' }}>ROLE USER</span>
             </CNavLink>
           </CNavItem>
         </CHeaderNav>
