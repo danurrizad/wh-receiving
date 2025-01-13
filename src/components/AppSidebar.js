@@ -34,8 +34,8 @@ const AppSidebar = () => {
       }}
     >
       <CSidebarHeader className="border-bottom">
-        <CSidebarBrand to="/">
-          <CImage className="w-100 sidebar-narrow d-flex h-100" src={LogoTWIIS} height={52} />
+        <CSidebarBrand to="/" className="d-flex justify-content-center">
+          <CImage className="w-75 sidebar-narrow d-flex h-75" src={LogoTWIIS} height={52} />
         </CSidebarBrand>
         <CCloseButton
           className="d-lg-none"

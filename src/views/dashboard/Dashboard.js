@@ -39,8 +39,6 @@ import {
   Legend,
 } from 'chart.js';
 import { Bar } from 'react-chartjs-2';
-// import faker from 'faker';
-import style from './../../../node_modules/dom-helpers/esm/css';
 import CIcon from '@coreui/icons-react'
 import * as icon from "@coreui/icons"
 

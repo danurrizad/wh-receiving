@@ -59,9 +59,9 @@ const AppHeader = () => {
         </CHeaderToggler>
         <CHeaderNav className="d-none d-md-flex">
           <CNavItem>
-            <CNavLink style={{ color: 'red'}}>
+            <h4 style={{ color: 'red'}}>
               TOYOTA
-            </CNavLink>
+            </h4>
           </CNavItem>
         </CHeaderNav>
         <CHeaderNav className="ms-auto">
