@@ -1,32 +1,72 @@
-const useChartData = () => {
+import { useEffect } from "react";
+import { dataSchedulesDummy } from "../utils/DummyData";
+
+const useChartData = ({currentItems}) => {
+    useEffect(()=>{
+        console.log("rerender...")
+    }, [currentItems])
+    const color = {
+        yellow: "#FFBB00",
+        red: "#F64242",
+        green: "#35A535"
+    }
 
     const setChartData = () => {
-        const labels = ['January', 'February', 'March', 'April', 'May', 'June', 'July']; // Replace Utils.months if necessary
+        const labelsVendor = currentItems.map((data)=>data.vendor_name)
+        // Generate time range (hourly labels)
+        const timeLabels = [];
+        for (let hour = 7; hour <= 18; hour++) {
+            timeLabels.push(`${hour.toString().padStart(2, "0")}:00`);
+        }
+
+        const dataSchedulePlan = {
+            from : currentItems.map((data)=>data.schedule_from),
+            to : currentItems.map((data)=>data.schedule_to)
+        }
+        const dataArrivalTime = currentItems.map((data)=>data.arrival_time)
+
         const data = {
-            labels: labels,
+            labels: labelsVendor,
             datasets: [
                 {
-                    label: 'My First Dataset',
-                    data: [65, 59, 80, 81, 56, 55, 40],
-                    backgroundColor: [
-                        'rgba(255, 99, 132, 0.2)',
-                        'rgba(255, 159, 64, 0.2)',
-                        'rgba(255, 205, 86, 0.2)',
-                        'rgba(75, 192, 192, 0.2)',
-                        'rgba(54, 162, 235, 0.2)',
-                        'rgba(153, 102, 255, 0.2)',
-                        'rgba(201, 203, 207, 0.2)',
-                    ],
-                    borderColor: [
-                        'rgb(255, 99, 132)',
-                        'rgb(255, 159, 64)',
-                        'rgb(255, 205, 86)',
-                        'rgb(75, 192, 192)',
-                        'rgb(54, 162, 235)',
-                        'rgb(153, 102, 255)',
-                        'rgb(201, 203, 207)',
+                    xAxisId: "x-arrival",
+                    label: "Arrival On Schedule",
+                    data: currentItems.map((data) => ({
+                        x: [
+                            parseInt(data.arrival_time.split(":")[0], 10) + parseInt(data.arrival_time.split(":")[1], 10) / 60,
+                            parseInt(data.arrival_time.split(":")[0], 10) + parseInt(data.arrival_time.split(":")[1], 10) / 60 + 0.5,
+                        ],
+                        y: data.vendor_name,
+                    })),
+                    backgroundColor: currentItems.map((data)=> data.status === "Delayed" ? "#F64242" : "#35A535"),
+                    borderColor: currentItems.map((data) => data.status === "Delayed" ? "rgb(240, 15, 15)" : "rgb(36, 173, 47)"), 
+                    backgroundOpacity: [
+                        '50%'
                     ],
                     borderWidth: 1,
+                },
+                {
+                    xAxisId: "x-plan",
+                    label: 'Arrival Plan',
+                    data: currentItems.map((data) => ({
+                        x: [
+                            parseInt(data.schedule_from.split(":")[0], 10) + parseInt(data.schedule_from.split(":")[1], 10) / 60,
+                            parseInt(data.schedule_to.split(":")[0], 10) + parseInt(data.schedule_to.split(":")[1], 10) / 60,
+                        ],
+                        y: data.vendor_name,
+                    })),
+                   
+                    backgroundColor:[
+                        'rgba(255, 187, 0, 0.29)',
+                    ],
+                    borderColor: [
+                        'rgb(255, 205, 86)',
+                    ],
+                    backgroundOpacity: [
+                        '50%'
+                    ],
+                    borderWidth: 1,
+                    
                 },
             ],
         };
@@ -38,19 +78,51 @@ const useChartData = () => {
         const data = setChartData()
         const config = {
             indexAxis: 'y',
+            scales: {
+                x: {
+                    position: "top",
+                    // type: "linear",
+                    min: 7,
+                    max: 18,
+                    ticks: {
+                        stepSize: 1,
+                        callback: (value) => `${value}:00`,
+                    }
+                },
+                y: {
+                    stacked: true,
+                    beginAtZero: false,
+                },
+            },
             elements: {
                 bar: {
-                borderWidth: 2,
+                    borderWidth: 2,
                 },
             },
             responsive: true,
             plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: (context) => {
+                            const dataIndex = context.dataIndex; // Get the index of the data point
+            
+                            // Use your `currentItems` array to get the schedule details
+                            const schedule = currentItems[dataIndex]; 
+                            if(context.dataset.label === "Arrival On Schedule"){
+                                return `Arrival Time: ${schedule.arrival_time}`;
+                            } else {
+                                return `Schedule Plan: ${schedule.schedule_from} - ${schedule.schedule_to}`;
+                            }
+                        },
+                    },
+                },
                 legend: {
-                position: 'right',
+                    position: 'top',
+                    display: false
                 },
                 title: {
-                display: true,
-                text: 'Chart.js Horizontal Bar Chart',
+                    display: true,
+                    text: 'Scheduling Time Vendor',
                 },
             },
           };

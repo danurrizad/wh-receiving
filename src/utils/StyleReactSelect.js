@@ -34,16 +34,16 @@ const colorStyles = {
     singleValue: (styles, {data}) => ({ 
         ...styles,  
         backgroundColor: 
-            data.value === 'shortage' ? '#FFB3B3' : 
-            data.value === "delayed" ? "#F64242" : 
-            data.value === "on_schedule" ? "#35A535" : 
+            data.value === 'Shortage' ? '#FFB3B3' : 
+            data.value === "Delayed" ? "#F64242" : 
+            data.value === "On Schedule" ? "#35A535" : 
             "white",
         textAlign: "center",
         padding: "3px 0 3px 0",
         color: 
-            data.value === 'shortage' ? 'white' : 
-            data.value === 'delayed' ? 'white' : 
-            data.value === 'on_schedule' ? 'white' : 
+            data.value === 'Shortage' ? 'white' : 
+            data.value === 'Delayed' ? 'white' : 
+            data.value === 'On Schedule' ? 'white' : 
             "black",
         borderRadius: "5px"
     }),
