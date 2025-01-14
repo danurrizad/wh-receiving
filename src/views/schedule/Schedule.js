@@ -2,7 +2,8 @@ import React, { useState, useEffect} from 'react'
 import CIcon from '@coreui/icons-react'
 import * as icon from '@coreui/icons'
 import { CButton, CButtonGroup, CCard, CCardBody, CCardHeader, CCardTitle, CCol, CContainer, CFormInput, CFormLabel, CFormText, CInputGroup, CRow, CTable, CTableBody, CTableDataCell, CTableHead, CTableHeaderCell, CTableRow } from '@coreui/react'
-import { dataSchedulesDummy, dataReceivingDummy } from '../../utils/DummyData'
+import { dataSchedulesDummy } from '../../utils/DummyData'
+import { DatePicker } from 'rsuite';
 import  colorStyles from '../../utils/StyleReactSelect'
 import Select from 'react-select'
 import Pagination from '../../components/Pagination'
@@ -75,65 +76,70 @@ const Schedule = () => {
                     <CRow>
                       <CCol sm={4}>
                         <CRow className='mb-3'>
-                        <CFormLabel style={{ fontSize: "0.8rem" }}>DATE</CFormLabel>
+                          <CFormLabel style={{ fontSize: "0.8rem" }}>DATE</CFormLabel>
                           <div className='d-flex align-items-center gap-2'>
-                            <CFormInput/>
                             <CIcon style={{}} icon={icon.cilCalendar} size='xxl' className='flex-shrink-0'/>
+                            <DatePicker className="w-100" placeholder="Select dates" size='lg' block />
                           </div>
                         </CRow>
-                        <CRow>
+                        <CRow className=''>
                           <CCol md={8}>
-                          <CFormLabel  style={{ fontSize: "0.8rem" }}>VENDOR CODE</CFormLabel>
-                          <div className='d-flex align-items-center gap-2'>
-                            <CFormInput/>
-                            <CIcon style={{}} icon={icon.cilBarcode} size='xxl' className='flex-shrink-0'/>
-                          </div>
+                            <CFormLabel  style={{ fontSize: "0.8rem" }}>VENDOR CODE</CFormLabel>
+                            <div className='d-flex align-items-center gap-2'>
+                              <CIcon style={{}} icon={icon.cilBarcode} size='xxl' className='flex-shrink-0'/>
+                              <CFormInput/>
+                            </div>
                           </CCol>
-                          <CCol md={4}>
-                          <CButton color='success' style={{color: 'white'}} className='flex-grow-0 d-flex align-items-center gap-2'>
-                        <CIcon icon={icon.cilCheckAlt}/>
-                        <div style={{border: "0.5px solid white", height: "10px", width: "1px"}}></div>
-                        <span>Submit</span>
-                      </CButton>
-                </CCol>
+                          <CCol md={4} className='d-flex align-items-end justify-content-end'>
+                            <CButton color='success' style={{color: 'white'}} className='flex-grow-0 d-flex align-items-center gap-2'>
+                              <CIcon icon={icon.cilCheckAlt}/>
+                              <div style={{border: "0.5px solid white", height: "10px", width: "1px"}}></div>
+                              <span>Submit</span>
+                            </CButton>
+                          </CCol>
                         </CRow>
                       </CCol>
-                      <CCol sm={5} className='d-flex flex-column'  >
-                      <CRow style={{ fontSize: "0.8rem" }}>
-                        VENDOR STATUS
-                        </CRow>
-                        {/* <CCard className='p-1 mt-2 h-100' style={{ backgroundColor:"rgb(152, 193, 255)", borderRadius: "10px"}}> */}
-                        <CCard className='p-1 mt-2 h-100' style={{ backgroundColor:"gray", borderRadius: "8px"}}>
-                          <CTable className=''>
-                            <CTableRow>
-                              <CTableDataCell>Vendor Code</CTableDataCell>
-                              <CTableDataCell>:</CTableDataCell>
-                              <CTableDataCell>123192</CTableDataCell>
-                            </CTableRow>
-                            <CTableRow>
-                              <CTableDataCell>Vendor Namer</CTableDataCell>
-                              <CTableDataCell>:</CTableDataCell>
-                              <CTableDataCell>Cahaya Prima</CTableDataCell>
-                            </CTableRow>
-                            <CTableRow>
-                              <CTableDataCell>hari [PLAN]</CTableDataCell>
-                              <CTableDataCell>:</CTableDataCell>
-                              <CTableDataCell>10-01-2025</CTableDataCell>
-                            </CTableRow>
-                            <CTableRow>
-                              <CTableDataCell>ARRIVAL [ACT]</CTableDataCell>
-                              <CTableDataCell>:</CTableDataCell>
-                              <CTableDataCell>10-01-2025</CTableDataCell>
-                            </CTableRow>
-                          </CTable>
-                        </CCard>
-                      </CCol>
-                      <CCol sm={3} className='d-flex flex-column' style={{ fontSize: "0.8rem" }}>
-                        <CRow>SCHEDULE STATUS</CRow>
-                        <CRow className='h-100'>
-                          <CCard className='p-5 d-flex align-items-center justify-content-center'>
-                            <h1>ON TIME</h1>
-                          </CCard>
+                      <CCol sm={8} className='px-4' >
+                        <CRow className='h-100' >
+                          <CCol className='px-4 d-flex flex-column' >
+                            <CRow style={{ fontSize: "0.8rem" }}>VENDOR STATUS</CRow>
+                            <CRow className='flex-grow-1 '>
+                              <CCard className='px-3 pt-3 mt-2' style={{ backgroundColor:"rgba(129,198,240, 0.15)", borderRadius: "8px"}}>
+                                <div className='d-flex align-items-center h-10 '>
+                                  <CTable className='h-100'>
+                                    <CTableRow>
+                                      <CTableDataCell>Vendor Code</CTableDataCell>
+                                      <CTableDataCell>:</CTableDataCell>
+                                      <CTableDataCell>123192</CTableDataCell>
+                                    </CTableRow>
+                                    <CTableRow>
+                                      <CTableDataCell>Vendor Name</CTableDataCell>
+                                      <CTableDataCell>:</CTableDataCell>
+                                      <CTableDataCell>Cahaya Prima</CTableDataCell>
+                                    </CTableRow>
+                                    <CTableRow>
+                                      <CTableDataCell>ARRIVAL [PLAN]</CTableDataCell>
+                                      <CTableDataCell>:</CTableDataCell>
+                                      <CTableDataCell>10-01-2025</CTableDataCell>
+                                    </CTableRow>
+                                    <CTableRow>
+                                      <CTableDataCell>ARRIVAL [ACT]</CTableDataCell>
+                                      <CTableDataCell>:</CTableDataCell>
+                                      <CTableDataCell>10-01-2025</CTableDataCell>
+                                    </CTableRow>
+                                  </CTable>
+                                </div>
+                              </CCard>
+                            </CRow>
+                          </CCol>
+                          <CCol  className='d-flex flex-column' style={{ fontSize: "0.8rem" }}>
+                            <CRow className='mb-2'>SCHEDULE STATUS</CRow>
+                            <CRow className='flex-grow-1'>
+                              <CCard className='p-4 d-flex align-items-center justify-content-center'>
+                                <h2>ON SCHEDULE</h2>
+                              </CCard>
+                            </CRow>
+                          </CCol>
                         </CRow>
                       </CCol>
                     </CRow>
@@ -159,7 +165,7 @@ const Schedule = () => {
               </CRow>
               <CRow className='p-3'>
                   <CTable bordered>
-                    <CTableHead>
+                    <CTableHead color='light'>
                       <CTableRow align='middle'>
                         <CTableHeaderCell rowSpan={2}>No</CTableHeaderCell>
                         <CTableHeaderCell rowSpan={2}>Vendor ID</CTableHeaderCell>
