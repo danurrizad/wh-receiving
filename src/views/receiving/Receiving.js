@@ -1,14 +1,16 @@
 import React, { useState, useEffect} from 'react'
 import CIcon from '@coreui/icons-react'
 import * as icon from '@coreui/icons'
-import { CButton, CButtonGroup, CCard, CCardBody, CCardHeader, CCardTitle, CCol, CContainer, CFormInput, CFormText, CInputGroup, CRow, CTable, CTableBody, CTableDataCell, CTableHead, CTableHeaderCell, CTableRow } from '@coreui/react'
+import { CButton, CButtonGroup, CCard, CCardBody, CCardHeader, CCardTitle, CCol, CContainer, CFormInput, CFormLabel, CFormText, CInputGroup, CModal, CModalBody, CModalFooter, CModalHeader, CModalTitle, CRow, CTable, CTableBody, CTableDataCell, CTableHead, CTableHeaderCell, CTableRow } from '@coreui/react'
 import { dataReceivingDummy } from '../../utils/DummyData'
 import  colorStyles from '../../utils/StyleReactSelect'
 import Select from 'react-select'
 import Pagination from '../../components/Pagination'
+import { handleExport } from '../../utils/ExportToExcel'
 
 const Receiving = () => {
   const [ dataReceiving, setDataReceiving ] = useState(dataReceivingDummy)
+  const [ showModalUpdate, setShowModalUpdate] = useState(false)
 
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage, setItemsPerPage] = useState(10)
@@ -111,11 +113,18 @@ const Receiving = () => {
             </CCardHeader>
             <CCardBody>
               <CRow>
-                <CCol>
-                  <CButton color='info' style={{color: 'white'}} className='flex-grow-0 d-flex align-items-center gap-2'>
+                <CCol xs='auto'>
+                  <CButton color='info' style={{color: 'white'}} onClick={()=>setShowModalUpdate(true)} className='flex-grow-0 d-flex align-items-center gap-2'>
                     <CIcon icon={icon.cilCloudUpload}/>
                     <div style={{border: "0.5px solid white", height: "10px", width: "1px"}}></div>
                     <span>Upload a File</span>
+                  </CButton>
+                </CCol>
+                <CCol>
+                  <CButton onClick={()=>handleExport(dataReceiving, 'receiving')} color='success' style={{color: 'white'}} className='flex-grow-0 d-flex align-items-center gap-2'>
+                    <CIcon icon={icon.cilCloudDownload}/>
+                    <div style={{border: "0.5px solid white", height: "10px", width: "1px"}}></div>
+                    <span>Export to File</span>
                   </CButton>
                 </CCol>
               </CRow>
@@ -153,6 +162,29 @@ const Receiving = () => {
             </CCardBody>
           </CCard>
         </CRow>
+
+        {/* Modal Upload File */}
+        <CModal 
+          visible={showModalUpdate}
+          onClose={() => setShowModalUpdate(false)}
+        >
+          <CModalHeader>
+            <CModalTitle>Upload Receiving Data</CModalTitle>
+          </CModalHeader>
+          <CModalBody>
+            <CRow className=''>
+              <CInputGroup className='d-flex flex-column'>
+                <CFormLabel>File Excel (.xlsx)</CFormLabel>
+                <CFormInput className='w-100' type='file'/>
+              </CInputGroup>
+            </CRow>
+
+          </CModalBody>
+          <CModalFooter>
+            <CButton onClick={()=>setShowModalUpdate(false)} color="secondary">Close</CButton>
+            <CButton color="success" style={{color: "white"}}>Upload</CButton>
+          </CModalFooter>
+        </CModal>
     </CContainer>
   )
 }
