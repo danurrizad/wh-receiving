@@ -4,6 +4,8 @@ import { useSelector } from 'react-redux'
 
 import { CSpinner, useColorModes } from '@coreui/react'
 import './scss/style.scss'
+import 'rsuite/dist/rsuite.min.css'
+// import 'rsuite/dist/rsuite.min.css';  // or 'rsuite/styles/index.less';
 
 // We use those styles to show code examples, you should remove them in your application.
 import './scss/examples.scss'
