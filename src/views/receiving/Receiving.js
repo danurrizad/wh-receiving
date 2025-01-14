@@ -107,7 +107,7 @@ const Receiving = () => {
         <CRow className='pt-4'>
           <CCard className='p-0'>
             <CCardHeader>
-              <CCardTitle>SCHEDULE DATA</CCardTitle>
+              <CCardTitle>RECEIVING DATA</CCardTitle>
             </CCardHeader>
             <CCardBody>
               <CRow>
@@ -120,36 +120,36 @@ const Receiving = () => {
                 </CCol>
               </CRow>
               <CRow className='p-2 pt-3'>
-                              <CTable bordered>
-                                <CTableHead>
-                                  <CTableRow>
-                                    <CTableHeaderCell>DN No</CTableHeaderCell>
-                                    <CTableHeaderCell>Material No</CTableHeaderCell>
-                                    <CTableHeaderCell>Material Description</CTableHeaderCell>
-                                    <CTableHeaderCell>Req Quantity</CTableHeaderCell>
-                                    <CTableHeaderCell>Actual Quantity</CTableHeaderCell>
-                                    <CTableHeaderCell>Difference</CTableHeaderCell>
-                                    <CTableHeaderCell>Date</CTableHeaderCell>
-                                  </CTableRow>
-                                </CTableHead>
-                                <CTableBody>
-                                  { dataReceiving.map((data, index)=>{
-                                    return(
-                                      <CTableRow key={index} color={`${data.difference !== 0 ? "danger" : ""}`}>
-                                      {/* <CTableRow key={index} style={{ backgroundColor: `${data.difference !== 0 ? "red" : ""}`}}> */}
-                                        <CTableDataCell>{data.dn_no}</CTableDataCell>
-                                        <CTableDataCell>{data.material_no}</CTableDataCell>
-                                        <CTableDataCell>{data.material_desc}</CTableDataCell>
-                                        <CTableDataCell>{data.req_qty}</CTableDataCell>
-                                        <CTableDataCell>{data.actual_qty}</CTableDataCell>
-                                        <CTableDataCell>{data.difference}</CTableDataCell>
-                                        <CTableDataCell>{data.date}</CTableDataCell>
-                                      </CTableRow>
-                                    )
-                                  })}
-                                </CTableBody>
-                              </CTable>
-                            </CRow>
+                <CTable bordered>
+                  <CTableHead color='light'>
+                    <CTableRow>
+                      <CTableHeaderCell>DN No</CTableHeaderCell>
+                      <CTableHeaderCell>Material No</CTableHeaderCell>
+                      <CTableHeaderCell>Material Description</CTableHeaderCell>
+                      <CTableHeaderCell>Req Quantity</CTableHeaderCell>
+                      <CTableHeaderCell>Actual Quantity</CTableHeaderCell>
+                      <CTableHeaderCell>Difference</CTableHeaderCell>
+                      <CTableHeaderCell>Date</CTableHeaderCell>
+                    </CTableRow>
+                  </CTableHead>
+                  <CTableBody>
+                    { dataReceiving.map((data, index)=>{
+                      return(
+                        <CTableRow key={index} color={`${data.difference !== 0 ? "danger" : ""}`}>
+                        {/* <CTableRow key={index} style={{ backgroundColor: `${data.difference !== 0 ? "red" : ""}`}}> */}
+                          <CTableDataCell>{data.dn_no}</CTableDataCell>
+                          <CTableDataCell>{data.material_no}</CTableDataCell>
+                          <CTableDataCell>{data.material_desc}</CTableDataCell>
+                          <CTableDataCell>{data.req_qty}</CTableDataCell>
+                          <CTableDataCell>{data.actual_qty}</CTableDataCell>
+                          <CTableDataCell>{data.difference}</CTableDataCell>
+                          <CTableDataCell>{data.date}</CTableDataCell>
+                        </CTableRow>
+                      )
+                    })}
+                  </CTableBody>
+                </CTable>
+              </CRow>
             </CCardBody>
           </CCard>
         </CRow>
