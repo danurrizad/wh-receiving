@@ -116,7 +116,7 @@ const Schedule = () => {
                               <CTableDataCell>Cahaya Prima</CTableDataCell>
                             </CTableRow>
                             <CTableRow>
-                              <CTableDataCell>ARRIVAL [PLAN]</CTableDataCell>
+                              <CTableDataCell>hari [PLAN]</CTableDataCell>
                               <CTableDataCell>:</CTableDataCell>
                               <CTableDataCell>10-01-2025</CTableDataCell>
                             </CTableRow>
