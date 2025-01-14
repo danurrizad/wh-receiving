@@ -70,34 +70,50 @@ const Schedule = () => {
                 <CCardHeader>
                     <CCardTitle>INPUT</CCardTitle>
                 </CCardHeader>
-                <CCardBody className='d-flex'>
-                  <CCol sm={7} className='d-flex'>
+                <CCardBody >
+                
                     <CRow>
                       <CCol sm={4}>
                         <CRow className='mb-3'>
-                          <CFormLabel>DATE</CFormLabel>
+                        <CFormLabel style={{ fontSize: "0.8rem" }}>DATE</CFormLabel>
                           <div className='d-flex align-items-center gap-2'>
                             <CFormInput/>
                             <CIcon style={{}} icon={icon.cilCalendar} size='xxl' className='flex-shrink-0'/>
                           </div>
                         </CRow>
                         <CRow>
-                          <CFormLabel>VENDOR CODE</CFormLabel>
+                          <CCol md={8}>
+                          <CFormLabel  style={{ fontSize: "0.8rem" }}>VENDOR CODE</CFormLabel>
                           <div className='d-flex align-items-center gap-2'>
                             <CFormInput/>
                             <CIcon style={{}} icon={icon.cilBarcode} size='xxl' className='flex-shrink-0'/>
                           </div>
+                          </CCol>
+                          <CCol md={4}>
+                          <CButton color='success' style={{color: 'white'}} className='flex-grow-0 d-flex align-items-center gap-2'>
+                        <CIcon icon={icon.cilCheckAlt}/>
+                        <div style={{border: "0.5px solid white", height: "10px", width: "1px"}}></div>
+                        <span>Submit</span>
+                      </CButton>
+                </CCol>
                         </CRow>
                       </CCol>
-                      <CCol sm={4} className='d-flex flex-column'>
+                      <CCol sm={5} className='d-flex flex-column'  >
+                      <CRow style={{ fontSize: "0.8rem" }}>
                         VENDOR STATUS
+                        </CRow>
                         {/* <CCard className='p-1 mt-2 h-100' style={{ backgroundColor:"rgb(152, 193, 255)", borderRadius: "10px"}}> */}
-                        <CCard className='p-1 mt-2 h-100' style={{ backgroundColor:"gray", borderRadius: "10px"}}>
+                        <CCard className='p-1 mt-2 h-100' style={{ backgroundColor:"gray", borderRadius: "8px"}}>
                           <CTable className=''>
                             <CTableRow>
                               <CTableDataCell>Vendor Code</CTableDataCell>
                               <CTableDataCell>:</CTableDataCell>
                               <CTableDataCell>123192</CTableDataCell>
+                            </CTableRow>
+                            <CTableRow>
+                              <CTableDataCell>Vendor Namer</CTableDataCell>
+                              <CTableDataCell>:</CTableDataCell>
+                              <CTableDataCell>Cahaya Prima</CTableDataCell>
                             </CTableRow>
                             <CTableRow>
                               <CTableDataCell>ARRIVAL [PLAN]</CTableDataCell>
@@ -112,7 +128,7 @@ const Schedule = () => {
                           </CTable>
                         </CCard>
                       </CCol>
-                      <CCol sm={4} className='d-flex flex-column'>
+                      <CCol sm={3} className='d-flex flex-column' style={{ fontSize: "0.8rem" }}>
                         <CRow>SCHEDULE STATUS</CRow>
                         <CRow className='h-100'>
                           <CCard className='p-5 d-flex align-items-center justify-content-center'>
@@ -121,14 +137,8 @@ const Schedule = () => {
                         </CRow>
                       </CCol>
                     </CRow>
-                  </CCol>
-                  <CCol sm={5} className='d-flex justify-content-end align-items-end'>
-                      <CButton color='success' style={{color: 'white'}} className='flex-grow-0 d-flex align-items-center gap-2'>
-                        <CIcon icon={icon.cilCheckAlt}/>
-                        <div style={{border: "0.5px solid white", height: "10px", width: "1px"}}></div>
-                        <span>Submit</span>
-                      </CButton>
-                  </CCol>
+              
+                
                 </CCardBody>
             </CCard>
         </CRow>
