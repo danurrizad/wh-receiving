@@ -79,6 +79,7 @@ const Dashboard = () => {
   ]
 
   const [ showCard, setShowCard ] = useState({
+    summary: false,
     schedule: true,
     receiving: true
   })
@@ -124,6 +125,21 @@ const Dashboard = () => {
     }
   }
 
+  const handleChangeSearch = (e) => {
+    if(e){
+      console.log("e :", e)
+      if(e.value === ""){
+        setDataReceiving(dataReceivingDummy)
+      }
+      else{
+        const matchesSearch = dataReceiving.filter((data)=>data.material_no.includes(e.value)) || dataReceiving.filter((data)=>data.material_desc.includes(e.value))
+        setDataReceiving(matchesSearch);
+      }
+    } else{
+      setDataReceiving(dataReceivingDummy)
+    }
+  }
+
 
   
   useEffect(()=>{
@@ -135,8 +151,62 @@ const Dashboard = () => {
   return (
       <CContainer fluid>
         <CRow className='mb-3'>
-          <CCard className='px-0' style={{ maxHeight: `${showCard.schedule ? "2000px" : "50px"}`, overflow: "hidden", transitionDuration: '1000ms', animationDuration: "1000ms"}}>
-            <CCardHeader style={{ position: "relative"}}>
+          <CCard className='px-0' style={{ maxHeight: `${showCard.summary ? "1000px" : "50px"}`, overflow: 'hidden', transitionDuration: "500ms"}}>
+            <CCardHeader style={{ position: "relative", cursor: "pointer"}} onClick={()=>setShowCard({ ...showCard, summary: !showCard.summary})}>
+              <CCardTitle className='text-center'>TODAY'S SUMMARY</CCardTitle>
+              <CButton onClick={()=>setShowCard({ ...showCard, summary: !showCard.summary})} style={{ position: "absolute", top: 0, right: 0, margin: "5px 5px 0 0"}}>
+                <CIcon icon={icon.cilHamburgerMenu}/>
+              </CButton>
+            </CCardHeader>
+            <CCardBody style={{ overflow: 'auto'}}>
+              <CRow>
+                <CCol>
+                  <CCard style={{ overflow: "hidden", border: "2px solid #F64242"}}>
+                    <CCardBody className='p-0'>
+                      <CRow className=''>
+                        <CCol className='p-2 px-4' style={{ backgroundColor: "#F64242", color: "white", borderRadius: ""}}><h6>DELAYED</h6></CCol>
+                        <CCol sm={2} className='p-2'><h6>{dataSchedules.filter((data)=>data.status === "Delayed").length}</h6></CCol>
+                      </CRow>
+                    </CCardBody>
+                  </CCard>
+                </CCol>
+                <CCol>
+                <CCard style={{ overflow: "hidden", border: "2px solid #35A535"}}>
+                    <CCardBody className='p-0'>
+                      <CRow className=''>
+                        <CCol className='p-2 px-4' style={{ backgroundColor: "#35A535", color: "white", borderRadius: ""}}><h6>ON SCHEDULE</h6></CCol>
+                        <CCol sm={2} className='p-2'><h6>{dataSchedules.filter((data)=>data.status === "On Schedule").length}</h6></CCol>
+                      </CRow>
+                    </CCardBody>
+                  </CCard>
+                </CCol>
+                <CCol>
+                  <CCard style={{ overflow: "hidden", border: "2px solid gray"}}>
+                    <CCardBody className='p-0'>
+                      <CRow className=''>
+                        <CCol className='p-2 px-4' style={{ backgroundColor: "gray", color: "white", borderRadius: ""}}><h6>REMAINING</h6></CCol>
+                        <CCol sm={2} className='p-2'><h6>{dataSchedules.filter((data)=>data.status === "").length}</h6></CCol>
+                      </CRow>
+                    </CCardBody>
+                  </CCard>
+                </CCol>
+                <CCol>
+                  <CCard style={{ overflow: "hidden", border: "2px solid #FFB3B3"}}>
+                    <CCardBody className='p-0'>
+                      <CRow className=''>
+                        <CCol className='p-2 px-4' style={{ backgroundColor: "#FFB3B3", color: "white", borderRadius: ""}}><h6>SHORTAGE</h6></CCol>
+                        <CCol sm={2} className='p-2'><h6>{dataReceiving.filter((data)=>data.req_qty - data.actual_qty !== 0).length}</h6></CCol>
+                      </CRow>
+                    </CCardBody>
+                  </CCard>
+                </CCol>
+              </CRow>
+            </CCardBody>
+          </CCard>
+        </CRow>
+        <CRow className='mb-3'>
+          <CCard className='px-0' style={{ maxHeight: `${showCard.schedule ? "2000px" : "50px"}`, overflow: "hidden", transitionDuration: '500ms'}}>
+            <CCardHeader style={{ position: "relative", cursor: "pointer"}} onClick={()=>setShowCard({ ...showCard, schedule: !showCard.schedule})}>
                 <CCardTitle className='text-center'>ARRIVAL SCHEDULE</CCardTitle>
                 <CButton onClick={()=>setShowCard({ ...showCard, schedule: !showCard.schedule})} style={{ position: 'absolute', top: 0, right: 0, margin: '5px 5px 0 0'}}>
                   <CIcon icon={icon.cilHamburgerMenu}/>
@@ -161,11 +231,22 @@ const Dashboard = () => {
                     data={setChartData()}
                   />
                 </CCard>
+                <div className="mt-3 d-flex justify-content-center">
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={Math.ceil(
+                      dataReceiving.length > 0
+                        ? dataReceiving.length / itemsPerPage
+                        : dataReceiving.length / itemsPerPage,
+                    )}
+                    onPageChange={(page) => setCurrentPage(page)}
+                  />
+                </div>
               </CRow>
               <CRow className='p-3'>
                 <CCard className='p-3'>
                   <CTable bordered>
-                    <CTableHead>
+                    <CTableHead color='light'>
                       <CTableRow align='middle'>
                         <CTableHeaderCell rowSpan={2}>No</CTableHeaderCell>
                         <CTableHeaderCell rowSpan={2}>Vendor ID</CTableHeaderCell>
@@ -196,7 +277,7 @@ const Dashboard = () => {
                               <CTableDataCell>{data.arrival_time}</CTableDataCell>
                               <CTableDataCell className='text-center'>
                                 <div className="py-1 px-2 " style={{ backgroundColor: data.status === "Delayed" ? "#F64242" : "#35A535", color: 'white', borderRadius: '5px'}}>
-                                  {data.status}  
+                                  {data.status.toUpperCase()}  
                                   </div>
                                 </CTableDataCell>
                               <CTableDataCell style={{ color: data.status === "Delayed" ? "#F64242" : ""}}> {data.delay_time !== 0 ? `- ${data.delay_time}` : ""}</CTableDataCell>
@@ -223,8 +304,8 @@ const Dashboard = () => {
           </CCard>
         </CRow>
         <CRow>
-          <CCard className='px-0' style={{ maxHeight: `${showCard.receiving ? "2500px" : "50px"}`, overflow: "hidden", transitionDuration: '1000ms', animationDuration: "1000ms"}}>
-            <CCardHeader style={{ position: "relative"}}>
+          <CCard className='px-0' style={{ maxHeight: `${showCard.receiving ? "2500px" : "50px"}`, overflow: "hidden", transitionDuration: '500ms'}}>
+            <CCardHeader style={{ position: "relative", cursor: "pointer"}} onClick={()=>setShowCard({ ...showCard, receiving: !showCard.receiving})}>
               <CCardTitle className='text-center'>RECEIVING</CCardTitle> 
               <CButton onClick={()=>setShowCard({...showCard, receiving: !showCard.receiving})} style={{position: "absolute", top: 0, right: 0, margin: "5px 5px 0 0"}}>
                 <CIcon icon={icon.cilHamburgerMenu}/>
@@ -241,6 +322,7 @@ const Dashboard = () => {
                       isClearable
                       className='w-25'
                       placeholder="Search by Material"
+                      onChange={handleChangeSearch}
                       options={dataReceiving.map((data) => ({ 
                           value: data.material_no, 
                           label: `${data.material_no} - ${data.material_desc}` 
@@ -250,7 +332,7 @@ const Dashboard = () => {
               </CRow>
               <CRow className='p-2 pt-3'>
                 <CTable bordered>
-                  <CTableHead>
+                  <CTableHead color='light'>
                     <CTableRow>
                       <CTableHeaderCell>DN No</CTableHeaderCell>
                       <CTableHeaderCell>Material No</CTableHeaderCell>
