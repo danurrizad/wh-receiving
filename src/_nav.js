@@ -17,7 +17,7 @@ const _nav = [
   {
     component: CNavItem,
     name: 'Schedule',
-    to: '/schedule/',
+    to: '/schedule',
     icon: <CIcon icon={icon.cilCalendar} customClassName="nav-icon" />,
   },
   {
