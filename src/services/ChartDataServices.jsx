@@ -1,10 +1,4 @@
-import { useEffect } from "react";
-import { dataSchedulesDummy } from "../utils/DummyData";
-
 const useChartData = ({currentItems}) => {
-    useEffect(()=>{
-        console.log("rerender...")
-    }, [currentItems])
     const color = {
         yellow: "#FFBB00",
         red: "#F64242",
