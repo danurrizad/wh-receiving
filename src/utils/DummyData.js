@@ -12,13 +12,13 @@ export const dataSchedulesDummy = [
     },
     {
         vendor_id: "2234512",
-        vendor_name: "Alpha Vendor",
+        vendor_name: "Alpha Vendor Planning today",
         day: "Tuesday",
-        date: "21-01-2025",
+        date: "15-01-2025",
         schedule_from: "10:00",
-        schedule_to: "12:00",
-        arrival_time: "10:15",
-        status: "On Schedule",
+        schedule_to: "16:00",
+        arrival_time: "",
+        status: "",
         delay_time: 0,
     },
     {

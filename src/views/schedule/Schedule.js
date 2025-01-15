@@ -1,17 +1,44 @@
-import React, { useState, useEffect} from 'react'
+import React, { useState, useEffect, useRef} from 'react'
 import CIcon from '@coreui/icons-react'
 import * as icon from '@coreui/icons'
-import { CButton, CButtonGroup, CCard, CCardBody, CCardHeader, CCardTitle, CCol, CContainer, CFormInput, CFormLabel, CFormText, CInputGroup, CModal, CModalBody, CModalFooter, CModalHeader, CModalTitle, CRow, CTable, CTableBody, CTableDataCell, CTableHead, CTableHeaderCell, CTableRow } from '@coreui/react'
+import { CButton, CButtonGroup, CCard, CCardBody, CCardHeader, CCardTitle, CCol, CContainer, CFormInput, CFormLabel, CFormText, CInputGroup, CModal, CModalBody, CModalFooter, CModalHeader, CModalTitle, CRow, CTable, CTableBody, CTableDataCell, CTableHead, CTableHeaderCell, CTableRow, CToaster } from '@coreui/react'
 import { dataSchedulesDummy } from '../../utils/DummyData'
 import { DatePicker } from 'rsuite';
 import  colorStyles from '../../utils/StyleReactSelect'
 import Select from 'react-select'
+import CreatableSelect from 'react-select/creatable'
 import Pagination from '../../components/Pagination'
 import { handleExport } from '../../utils/ExportToExcel'
+import TemplateToast from '../../components/TemplateToast'
 
 const Schedule = () => {
+  const [toast, addToast] = useState()
+  const toaster = useRef(null)
   const [ dataSchedules, setDataSchedules ] = useState(dataSchedulesDummy)
   const [ showModalUpdate, setShowModalUpdate] = useState(false)
+  const [ showModalScanner, setShowModalScanner ] = useState(false)
+
+  const defaultOptionsSelectVendor = dataSchedulesDummy?.map((data)=>{
+    return{
+      label: `${data.vendor_id} - ${data.vendor_name}`,
+      value: {
+        id: data.vendor_id,
+        name: data.vendor_name,
+      }
+    }
+  })
+  const [ optionsSelectVendor, setOptionsSelectVendor] = useState(defaultOptionsSelectVendor)
+
+  const [ formInput, setFormInput ] = useState({
+    date: "",
+    day: "",
+    vendor_id: "",
+    vendor_name: "",
+    schedule_from: "",
+    schedule_to: "",
+    arrival_time: "",
+    status: ""
+  })
 
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage, setItemsPerPage] = useState(10)
@@ -27,17 +54,6 @@ const Schedule = () => {
         ? dataSchedules.slice(indexOfFirstItem, indexOfLastItem)
         : dataSchedules.slice(indexOfFirstItem, indexOfLastItem)
   }, [currentPage])
-
-  const options = [
-    // { value: 'all', label: 'All' },
-    { value: 'Shortage', label: 'Shortage' },
-    { value: 'Optimal', label: 'Optimal' },
-  ]
-
-  const [ showCard, setShowCard ] = useState({
-    schedule: true,
-    receiving: true
-  })
 
   const getDataSchedules = () => {
     setDataSchedules(dataSchedulesDummy)
@@ -66,8 +82,77 @@ const Schedule = () => {
     getDataSchedules()
   }, [])
 
+
+  
+
+  const handleChangeInputVendor = (e) => {
+    if(e){
+      const foundData = dataSchedulesDummy.filter((data)=>data.vendor_id === e.value.id)
+      console.log("Found data :", foundData)
+      setFormInput({ 
+        ...formInput, 
+        vendor_id: e.value.id, 
+        vendor_name: e.value.name, 
+        schedule_from: foundData[0].schedule_from, 
+        schedule_to: foundData[0].schedule_to,
+        date: foundData[0].date,
+        day: foundData[0].day,
+        arrival_time: foundData[0].arrival_time === "" ? "" : foundData[0].arrival_time,
+        status: foundData[0].status === "" ? "" : foundData[0].status 
+      })
+    } else{
+      setFormInput({ 
+        ...formInput, 
+        vendor_id: "", 
+        vendor_name: "",
+        schedule_from: "",
+        schedule_to: "",
+        date: "",
+        day: "",
+        arrival_time: "",
+        status: ""
+      })
+    }
+  }
+
+  const handleCreateOptionVendor = (inputValue) => {
+    const newOption = {label: inputValue, value: {id: inputValue, name: "Vendor Name Baru"}}
+    // console.log("newOption :", newOption)
+    setOptionsSelectVendor([...optionsSelectVendor, newOption])
+    setFormInput({...formInput, vendor_id: newOption.value.id, vendor_name: newOption.value.name})
+  }
+
+  const handleSubmitSchedule = ( data ) => {
+    const dateNow = new Date()
+
+    const [day, month, year] = data.date.split("-")
+    const formattedDate = `${year}-${month}-${day}`
+
+    // Combine the dummy date with schedule times
+    const scheduleFrom = new Date(`${formattedDate}T${data.schedule_from}:00`);
+    const scheduleTo = new Date(`${formattedDate}T${data.schedule_to}:00`);
+
+    // Extract hours and minutes
+    const hours = dateNow.getHours().toString().padStart(2, "0"); // Ensure 2 digits
+    const minutes = dateNow.getMinutes().toString().padStart(2, "0"); // Ensure 2 digits
+
+    // Combine to get "HH:mm"
+    const timeNow = `${hours}:${minutes}`;
+   
+    // Compare the times
+    if (dateNow > scheduleTo) {
+      setFormInput({...formInput, arrival_time: timeNow, status: "Delayed"})
+      console.log("Current time is after the schedule.");
+    } else {
+      setFormInput({...formInput, arrival_time: timeNow, status: "On Schedule"})
+      console.log("Current time is within the schedule.");
+    }
+    addToast(TemplateToast("success", "success", "Data schedule has been submitted!"))
+  }
+
   return (
     <CContainer fluid>
+        <CToaster className="p-3" placement="top-end" push={toast} ref={toaster} />
         <CRow>
             <CCard className='p-0'>
                 <CCardHeader>
@@ -80,21 +165,23 @@ const Schedule = () => {
                         <CRow className='mb-3'>
                           <CFormLabel style={{ fontSize: "0.8rem" }}>DATE</CFormLabel>
                           <div className='d-flex align-items-center gap-2'>
-                            <DatePicker className="w-100" placeholder="Select dates" size='lg' block />
+                            <DatePicker defaultValue={new Date()} className="w-100" placeholder="Select dates" size='lg' block />
                           </div>
                         </CRow>
                         <CRow className=''>
                           <CCol md={8}>
                             <CFormLabel  style={{ fontSize: "0.8rem" }}>VENDOR CODE</CFormLabel>
-                            <CInputGroup className=''>
-                              <CFormInput/>
+                            <CInputGroup>
+                              {/* <CFormInput/> */}
+                              {/* <Select className='w-75' isClearable options={optionsSelectVendor}/> */}
+                              <CreatableSelect className='w-75' onCreateOption={handleCreateOptionVendor} isClearable options={optionsSelectVendor} value={optionsSelectVendor.find(option => option.value === formInput.vendor_id)} onChange={handleChangeInputVendor} />
                               <CButton color='success' className='p-0 px-2' style={{border: "1px solid #C8CCD2"}}>
                                 <CIcon style={{color: "white"}} icon={icon.cilBarcode} size='xl'/>
                               </CButton>
                             </CInputGroup>
                           </CCol>
                           <CCol md={4} className='d-flex align-items-end justify-content-end'>
-                            <CButton color='success' style={{color: 'white'}} className='flex-grow-0 d-flex align-items-center gap-2'>
+                            <CButton onClick={()=>handleSubmitSchedule(formInput)} color='success' style={{color: 'white'}} className='flex-grow-0 d-flex align-items-center gap-2' disabled={formInput.vendor_id === ""}>
                               <CIcon icon={icon.cilCheckAlt}/>
                               <div style={{border: "0.5px solid white", height: "10px", width: "1px"}}></div>
                               <span>Submit</span>
@@ -111,22 +198,22 @@ const Schedule = () => {
                                 <CRow>
                                   <CCol xs={4}>Vendor Code</CCol>
                                   <CCol xs='auto'>:</CCol>
-                                  <CCol>128192</CCol>
+                                  <CCol>{formInput.vendor_id}</CCol>
                                 </CRow>
                                 <CRow>
                                   <CCol xs={4}>Vendor Name</CCol>
                                   <CCol xs='auto'>:</CCol>
-                                  <CCol>Cahaya Prima</CCol>
+                                  <CCol>{formInput.vendor_name}</CCol>
                                 </CRow>
                                 <CRow>
                                   <CCol xs={4}>Arrival [PLAN]</CCol>
                                   <CCol xs='auto'>:</CCol>
-                                  <CCol>10-01-2025</CCol>
+                                  <CCol>{formInput.schedule_from} {formInput.schedule_from ? "-" : ""} {formInput.schedule_to}</CCol>
                                 </CRow>
                                 <CRow>
                                   <CCol xs={4}>Arrival [ACT]</CCol>
                                   <CCol xs='auto'>:</CCol>
-                                  <CCol>10-01-2025</CCol>
+                                  <CCol>{formInput.arrival_time}</CCol>
                                 </CRow>
                               </CCard>
                             </CRow>
@@ -134,8 +221,8 @@ const Schedule = () => {
                           <CCol  className='d-flex flex-column' style={{ fontSize: "0.8rem" }}>
                             <CRow className='mb-2'>SCHEDULE STATUS</CRow>
                             <CRow className='flex-grow-1'>
-                              <CCard className='p-4 d-flex align-items-center justify-content-center'>
-                                <h2>ON SCHEDULE</h2>
+                              <CCard color={formInput.status === "Delayed" ? 'danger' : formInput.status === "On Schedule" ? 'success' : ""} className='p-4 d-flex align-items-center justify-content-center'>
+                                <h2 style={{ color: "white"}}>{formInput.status}</h2>
                               </CCard>
                             </CRow>
                           </CCol>
@@ -174,11 +261,11 @@ const Schedule = () => {
                     <CTableHead color='light'>
                       <CTableRow align='middle'>
                         <CTableHeaderCell rowSpan={2}>No</CTableHeaderCell>
-                        <CTableHeaderCell rowSpan={2}>Vendor ID</CTableHeaderCell>
+                        <CTableHeaderCell rowSpan={2}>Vendor Code</CTableHeaderCell>
                         <CTableHeaderCell rowSpan={2}>Vendor Name</CTableHeaderCell>
                         <CTableHeaderCell rowSpan={2}>Day</CTableHeaderCell>
                         <CTableHeaderCell rowSpan={2}>Date</CTableHeaderCell>
-                        <CTableHeaderCell colSpan={2}>Schedule Time</CTableHeaderCell>
+                        <CTableHeaderCell colSpan={2}>Schedule Time Plan</CTableHeaderCell>
                         <CTableHeaderCell rowSpan={2}>Arrival Time</CTableHeaderCell>
                         <CTableHeaderCell rowSpan={2}>Status</CTableHeaderCell>
                         <CTableHeaderCell rowSpan={2}>Delay Time</CTableHeaderCell>
@@ -201,7 +288,7 @@ const Schedule = () => {
                               <CTableDataCell>{data.schedule_to}</CTableDataCell>
                               <CTableDataCell>{data.arrival_time}</CTableDataCell>
                               <CTableDataCell className='text-center'>
-                                <div className="py-1 px-2 " style={{ backgroundColor: data.status === "Delayed" ? "#F64242" : "#35A535", color: 'white', borderRadius: '5px'}}>
+                                <div className="py-1 px-2 " style={{ backgroundColor: data.status === "Delayed" ? "#F64242" : data.status === "On Schedule" ? "#35A535" : "transparent", color: 'white', borderRadius: '5px'}}>
                                   {data.status}  
                                   </div>
                                 </CTableDataCell>
