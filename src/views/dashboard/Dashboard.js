@@ -3,7 +3,7 @@ import { dataSchedulesDummy, dataReceivingDummy } from '../../utils/DummyData'
 import  colorStyles from '../../utils/StyleReactSelect'
 import Select from 'react-select'
 import Pagination from '../../components/Pagination'
-
+import { DatePicker } from 'rsuite';
 import {
   CAvatar,
   CButton,
@@ -17,6 +17,7 @@ import {
   CCol,
   CContainer,
   CFormLabel,
+  CFormText,
   CProgress,
   CRow,
   CTable,
@@ -79,7 +80,7 @@ const Dashboard = () => {
   ]
 
   const [ showCard, setShowCard ] = useState({
-    summary: false,
+    summary: true,
     schedule: true,
     receiving: true
   })
@@ -147,18 +148,26 @@ const Dashboard = () => {
     getDataReceiving()
   }, [])
 
+const optionsSelectDN = Array.from(
+    new Set(dataReceivingDummy.map((data) => data.dn_no))
+  ).map((uniqueValue) => {
+    return {
+      value: uniqueValue,
+      label: uniqueValue,
+    };
+  });
+  
 
   return (
       <CContainer fluid>
         <CRow className='mb-3'>
         <CCard
-  className="px-0"
-  style={{
-    maxHeight: `${showCard.summary ? "1000px" : "50px"}`,
-    overflow: "hidden",
-    transitionDuration: "500ms",
-  }}
->
+         className="px-0"
+       style={{
+        maxHeight: `${showCard.summary ? "1000px" : "50px"}`,
+        overflow: "hidden",
+        transitionDuration: "500ms",
+         }}>
   <CCardHeader
     style={{ position: "relative", cursor: "pointer" }}
     onClick={() => setShowCard({ ...showCard, summary: !showCard.summary })}
@@ -174,40 +183,15 @@ const Dashboard = () => {
   <CCardBody style={{ overflow: "auto" }}>
     <CRow>
       <CCol xs="auto">
-        <CButton
-          color="info"
-          style={{ color: "white" }}
-          onClick={() => setShowModalUpdate(true)}
-          className="flex-grow-0 d-flex align-items-center gap-2"
-        >
-          <CIcon icon={icon.cilCloudUpload} />
-          <div
-            style={{
-              border: "0.5px solid white",
-              height: "10px",
-              width: "1px",
-            }}
-          ></div>
-          <span>Upload a File</span>
-        </CButton>
+      <CFormText>PLANT</CFormText>
+      <Select isClearable 
+     />
       </CCol>
-      <CCol>
-        <CButton
-          onClick={() => handleExport(dataReceiving, "receiving")}
-          color="success"
-          style={{ color: "white" }}
-          className="flex-grow-0 d-flex align-items-center gap-2"
-        >
-          <CIcon icon={icon.cilCloudDownload} />
-          <div
-            style={{
-              border: "0.5px solid white",
-              height: "10px",
-              width: "1px",
-            }}
-          ></div>
-          <span>Export to File</span>
-        </CButton>
+      <CCol xs="auto">
+      <CFormLabel style={{ fontSize: "0.8rem" }}>DATE</CFormLabel>
+        <div className='d-flex align-items-center gap-2'>
+        <DatePicker defaultValue={new Date()} className="w-100" placeholder="Select dates" size='lg' block />
+       </div>
       </CCol>
     </CRow>
     <CRow>
@@ -247,22 +231,14 @@ const Dashboard = () => {
             <CCardText className="fs-1 fw-bold">46</CCardText>
           </CCardBody>
         </CCard>
-
-        <CCard className="mb-2 mt-3">
-          <CCardHeader
-            className="text-muted small text-center"
-            style={{ backgroundColor: "#FFB3B3" }}
-          >
-            <h6 style={{ color: "white", fontSize: "12px" }}>SHORTAGE</h6>
-          </CCardHeader>
-          <CCardBody className="text-center">
-            <CCardText className="fs-1 fw-bold">25</CCardText>
-            <CCol className="p-3" md={5}>
-              <Bar options={getChartOption()} data={setChartData()} />
+        </CCol>
+        <CCol sm={7} >
+        <Bar 
+        options={getChartOption()} 
+        data={setChartData()} 
+        height={200} // Tinggi chart
+    />
             </CCol>
-          </CCardBody>
-        </CCard>
-      </CCol>
     </CRow>
   </CCardBody>
 </CCard>

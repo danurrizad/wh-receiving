@@ -77,15 +77,23 @@ const useChartData = ({currentItems}) => {
                     position: "top",
                     // type: "linear",
                     min: 7,
-                    max: 18,
+                    max: 15,
                     ticks: {
                         stepSize: 1,
+                        font: {
+                            size: 1, // Ukuran font kecil
+                        },
                         callback: (value) => `${value}:00`,
                     }
                 },
                 y: {
                     stacked: true,
                     beginAtZero: false,
+                    ticks: {
+                        font: {
+                            size: 9, // Ukuran font kecil untuk sumbu-y
+                        },
+                    },
                 },
             },
             elements: {
