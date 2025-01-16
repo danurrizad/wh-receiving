@@ -194,52 +194,103 @@ const optionsSelectDN = Array.from(
        </div>
       </CCol>
     </CRow>
-    <CRow>
-      <CCol sm={2}>
-        <CCard className="mb-3 mt-1">
-          <CCardHeader
-            className="text-muted small text-center"
-            style={{ backgroundColor: "#F64242" }}
-          >
-            <h6 style={{ color: "white", fontSize: "12px" }}>DELAYED</h6>
-          </CCardHeader>
-          <CCardBody className="text-center">
-            <CCardText className="fs-1 fw-bold">46</CCardText>
-          </CCardBody>
-        </CCard>
-
-        <CCard className="mb-2 mt-3">
-          <CCardHeader
-            className="text-muted small text-center"
-            style={{ backgroundColor: "#35A535" }}
-          >
-            <h6 style={{ color: "white", fontSize: "12px" }}>ON SCHEDULE</h6>
-          </CCardHeader>
-          <CCardBody className="text-center">
-            <CCardText className="fs-1 fw-bold">25</CCardText>
-          </CCardBody>
-        </CCard>
-
-        <CCard className="mb-3 mt-1">
-          <CCardHeader
-            className="text-muted small text-center"
-            style={{ backgroundColor: "gray" }}
-          >
-            <h6 style={{ color: "white", fontSize: "12px" }}>REMAINING</h6>
-          </CCardHeader>
-          <CCardBody className="text-center">
-            <CCardText className="fs-1 fw-bold">46</CCardText>
-          </CCardBody>
-        </CCard>
-        </CCol>
+   <CRow>
         <CCol sm={7} >
+        <CCard>
         <Bar 
         options={getChartOption()} 
         data={setChartData()} 
         height={200} // Tinggi chart
     />
-            </CCol>
-    </CRow>
+       </CCard>
+       </CCol>
+       <CCol sm={5} >
+       <CRow>
+       <CCol sm="auto">
+    <CCard className="mb-3 mt-1">
+      <CCardHeader
+        className="text-muted small text-center"
+        style={{ backgroundColor: "#F64242" }}
+      >
+        <h6 style={{ color: "white", fontSize: "7px" }}>DELAYED</h6>
+      </CCardHeader>
+      <CCardBody className="text-center">
+        <CCardText className="fs-5 fw-bold">46</CCardText>
+      </CCardBody>
+    </CCard>
+  </CCol>
+
+  <CCol sm="auto">
+    <CCard className="mb-3 mt-1">
+      <CCardHeader
+        className="text-muted small text-center"
+        style={{ backgroundColor: "#35A535" }}
+      >
+        <h6 style={{ color: "white", fontSize: "7px" }}>ON SCHEDULE</h6>
+      </CCardHeader>
+      <CCardBody className="text-center">
+        <CCardText className="fs-5 fw-bold">25</CCardText>
+      </CCardBody>
+    </CCard>
+  </CCol>
+
+  <CCol sm="auto">
+    <CCard className="mb-3 mt-1">
+      <CCardHeader
+        className="text-muted small text-center"
+        style={{ backgroundColor: "gray" }}
+      >
+        <h6 style={{ color: "white", fontSize: "7px" }}>REMAINING</h6>
+      </CCardHeader>
+      <CCardBody className="text-center">
+        <CCardText className="fs-5 fw-bold">46</CCardText>
+      </CCardBody>
+    </CCard>
+  </CCol>
+  </CRow>
+   <CRow className='p-2 pt-3'>
+                  <CTable style={{fontSize:'10px'}} bordered>
+                    <CTableHead color='light'>
+                      <CTableRow>
+                        <CTableHeaderCell>Material Description</CTableHeaderCell>
+                        <CTableHeaderCell>Rack Address</CTableHeaderCell>
+                        <CTableHeaderCell>Plan Qty</CTableHeaderCell>
+                        <CTableHeaderCell>Act Qty</CTableHeaderCell>
+                        <CTableHeaderCell>Diff</CTableHeaderCell>
+                        <CTableHeaderCell>Date</CTableHeaderCell>
+                      </CTableRow>
+                    </CTableHead>
+                    <CTableBody>
+                      { dataReceiving.map((data, index)=>{
+                        return(
+                          <CTableRow key={index} color={`${data.difference !== 0 ? "danger" : ""}`}>
+                          {/* <CTableRow key={index} style={{ backgroundColor: `${data.difference !== 0 ? "red" : ""}`}}> */}
+                          
+                       
+                            <CTableDataCell>{data.material_desc}</CTableDataCell>
+                            <CTableDataCell>{data.rack_address}</CTableDataCell>
+                            <CTableDataCell>{data.req_qty}</CTableDataCell>
+                            <CTableDataCell>{data.actual_qty}</CTableDataCell>
+                            <CTableDataCell className='text-center' style={{ borderLeft: '2px solid red', borderRight: '2px solid red', borderTop: index===0 && "2px solid red", borderBottom: index === 10 + 2 && "2px solid red", fontWeight: data.difference !== 0 && 'bold'}}>{data.difference === 0 ? "-" : data.difference}</CTableDataCell>
+                            <CTableDataCell>{data.date}</CTableDataCell>
+                          </CTableRow>
+                        )
+                      })}
+                      { dataReceiving.length === 0 && (
+                        <CTableRow>
+                          <CTableDataCell colSpan={10} style={{ opacity: "50%"}}>
+                            <div className='d-flex flex-column align-items-center justify-content-center py-4'>
+                              <CIcon icon={icon.cilInbox} size='4xl'/>
+                              <span>Data not found</span>
+                            </div>
+                          </CTableDataCell>
+                        </CTableRow>
+                      )}
+                    </CTableBody>
+                  </CTable>
+                </CRow>
+                </CCol>
+        </CRow>
   </CCardBody>
 </CCard>
 
