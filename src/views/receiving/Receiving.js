@@ -253,7 +253,7 @@ const Receiving = () => {
                         style={{color: 'white'}} 
                         className='flex-grow-0 d-flex align-items-center gap-2'
                         >
-                          { materialByDN.dn_no === "" || materialByDN.material_desc === "" || materialByDN.rack_address === "" ? <CIcon icon={icon.cilX}/> : <CIcon icon={icon.cilCheckAlt}/>}
+                          <CIcon icon={icon.cilCheckAlt}/>
                           <div style={{border: "0.5px solid white", height: "10px", width: "2px"}}></div>
                           <span>Submit</span>
                       </CButton>
