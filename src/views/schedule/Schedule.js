@@ -147,6 +147,18 @@ const Schedule = () => {
       setFormInput({...formInput, arrival_time: timeNow, status: "On Schedule"})
       console.log("Current time is within the schedule.");
     }
+    setTimeout(()=>{
+      setFormInput({ 
+        vendor_id: "", 
+        vendor_name: "",
+        schedule_from: "",
+        schedule_to: "",
+        date: "",
+        day: "",
+        arrival_time: "",
+        status: ""
+      })
+    }, 5000)
     addToast(TemplateToast("success", "success", "Data schedule has been submitted!"))
   }
 
@@ -174,7 +186,27 @@ const Schedule = () => {
                             <CInputGroup>
                               {/* <CFormInput/> */}
                               {/* <Select className='w-75' isClearable options={optionsSelectVendor}/> */}
-                              <CreatableSelect className='w-75' onCreateOption={handleCreateOptionVendor} isClearable options={optionsSelectVendor} value={optionsSelectVendor.find(option => option.value === formInput.vendor_id)} onChange={handleChangeInputVendor} />
+                              <CreatableSelect 
+                                styles={{
+                                  control: (base, state) => ({
+                                    ...base,
+                                    borderRadius: "5px 0 0 5px",
+                                    borderColor: state.isFocused ? "#C8CCD2" : "#C8CCD2",
+                                    // This line disable the blue border
+                                    boxShadow: state.isFocused && 0,
+                                    '&:hover': {
+                                      //  border: state.isFocused ? 0 : 0
+                                    }
+                                })
+                                }}
+                                className='w-75' 
+                                onCreateOption={handleCreateOptionVendor} 
+                                isClearable 
+                                options={optionsSelectVendor} 
+                                value={optionsSelectVendor.find(option => option.value.id === formInput.vendor_id) || null} 
+                                // value={optionsSelectMaterial.find(option => option.value === materialByDN.material_desc) || null}
+                                onChange={handleChangeInputVendor} 
+                              />
                               <CButton color='success' className='p-0 px-2' style={{border: "1px solid #C8CCD2"}}>
                                 <CIcon style={{color: "white"}} icon={icon.cilBarcode} size='xl'/>
                               </CButton>
@@ -182,7 +214,7 @@ const Schedule = () => {
                           </CCol>
                           <CCol md={4} className='d-flex align-items-end justify-content-end'>
                             <CButton onClick={()=>handleSubmitSchedule(formInput)} color='success' style={{color: 'white'}} className='flex-grow-0 d-flex align-items-center gap-2' disabled={formInput.vendor_id === ""}>
-                              <CIcon icon={icon.cilCheckAlt}/>
+                              { formInput.vendor_id === "" ? <CIcon icon={icon.cilX}/> : <CIcon icon={icon.cilCheckAlt}/>}
                               <div style={{border: "0.5px solid white", height: "10px", width: "1px"}}></div>
                               <span>Submit</span>
                             </CButton>
@@ -191,10 +223,11 @@ const Schedule = () => {
                       </CCol>
                       <CCol sm={8} className='px-4' >
                         <CRow className='h-100' >
-                          <CCol className='px-4 d-flex flex-column' >
+                          <CCol className='px-4 d-flex flex-column col-7'>
                             <CRow className='mb-2' style={{ fontSize: "0.8rem" }}>VENDOR STATUS</CRow>
                             <CRow className='flex-grow-1'>
-                              <CCard className='px-3 pt-3' style={{ backgroundColor:"rgba(129,198,240, 0.15)", borderRadius: "8px"}}>
+                              <CCard className='px-3 pt-3' style={{ backgroundColor:"rgba(129,198,240, 0.15)", borderRadius: "8px", position: 'relative'}}>
+                                <CIcon icon={icon.cilTruck} style={{ position: "absolute", bottom: "10px", right: "10px", opacity: "20%"}} size='3xl'/>
                                 <CRow>
                                   <CCol xs={4}>Vendor Code</CCol>
                                   <CCol xs='auto'>:</CCol>
@@ -222,7 +255,7 @@ const Schedule = () => {
                             <CRow className='mb-2'>SCHEDULE STATUS</CRow>
                             <CRow className='flex-grow-1'>
                               <CCard color={formInput.status === "Delayed" ? 'danger' : formInput.status === "On Schedule" ? 'success' : ""} className='p-4 d-flex align-items-center justify-content-center'>
-                                <h2 style={{ color: "white"}}>{formInput.status}</h2>
+                                <h2 style={{ color: "white"}}>{formInput.status.toUpperCase()}</h2>
                               </CCard>
                             </CRow>
                           </CCol>
@@ -259,7 +292,7 @@ const Schedule = () => {
               <CRow className='p-3'>
                   <CTable bordered>
                     <CTableHead color='light'>
-                      <CTableRow align='middle'>
+                      <CTableRow align='middle' className='text-center'>
                         <CTableHeaderCell rowSpan={2}>No</CTableHeaderCell>
                         <CTableHeaderCell rowSpan={2}>Vendor Code</CTableHeaderCell>
                         <CTableHeaderCell rowSpan={2}>Vendor Name</CTableHeaderCell>
@@ -288,8 +321,8 @@ const Schedule = () => {
                               <CTableDataCell>{data.schedule_to}</CTableDataCell>
                               <CTableDataCell>{data.arrival_time}</CTableDataCell>
                               <CTableDataCell className='text-center'>
-                                <div className="py-1 px-2 " style={{ backgroundColor: data.status === "Delayed" ? "#F64242" : data.status === "On Schedule" ? "#35A535" : "transparent", color: 'white', borderRadius: '5px'}}>
-                                  {data.status}  
+                                <div className={`py-1 px-2 ${data.status.toLowerCase() === 'delayed' && "blink"}`} style={{ backgroundColor: data.status === "Delayed" ? "#F64242" : data.status === "On Schedule" ? "#35A535" : "transparent", color: 'white', borderRadius: '5px'}}>
+                                  {data.status.toUpperCase()}  
                                   </div>
                                 </CTableDataCell>
                               <CTableDataCell style={{ color: data.status === "Delayed" ? "#F64242" : ""}}> {data.delay_time !== 0 ? `- ${data.delay_time}` : ""}</CTableDataCell>
