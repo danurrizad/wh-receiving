@@ -8,6 +8,9 @@ yarn.lock
 # testing
 /coverage
 
+# API config
+/src/utils/config.js
+
 # production
 /build
 

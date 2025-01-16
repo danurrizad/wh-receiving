@@ -240,7 +240,7 @@ export const dataReceivingDummy = [
       actual_qty: 40,
       difference: 0,
       date: "2025-01-08 09:35:00",
-      rack_address: "R001",
+      rack_address: "R001 2",
     },
     {
       dn_no: "2251368 no rack",
