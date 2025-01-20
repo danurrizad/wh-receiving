@@ -9,17 +9,36 @@ import {
   CContainer,
   CForm,
   CFormInput,
+  CImage,
   CInputGroup,
   CInputGroupText,
   CRow,
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { cilLockLocked, cilUser } from '@coreui/icons'
+import ImageBG from '../../../assets/images/bg-login.jpg'
+// import { Player } from '@lottiefiles/react-lottie-player';
+import Lottie from 'lottie-react'
+import animationData from '../../../assets/lottie/lottie-login.json'
+// import lottieAnimation from '../../../assets/lottie/lottie-login.json'
+import LogoTWIIS from 'src/assets/images/logo-twiis.png';
 
 const Login = () => {
+
+  const defaultOptions = {
+    loop: true,
+    autoplay: true, 
+    animationData: animationData,
+    rendererSettings: {
+      preserveAspectRatio: 'xMidYMid slice'
+    }
+  };
+  console.log('defaultOptions :', defaultOptions)
+
   return (
     <div className="bg-body-tertiary min-vh-100 d-flex flex-row align-items-center">
       <CContainer>
+        <CImage style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', opacity: '55%'}} src={ImageBG}/>
         <CRow className="justify-content-center">
           <CCol md={8}>
             <CCardGroup>
@@ -59,20 +78,11 @@ const Login = () => {
                   </CForm>
                 </CCardBody>
               </CCard>
-              <CCard className="text-white bg-primary py-5" style={{ width: '44%' }}>
-                <CCardBody className="text-center">
-                  <div>
-                    <h2>Sign up</h2>
-                    <p>
-                      Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
-                      tempor incididunt ut labore et dolore magna aliqua.
-                    </p>
-                    <Link to="/register">
-                      <CButton color="primary" className="mt-3" active tabIndex={-1}>
-                        Register Now!
-                      </CButton>
-                    </Link>
-                  </div>
+              <CCard color='info' className="text-white py- p-0" style={{ width: '44%' }}>
+                <CCardBody className="text-cente">
+                  <CImage src={LogoTWIIS}/>
+                  <Lottie animationData={animationData} width={1000} loop={true} />
+
                 </CCardBody>
               </CCard>
             </CCardGroup>

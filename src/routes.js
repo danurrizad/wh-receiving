@@ -1,8 +1,8 @@
 import React from 'react'
 
 const Dashboard = React.lazy(() => import('./views/dashboard/Dashboard'))
-const Schedule = React.lazy(() => import('./views/schedule/Schedule'))
-const Receiving = React.lazy(() => import('./views/receiving/Receiving'))
+const Schedule = React.lazy(() => import('./views/schedule/Schedule2'))
+const Receiving = React.lazy(() => import('./views/receiving/Receiving2'))
 
 const routes = [
   { path: '/', exact: true, name: 'Home' },
