@@ -93,6 +93,7 @@ const useChartData = ({currentItems}) => {
                     ticks: {
                         font: {
                             size: 9, // Ukuran font kecil untuk sumbu-y
+                            
                         },
                     },
                 },
@@ -100,6 +101,7 @@ const useChartData = ({currentItems}) => {
             elements: {
                 bar: {
                     borderWidth: 2,
+
                 },
             },
             responsive: true,
@@ -108,6 +110,7 @@ const useChartData = ({currentItems}) => {
                     color: 'black',
                   },
                 tooltip: {
+                    backgroundColor: "rgba(0, 0, 0, 0.7)", // Latar belakang tooltip semi-transparan
                     callbacks: {
                         label: (context) => {
                             const dataIndex = context.dataIndex; // Get the index of the data point
@@ -131,6 +134,7 @@ const useChartData = ({currentItems}) => {
                     text: 'Scheduling Time Vendor',
                 },
             },
+            
           };
         return config
     }

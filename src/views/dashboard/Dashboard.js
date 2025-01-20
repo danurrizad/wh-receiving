@@ -2,8 +2,15 @@ import React, { useState, useEffect } from 'react'
 import { dataSchedulesDummy, dataReceivingDummy } from '../../utils/DummyData'
 import  colorStyles from '../../utils/StyleReactSelect'
 import Select from 'react-select'
+import Flatpickr from 'react-flatpickr'
+import 'flatpickr/dist/flatpickr.css'
 import Pagination from '../../components/Pagination'
-import { DatePicker } from 'rsuite';
+import 'primeicons/primeicons.css'
+import { IconField } from 'primereact/iconfield'
+import { InputIcon } from 'primereact/inputicon'
+import { InputText } from 'primereact/inputtext'
+import 'primereact/resources/themes/nano/theme.css'
+import 'primereact/resources/primereact.min.css'
 import {
   CAvatar,
   CButton,
@@ -27,7 +34,9 @@ import {
   CTableHeaderCell,
   CTableRow,
 } from '@coreui/react'
-
+import {
+  cilCalendar,
+} from '@coreui/icons'
 
 import useChartData from '../../services/ChartDataServices'
 import {
@@ -56,8 +65,9 @@ ChartJS.register(
 const Dashboard = () => {
   const [ dataSchedules, setDataSchedules ] = useState(dataSchedulesDummy)
   const [ dataReceiving, setDataReceiving ] = useState(dataReceivingDummy)
-
+  const [globalFilterValue, setGlobalFilterValue] = useState('');
   const [currentPage, setCurrentPage] = useState(1)
+  const [dates, setDates] = useState([null, null]) // State for date range
   const [itemsPerPage, setItemsPerPage] = useState(10)
   const indexOfLastItem = currentPage * itemsPerPage
   const indexOfFirstItem = indexOfLastItem - itemsPerPage
@@ -84,7 +94,9 @@ const Dashboard = () => {
     schedule: true,
     receiving: true
   })
-
+  const onGlobalFilterChange = (e) => {
+    setGlobalFilterValue(e.target.value);
+  };
   const getDataSchedules = () => {
     setDataSchedules(dataSchedulesDummy)
   }
@@ -157,19 +169,39 @@ const optionsSelectDN = Array.from(
     };
   });
   
-
+  const renderHeader = () => {
+    return (
+      <div>
+        <IconField iconPosition="left">
+          <InputIcon className="pi pi-search" />
+          <InputText
+            value={globalFilterValue}
+            onChange={onGlobalFilterChange}
+            placeholder="Keyword Search"
+            style={{ width: '100%', borderRadius: '5px' }}
+          />
+        </IconField>
+      </div>
+    )
+  }
   return (
       <CContainer fluid>
         <CRow className='mb-3'>
         <CCard
-         className="px-0"
-       style={{
+        className="px-0 bg-dark text-white"
+        style={{
         maxHeight: `${showCard.summary ? "1000px" : "50px"}`,
         overflow: "hidden",
-        transitionDuration: "500ms",
-         }}>
+        transitionDuration: "500ms"
+  }}
+>
   <CCardHeader
-    style={{ position: "relative", cursor: "pointer" }}
+    style={{
+      position: "relative",
+      cursor: "pointer",
+      backgroundColor: "#000957", // Warna latar belakang header tetap putih
+      color: "white",           // Warna teks header tetap hitam
+    }}
     onClick={() => setShowCard({ ...showCard, summary: !showCard.summary })}
   >
     <CCardTitle className="text-center">SUMMARY RECEIVING WAREHOUSE</CCardTitle>
@@ -181,41 +213,65 @@ const optionsSelectDN = Array.from(
     </CButton>
   </CCardHeader>
   <CCardBody style={{ overflow: "auto" }}>
-    <CRow>
-      <CCol xs="auto">
-      <CFormText>PLANT</CFormText>
-      <Select isClearable 
-     />
-      </CCol>
-      <CCol xs="auto">
-      <CFormLabel style={{ fontSize: "0.8rem" }}>DATE</CFormLabel>
-        <div className='d-flex align-items-center gap-2'>
-        <DatePicker defaultValue={new Date()} className="w-100" placeholder="Select dates" size='lg' block />
-       </div>
-      </CCol>
-    </CRow>
-   <CRow>
-        <CCol sm={7} >
-        <CCard>
-        <Bar 
-        options={getChartOption()} 
-        data={setChartData()} 
-        height={200} // Tinggi chart
-    />
-       </CCard>
+  <CRow className="d-flex justify-content-center align-items-center">
+  {/* Plant Select aligned left */}
+  <CCol xs="auto">
+    <CFormText style={{ fontSize: "0.6rem" }}>PLANT</CFormText>
+    <Select isClearable />
+  </CCol>
+
+  {/* Date and Material Search aligned right */}
+  <CCol className="d-flex justify-content-end gap-3">
+    <CCol xs="auto">
+    <div className="d-flex flex-wrap justify-content-end">{renderHeader()}</div>
+    </CCol>
+
+    <CCol xs="auto">
+    <div
+    className="flatpickr-wrapper"
+    style={{ position: 'relative', width: '300px', height: '36px' }}
+    >
+    
+      <Flatpickr
+        value={dates}
+         onChange={(selectedDates) => setDates(selectedDates)}
+           options={{
+            mode: 'range',
+             dateFormat: 'Y-m-d',}}
+              className="form-control"
+              placeholder="Select a date"
+              style={{
+               paddingLeft: '40px', // Beri ruang untuk ikon
+               height: '80%',}}/>
+                <CIcon
+       icon={cilCalendar}
+       size="lg"
+        style={{
+           position: 'absolute',
+            top: '40%',
+            right: '10px',
+             transform: 'translateY(-50%)',
+              pointerEvents: 'none',
+              color: 'black',  // Set the color of the icon here
+               }}
+                />
+           </div>
        </CCol>
-       <CCol sm={5} >
-       <CRow>
+     </CCol>
+     </CRow>
+      <CRow>
+        <CCol sm={7} >
+        <CRow>
        <CCol sm="auto">
-    <CCard className="mb-3 mt-1">
+       <CCard className="mb-3 mt-1">
       <CCardHeader
         className="text-muted small text-center"
         style={{ backgroundColor: "#F64242" }}
       >
-        <h6 style={{ color: "white", fontSize: "7px" }}>DELAYED</h6>
+        <h6 style={{ color: "white", fontSize: "10px" }}>DELAYED</h6>
       </CCardHeader>
       <CCardBody className="text-center">
-        <CCardText className="fs-5 fw-bold">46</CCardText>
+        <CCardText className="fs-3 fw-bold">46</CCardText>
       </CCardBody>
     </CCard>
   </CCol>
@@ -244,36 +300,46 @@ const optionsSelectDN = Array.from(
       </CCardHeader>
       <CCardBody className="text-center">
         <CCardText className="fs-5 fw-bold">46</CCardText>
-      </CCardBody>
-    </CCard>
-  </CCol>
-  </CRow>
+       </CCardBody>
+       </CCard>
+      </CCol>
+     </CRow>
+     <CRow>
+        <CCard>
+        <Bar 
+        options={getChartOption()} 
+        data={setChartData()} 
+        height={200} // Tinggi chart
+       />
+       </CCard>
+      </CRow>
+     </CCol>
+   <CCol sm={5} >
    <CRow className='p-2 pt-3'>
-                  <CTable style={{fontSize:'10px'}} bordered>
-                    <CTableHead color='light'>
-                      <CTableRow>
-                        <CTableHeaderCell>Material Description</CTableHeaderCell>
-                        <CTableHeaderCell>Rack Address</CTableHeaderCell>
-                        <CTableHeaderCell>Plan Qty</CTableHeaderCell>
-                        <CTableHeaderCell>Act Qty</CTableHeaderCell>
-                        <CTableHeaderCell>Diff</CTableHeaderCell>
-                        <CTableHeaderCell>Date</CTableHeaderCell>
-                      </CTableRow>
-                    </CTableHead>
-                    <CTableBody>
-                      { dataReceiving.map((data, index)=>{
-                        return(
-                          <CTableRow key={index} color={`${data.difference !== 0 ? "danger" : ""}`}>
-                          {/* <CTableRow key={index} style={{ backgroundColor: `${data.difference !== 0 ? "red" : ""}`}}> */}
-                          
-                       
-                            <CTableDataCell>{data.material_desc}</CTableDataCell>
-                            <CTableDataCell>{data.rack_address}</CTableDataCell>
-                            <CTableDataCell>{data.req_qty}</CTableDataCell>
-                            <CTableDataCell>{data.actual_qty}</CTableDataCell>
-                            <CTableDataCell className='text-center' style={{ borderLeft: '2px solid red', borderRight: '2px solid red', borderTop: index===0 && "2px solid red", borderBottom: index === 10 + 2 && "2px solid red", fontWeight: data.difference !== 0 && 'bold'}}>{data.difference === 0 ? "-" : data.difference}</CTableDataCell>
-                            <CTableDataCell>{data.date}</CTableDataCell>
-                          </CTableRow>
+    <label>Table Receiv Item</label>
+     <CTable style={{fontSize:'10px'}} bordered>
+       <CTableHead color='light'>
+         <CTableRow>
+          <CTableHeaderCell>Material Description</CTableHeaderCell>
+          <CTableHeaderCell>Rack Address</CTableHeaderCell>
+          <CTableHeaderCell>Plan Qty</CTableHeaderCell>
+          <CTableHeaderCell>Act Qty</CTableHeaderCell>
+          <CTableHeaderCell>Diff</CTableHeaderCell>
+           <CTableHeaderCell>Date</CTableHeaderCell>
+          </CTableRow>
+           </CTableHead>
+           <CTableBody>
+           { dataReceiving.map((data, index)=>{
+            return(
+             <CTableRow key={index} color={`${data.difference !== 0 ? "danger" : ""}`}>
+            {/* <CTableRow key={index} style={{ backgroundColor: `${data.difference !== 0 ? "red" : ""}`}}> */}
+              <CTableDataCell>{data.material_desc}</CTableDataCell>
+               <CTableDataCell>{data.rack_address}</CTableDataCell>
+               <CTableDataCell>{data.req_qty}</CTableDataCell>
+                <CTableDataCell>{data.actual_qty}</CTableDataCell>
+                 <CTableDataCell className='text-center' style={{ borderLeft: '2px solid red', borderRight: '2px solid red', borderTop: index===0 && "2px solid red", borderBottom: index === 10 + 2 && "2px solid red", fontWeight: data.difference !== 0 && 'bold'}}>{data.difference === 0 ? "-" : data.difference}</CTableDataCell>
+                 <CTableDataCell>{data.date}</CTableDataCell>
+                  </CTableRow>
                         )
                       })}
                       { dataReceiving.length === 0 && (

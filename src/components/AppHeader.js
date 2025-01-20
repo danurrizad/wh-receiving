@@ -22,7 +22,7 @@ import {
   cilMenu,
 } from '@coreui/icons'
 
-import { AppBreadcrumb } from './index'
+
 
 const AppHeader = () => {
   const headerRef = useRef()
@@ -107,9 +107,6 @@ const AppHeader = () => {
             </CNavLink>
           </CNavItem>
         </CHeaderNav>
-      </CContainer>
-      <CContainer className="px-4" fluid>
-        <AppBreadcrumb />
       </CContainer>
     </CHeader>
   )
