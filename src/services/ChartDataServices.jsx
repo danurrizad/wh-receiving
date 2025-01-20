@@ -23,6 +23,7 @@ const useChartData = ({currentItems}) => {
             labels: labelsVendor,
             datasets: [
                 {
+                    backgroundColor: 'red',
                     xAxisId: "x-arrival",
                     label: "Arrival On Schedule",
                     data: currentItems.map((data) => ({
@@ -103,6 +104,9 @@ const useChartData = ({currentItems}) => {
             },
             responsive: true,
             plugins: {
+                backgroundColor: {
+                    color: 'black',
+                  },
                 tooltip: {
                     callbacks: {
                         label: (context) => {
