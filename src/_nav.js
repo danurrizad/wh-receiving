@@ -16,16 +16,16 @@ const _nav = [
   },
   {
     component: CNavItem,
-    name: 'Schedule',
-    to: '/schedule',
-    icon: <CIcon icon={icon.cilCalendar} customClassName="nav-icon" />,
-  },
-  {
-    component: CNavItem,
-    name: 'Receiving',
-    to: '/receiving',
+    name: 'Input Receiving',
+    to: '/input',
     icon: <CIcon icon={icon.cilInbox} customClassName="nav-icon" />,
   },
+  // {
+  //   component: CNavItem,
+  //   name: 'Receiving',
+  //   to: '/receiving',
+  //   icon: <CIcon icon={icon.cilInbox} customClassName="nav-icon" />,
+  // },
   {
     component: CNavTitle,
     name: 'SETUP',

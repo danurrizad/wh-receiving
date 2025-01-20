@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef} from 'react'
 import CIcon from '@coreui/icons-react'
 import * as icon from '@coreui/icons'
 import { CButton, CButtonGroup, CCard, CCardBody, CCardHeader, CCardTitle, CCol, CContainer, CFormInput, CFormLabel, CFormText, CInputGroup, CModal, CModalBody, CModalFooter, CModalHeader, CModalTitle, CRow, CTable, CTableBody, CTableDataCell, CTableHead, CTableHeaderCell, CTableRow, CToaster } from '@coreui/react'
-import { dataSchedulesDummy } from '../../utils/DummyData'
+import { dataReceivingDummy, dataSchedulesDummy, dataDummy } from '../../utils/DummyData'
 import { DatePicker } from 'rsuite';
 import  colorStyles from '../../utils/StyleReactSelect'
 import Select from 'react-select'
@@ -11,15 +11,20 @@ import Pagination from '../../components/Pagination'
 import { handleExport } from '../../utils/ExportToExcel'
 import TemplateToast from '../../components/TemplateToast'
 import BarcodeScannerComponent from "react-qr-barcode-scanner";
+import Receiving from './../receiving/Receiving';
 
-const Schedule = () => {
+
+const Schedule2 = () => {
   const [toast, addToast] = useState()
   const toaster = useRef(null)
+  const [errMsg, setErrMsg] = useState("")
+
+  const [ dataDummies, setDataDummies ] = useState(dataDummy)
   const [ dataSchedules, setDataSchedules ] = useState(dataSchedulesDummy)
-  const [ showModalUpdate, setShowModalUpdate] = useState(false)
+  const [ showModalInput, setShowModalInput] = useState(false)
   const [ showModalScanner, setShowModalScanner ] = useState(false)
 
-  const defaultOptionsSelectVendor = dataSchedulesDummy?.map((data)=>{
+  const defaultOptionsSelectVendor = dataDummies?.map((data)=>{
     return{
       label: `${data.vendor_id} - ${data.vendor_name}`,
       value: {
@@ -38,12 +43,24 @@ const Schedule = () => {
     schedule_from: "",
     schedule_to: "",
     arrival_time: "",
-    status: ""
+    status: "",
+    
+    materials: [{
+      vendor_id: "",
+      dn_no: "",
+      material_no: "",
+      material_desc: "",
+      rack_address: "",
+      req_qty: "",
+      actual_qty: "",
+    }],
   })
 
   const [queryFilter, setQueryFilter] = useState({
     date: new Date(),
-    sortType: ""
+    sortType: "",
+    day: new Date().getDay(),
+    dn_no: ""
   })
 
   const [currentPage, setCurrentPage] = useState(1)
@@ -51,67 +68,78 @@ const Schedule = () => {
   const indexOfLastItem = currentPage * itemsPerPage
   const indexOfFirstItem = indexOfLastItem - itemsPerPage
   const currentItems =
-    dataSchedules.length > 0
-        ? dataSchedules.slice(indexOfFirstItem, indexOfLastItem)
-        : dataSchedules.slice(indexOfFirstItem, indexOfLastItem)
+  dataDummies.length > 0
+        ? dataDummies.slice(indexOfFirstItem, indexOfLastItem)
+        : dataDummies.slice(indexOfFirstItem, indexOfLastItem)
 
   useEffect(()=>{
-     const currentItems = dataSchedules.length > 0
-        ? dataSchedules.slice(indexOfFirstItem, indexOfLastItem)
-        : dataSchedules.slice(indexOfFirstItem, indexOfLastItem)
+     const currentItems = dataDummies.length > 0
+        ? dataDummies.slice(indexOfFirstItem, indexOfLastItem)
+        : dataDummies.slice(indexOfFirstItem, indexOfLastItem)
   }, [currentPage])
 
-  // const getDataSchedules = () => {
-  //   setDataSchedules(dataSchedulesDummy)
-  // }
+ 
+  const handleClickInput = (data) => {
+    // const selectedDataReceiving = dataReceivingDummy.filter((dataReceiving)=>dataReceiving.vendor_id === data.vendor_id)
+    // console.log('selectedDataReceiving :', selectedDataReceiving)
+    console.log("data :", data)
+    setFormInput({
+      date: data.date,
+      day: data.day,
+      vendor_id: data.vendor_id,
+      vendor_name: data.vendor_name,
+      schedule_from: data.schedule_from,
+      schedule_to: data.schedule_to,
+      arrival_time: data.arrival_time,
+      status: data.status,
+
+      materials: data.materials.map((material)=>{return({
+        vendor_id: material.vendor_id,
+        dn_no: material.dn_no,
+        material_no: material.material_no,
+        material_desc: material.material_desc,
+        rack_address: material.rack_address,
+        date: material.date,
+        req_qty: material.req_qty,
+        actual_qty: material.actual_qty,
+        difference: material.difference,
+      })})
+    })
+    setShowModalInput(true)
+  }
 
   const getDataSchedulesToday = () => {
-    const filteredDataSchedule = dataSchedulesDummy.filter((item) => {
-      if(queryFilter.date){
-        // Convert item.date from "DD-MM-YYYY" to a Date object
-        const itemDateParts = item.date.split("-"); // Split by "-"
-        const itemDate = new Date(
-          parseInt(itemDateParts[2], 10), // Year
-          parseInt(itemDateParts[1], 10) - 1, // Month (0-based index)
-          parseInt(itemDateParts[0], 10) // Day
-        );
-    
+    const filteredDataSchedule = dataDummy.filter((item) => {
+      if(queryFilter.day !== 7){
         // Compare only the date part (ignore time)
-        return itemDate.toDateString() === queryFilter.date.toDateString();
+        return item.day === queryFilter.day
       } else{
         return item
       }
     });
-    setDataSchedules(filteredDataSchedule)
+    // console.log("filteredDataSchedule :", filteredDataSchedule)
+    setDataDummies(filteredDataSchedule)
   }
 
-  const getDataScheduleByDate = () => {
+  const getDataScheduleByDay = () => {
     // Filter data by date
-    const filteredDataSchedule = dataSchedulesDummy.filter((item) => {
-      if(queryFilter.date){
-        // Convert item.date from "DD-MM-YYYY" to a Date object
-        const itemDateParts = item.date.split("-"); // Split by "-"
-        const itemDate = new Date(
-          parseInt(itemDateParts[2], 10), // Year
-          parseInt(itemDateParts[1], 10) - 1, // Month (0-based index)
-          parseInt(itemDateParts[0], 10) // Day
-        );
-    
-        // Compare only the date part (ignore time)
-        return itemDate.toDateString() === queryFilter.date.toDateString();
+    const filteredDataSchedule = dataDummy.filter((item) => {
+      if(queryFilter.day !== 7){
+        return item.day === queryFilter.day
       } else{
+        console.warn("here")
         return item
       }
     });
     if(queryFilter.sortType === "Newest"){
       const filteredSortedAscending = [...filteredDataSchedule].sort((a, b) => parseDate(a.date) - parseDate(b.date));
-      setDataSchedules(filteredSortedAscending)
+      setDataDummies(filteredSortedAscending)
     } else if(queryFilter.sortType === "Oldest"){
       const filteredSortedDescending = [...filteredDataSchedule].sort((a, b) => parseDate(b.date) - parseDate(a.date));
-      setDataSchedules(filteredSortedDescending)
+      setDataDummies(filteredSortedDescending)
     }
     else{
-      setDataSchedules(filteredDataSchedule)
+      setDataDummies(filteredDataSchedule)
     }
   }
   // Function to convert "DD-MM-YYYY" to Date object
@@ -120,26 +148,37 @@ const Schedule = () => {
     return new Date(year, month - 1, day);
   };
 
-  const sortDataSchedules = (type, data) => {
-    console.log("type :", type)
-    setQueryFilter({...queryFilter, sortType: type !== null ? type.value : ""})
-    if(type){
-      if(type.value==='Newest'){
-        // Sort ascending
-        const sortedAscending = [...data].sort((a, b) => parseDate(a.date) - parseDate(b.date));
-        setDataSchedules(sortedAscending)
-      } else if(type.value==='Oldest'){
-        // Sort descending
-        const sortedDescending = [...data].sort((a, b) => parseDate(b.date) - parseDate(a.date));
-        setDataSchedules(sortedDescending)
-      } else{
-        getDataScheduleByDate()
-      }
-    } else{
-      getDataScheduleByDate()
+  
+
+  const handleChangeFilter = (e) =>{
+    // console.log(e.value)
+    if(e){
+      setQueryFilter({...queryFilter, day: e.value})
+      // getDataScheduleByDay()
+    }else{
+      setQueryFilter({...queryFilter, day: 7})
     }
   }
 
+  const handleClearInputDN = () => {
+    setQueryFilter({ ...queryFilter, dn_no: ""})
+    setErrMsg("")
+  }
+
+  const handleChangeInputDN = (e) => {
+    setErrMsg("DN is invalid. Can't find vendor with that DN number!")
+    const foundData = dataDummies.filter((data)=>data.materials[0].dn_no === e.target.value)
+    // console.log("foundData :", foundData)
+    if(foundData.length !== 0){
+      setErrMsg("")
+    }
+    if(e){
+      setQueryFilter({ ...queryFilter, dn_no: e.target.value})
+      if(e.target.value === ""){
+        setErrMsg("")
+      }
+    } 
+  }
   
   useEffect(()=>{
     // getDataSchedules()
@@ -147,87 +186,20 @@ const Schedule = () => {
   }, [])
 
   useEffect(()=>{
-    getDataScheduleByDate()
-  }, [queryFilter.date])
+    getDataScheduleByDay()
+  }, [queryFilter.day])
 
   
+  const optionsSelectDay = [
+    { label: "Monday", value: 1 },
+    { label: "Tuesday", value: 2 },
+    { label: "Wednesday", value: 3 },
+    { label: "Thursday", value: 4 },
+    { label: "Friday", value: 5 },
+    { label: "Saturday", value: 6 },
+    { label: "Sunday", value: 0 },
+  ]
 
-  const handleChangeInputVendor = (e) => {
-    if(e){
-      const foundData = dataSchedulesDummy.filter((data)=>data.vendor_id === e.value.id)
-      console.log("Found data :", foundData)
-      setFormInput({ 
-        ...formInput, 
-        vendor_id: e.value.id, 
-        vendor_name: e.value.name, 
-        schedule_from: foundData[0].schedule_from, 
-        schedule_to: foundData[0].schedule_to,
-        date: foundData[0].date,
-        day: foundData[0].day,
-        arrival_time: foundData[0].arrival_time === "" ? "" : foundData[0].arrival_time,
-        status: foundData[0].status === "" ? "" : foundData[0].status 
-      })
-    } else{
-      setFormInput({ 
-        ...formInput, 
-        vendor_id: "", 
-        vendor_name: "",
-        schedule_from: "",
-        schedule_to: "",
-        date: "",
-        day: "",
-        arrival_time: "",
-        status: ""
-      })
-    }
-  }
-
-  const handleCreateOptionVendor = (inputValue) => {
-    const newOption = {label: inputValue, value: {id: inputValue, name: "Vendor Name Baru"}}
-    // console.log("newOption :", newOption)
-    setOptionsSelectVendor([...optionsSelectVendor, newOption])
-    setFormInput({...formInput, vendor_id: newOption.value.id, vendor_name: newOption.value.name})
-  }
-
-  const handleSubmitSchedule = ( data ) => {
-    const dateNow = new Date()
-
-    const [day, month, year] = data.date.split("-")
-    const formattedDate = `${year}-${month}-${day}`
-
-    // Combine the dummy date with schedule times
-    const scheduleFrom = new Date(`${formattedDate}T${data.schedule_from}:00`);
-    const scheduleTo = new Date(`${formattedDate}T${data.schedule_to}:00`);
-
-    // Extract hours and minutes
-    const hours = dateNow.getHours().toString().padStart(2, "0"); // Ensure 2 digits
-    const minutes = dateNow.getMinutes().toString().padStart(2, "0"); // Ensure 2 digits
-
-    // Combine to get "HH:mm"
-    const timeNow = `${hours}:${minutes}`;
-   
-    // Compare the times
-    if (dateNow > scheduleTo) {
-      setFormInput({...formInput, arrival_time: timeNow, status: "Delayed"})
-      console.log("Current time is after the schedule.");
-    } else {
-      setFormInput({...formInput, arrival_time: timeNow, status: "On Schedule"})
-      console.log("Current time is within the schedule.");
-    }
-    setTimeout(()=>{
-      setFormInput({ 
-        vendor_id: "", 
-        vendor_name: "",
-        schedule_from: "",
-        schedule_to: "",
-        date: "",
-        day: "",
-        arrival_time: "",
-        status: ""
-      })
-    }, 5000)
-    addToast(TemplateToast("success", "success", "Data schedule has been submitted!"))
-  }
 
 
   
@@ -236,156 +208,64 @@ const Schedule = () => {
   return (
     <CContainer fluid>
         <CToaster className="p-3" placement="top-end" push={toast} ref={toaster} />
-        {/* <CRow>
-            <CCard className='p-0'>
-                <CCardHeader>
-                    <CCardTitle>INPUT</CCardTitle>
-                </CCardHeader>
-                <CCardBody >
-                
-                    <CRow>
-                      <CCol xxl={6} xl={5} lg={4} style={{ border: "blue 2px solid"}}>
-                        <CRow className='mb-3 col-lg-12 col-xl-12' style={{ border: "blue 2px solid"}}>
-                          <CFormLabel style={{ fontSize: "0.8rem" }}>DATE</CFormLabel>
-                          <div className='d-flex align-items-center gap-2'>
-                            <DatePicker defaultValue={new Date()} className="" placeholder="Select dates" size='lg' block />
-                          </div>
-                        </CRow>
-                        <CRow className=''>
-                          <CCol md={8} lg={12} xxl={8} xl={8}>
-                            <CFormLabel  style={{ fontSize: "0.8rem" }}>VENDOR CODE</CFormLabel>
-                            <CInputGroup className='w-10 d-flex'>
-                              <CreatableSelect 
-                                styles={{
-                                  control: (base, state) => ({
-                                    ...base,
-                                    borderRadius: "5px 0 0 5px",
-                                    borderColor: state.isFocused ? "#C8CCD2" : "#C8CCD2",
-                                    // This line disable the blue border
-                                    boxShadow: state.isFocused && 0,
-                                    '&:hover': {
-                                      //  border: state.isFocused ? 0 : 0
-                                    }
-                                })
-                                }} 
-                                className='flex-grow-1'
-                                onCreateOption={handleCreateOptionVendor} 
-                                isClearable 
-                                options={optionsSelectVendor} 
-                                value={optionsSelectVendor.find(option => option.value.id === formInput.vendor_id) || null} 
-                                // value={optionsSelectMaterial.find(option => option.value === materialByDN.material_desc) || null}
-                                onChange={handleChangeInputVendor} 
-                              />
-                              <CButton color='success' onClick={()=>setShowModalScanner(true)} className=' d-flex' style={{border: "1px solid #C8CCD2"}}>
-                                <CIcon style={{color: "white"}} icon={icon.cilQrCode} size='xl'/>
-                              </CButton>
-                            </CInputGroup>
-                          </CCol>
-                          <CCol md={3} lg={12} className='d-flex align-items-end justify-content-end'>
-                            <CButton onClick={()=>handleSubmitSchedule(formInput)} color='success' style={{color: 'white'}} className='flex-grow-1' disabled={formInput.vendor_id === ""}>
-                              <span>Submit</span>
-                            </CButton>
-                          </CCol>
-                        </CRow>
-                      </CCol>
-                      <CCol xxl={6} xl={7} lg={8} className='px-4' >
-                        <CRow className='h-100' >
-                          <CCol className='px-4 d-flex flex-column col-8'>
-                            <CRow className='mb-2' style={{ fontSize: "0.8rem" }}>VENDOR STATUS</CRow>
-                            <CRow className='flex-grow-1'>
-                              <CCard className='px-3 pt-3' style={{ backgroundColor:"rgba(129,198,240, 0.15)", borderRadius: "8px", position: 'relative'}}>
-                                <CIcon icon={icon.cilTruck} style={{ position: "absolute", bottom: "10px", right: "10px", opacity: "20%"}} size='3xl'/>
-                                <CRow>
-                                  <CCol xs={4} className='px-0 ps-2'>Vendor Code</CCol>
-                                  <CCol xs='auto' className='px-0'>:</CCol>
-                                  <CCol>{formInput.vendor_id}</CCol>
-                                </CRow>
-                                <CRow>
-                                  <CCol xs={4} className='px-0 ps-2'>Vendor Name</CCol>
-                                  <CCol xs='auto' className='px-0'>:</CCol>
-                                  <CCol>{formInput.vendor_name}</CCol>
-                                </CRow>
-                                <CRow>
-                                  <CCol xs={4} className='px-0 ps-2'>Arrival [PLAN]</CCol>
-                                  <CCol xs='auto' className='px-0'>:</CCol>
-                                  <CCol>{formInput.schedule_from} {formInput.schedule_from ? "-" : ""} {formInput.schedule_to}</CCol>
-                                </CRow>
-                                <CRow>
-                                  <CCol xs={4} className='px-0 ps-2'>Arrival [ACT]</CCol>
-                                  <CCol xs='auto' className='px-0'>:</CCol>
-                                  <CCol>{formInput.arrival_time}</CCol>
-                                </CRow>
-                              </CCard>
-                            </CRow>
-                          </CCol>
-                          <CCol  className='d-flex flex-column' style={{ fontSize: "0.8rem" }}>
-                            <CRow className='mb-2'>SCHEDULE STATUS</CRow>
-                            <CRow className='flex-grow-0  h-100'>
-                              <CCard color={formInput.status === "Delayed" ? 'danger' : formInput.status === "On Schedule" ? 'success' : ""} className='p-4 px-2 d-flex align-items-center justify-content-center'>
-                                <h4 style={{ color: "white"}}>{formInput.status.toUpperCase()}</h4>
-                              </CCard>
-                            </CRow>
-                          </CCol>
-                        </CRow>
-                      </CCol>
-                    </CRow>
-              
-                
-                </CCardBody>
-            </CCard>
-        </CRow> */}
+        
         <CRow className='pt-4'>
           <CCard className='p-0'>
             <CCardHeader>
               <CCardTitle>SCHEDULE DATA</CCardTitle>
             </CCardHeader>
             <CCardBody>
-              <CRow>
-                <CCol sm='auto'>
-                  <CButton onClick={()=>setShowModalUpdate(true)} color='info' style={{color: 'white'}} className='flex-grow-0 d-flex align-items-center gap-2'>
-                    <CIcon icon={icon.cilCloudUpload}/>
-                    <div style={{border: "0.5px solid white", height: "10px", width: "1px"}}></div>
-                    <span>Upload a File</span>
-                  </CButton>
+              <CRow className='d-flex justify-content-between align-items-start'>
+                <CCol md={4} style={{ position: "relative"}} className=''>
+                    <CFormText>DN No</CFormText>
+                      <div>
+                        <div style={{ position: "relative"}}>
+                        <CInputGroup>
+                          <CFormInput 
+                            type='number'
+                            inputMode='numeric'
+                            placeholder='Insert DN Number'
+                            onKeyDown={
+                              (e)=>{
+                                if(e.key === 'Enter'){
+                                  console.log('here')
+                                }
+                              }
+                            }
+                            value={queryFilter.dn_no}
+                            onChange={handleChangeInputDN}
+                            />
+                            { queryFilter.dn_no !== "" && 
+                              <CButton onClick={handleClearInputDN} className='p-0 px-1' style={{border: "0", position: "absolute", top: '50%', right: '50px', translate: "0 -50%", zIndex: "50"}}>
+                                <CIcon icon={icon.cilX}/> 
+                              </CButton>
+                            } 
+                          <CButton onClick={()=>setShowModalScanner(true)} color='success' style={{ color: "white"}}><CIcon icon={icon.cilQrCode}/></CButton>
+                        </CInputGroup>
+                        <CFormText style={{ color: "red", opacity: '75%'}}>{errMsg}</CFormText>
+                        </div>
+                      </div>
                 </CCol>
-                <CCol>
-                  <CButton color='success' onClick={()=>handleExport(dataSchedules, 'schedule')} style={{color: 'white'}} className='flex-grow-0 d-flex align-items-center gap-2'>
-                    <CIcon icon={icon.cilCloudDownload}/>
-                    <div style={{border: "0.5px solid white", height: "10px", width: "1px"}}></div>
-                    <span>Export to File</span>
-                  </CButton>
-                </CCol>
-                <CCol sm='auto' className=''>
-                    <CFormText>Filter by Date</CFormText>
-                    <DatePicker value={queryFilter.date} onChange={(dateValue)=>setQueryFilter({...queryFilter, date: dateValue})} className="" placeholder="All time" size='lg'/>
-                </CCol>
-                <CCol sm='auto' className=''>
-                    <CFormText>Sort by</CFormText>
-                    <Select 
-                      isClearable 
-                      placeholder='Select sort' 
-                      options={[{ label: 'Newest', value: 'Newest'}, { label: 'Oldest', value: 'Oldest'}]} 
-                      value={[{ label: 'Newest', value: 'Newest' }, { label: 'Oldest', value: 'Oldest' }].find(
-                          (option) => option.value === queryFilter.sortType
-                        ) || ""} 
-                      onChange={(value)=>sortDataSchedules(value , dataSchedulesDummy)}
-                      />
-                    {/* <DatePicker value={queryFilter.date} onChange={(dateValue)=>setQueryFilter({...queryFilter, date: dateValue})} className="" placeholder="All time" size='lg'/> */}
+                <CCol sm='2' className=''>
+                    <CFormText>Filter by Day</CFormText>
+                    <Select isClearable options={optionsSelectDay} value={optionsSelectDay.find((option)=>option.value === queryFilter.day) || 7} onChange={handleChangeFilter} placeholder='All day' />
                 </CCol>
               </CRow>
-              <CRow className='p-3'>
-                  <CTable bordered>
+              <CRow className='mt-3'>
+                  <CTable responsive bordered hover>
                     <CTableHead color='light'>
                       <CTableRow align='middle' className='text-center'>
                         <CTableHeaderCell rowSpan={2}>No</CTableHeaderCell>
+                        <CTableHeaderCell rowSpan={2}>DN No</CTableHeaderCell>
                         <CTableHeaderCell rowSpan={2}>Vendor Code</CTableHeaderCell>
                         <CTableHeaderCell rowSpan={2}>Vendor Name</CTableHeaderCell>
                         <CTableHeaderCell rowSpan={2}>Day</CTableHeaderCell>
-                        <CTableHeaderCell rowSpan={2}>Date</CTableHeaderCell>
+                        {/* <CTableHeaderCell rowSpan={2}>Date</CTableHeaderCell> */}
                         <CTableHeaderCell colSpan={2}>Schedule Time Plan</CTableHeaderCell>
                         <CTableHeaderCell rowSpan={2}>Arrival Time</CTableHeaderCell>
                         <CTableHeaderCell rowSpan={2}>Status</CTableHeaderCell>
                         <CTableHeaderCell rowSpan={2}>Delay Time</CTableHeaderCell>
+                        <CTableHeaderCell rowSpan={2}>Input</CTableHeaderCell>
                       </CTableRow>
                       <CTableRow align='middle' className='text-center'>
                         <CTableHeaderCell >From</CTableHeaderCell>
@@ -394,13 +274,15 @@ const Schedule = () => {
                     </CTableHead>
                     <CTableBody>
                         { currentItems.map((data, index)=> {
+                          const daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
                           return(
                             <CTableRow key={index}>
                               <CTableDataCell>{index+1}</CTableDataCell>
+                              <CTableDataCell>{data.materials[0].dn_no}</CTableDataCell>
                               <CTableDataCell>{data.vendor_id}</CTableDataCell>
                               <CTableDataCell>{data.vendor_name}</CTableDataCell>
-                              <CTableDataCell>{data.day}</CTableDataCell>
-                              <CTableDataCell>{data.date}</CTableDataCell>
+                              <CTableDataCell>{daysOfWeek[data.day]}</CTableDataCell>
+                              {/* <CTableDataCell>{data.date}</CTableDataCell> */}
                               <CTableDataCell>{data.schedule_from}</CTableDataCell>
                               <CTableDataCell>{data.schedule_to}</CTableDataCell>
                               <CTableDataCell>{data.arrival_time}</CTableDataCell>
@@ -410,12 +292,19 @@ const Schedule = () => {
                                   </div>
                                 </CTableDataCell>
                               <CTableDataCell style={{ color: data.status === "Delayed" ? "#F64242" : ""}}> {data.delay_time !== 0 ? `- ${data.delay_time}` : ""}</CTableDataCell>
+                              <CTableDataCell className='text-center'>
+                                { !data.arrival_time && 
+                                  <CButton onClick={()=>handleClickInput(data)} color='info' style={{ color: "white", padding: "5px 5px 0 5px"}}>
+                                    <CIcon size='lg' icon={icon.cilInput}/>
+                                  </CButton> 
+                                }
+                              </CTableDataCell>
                             </CTableRow>
                           )
                         })}
                         { currentItems.length === 0 && (
                           <CTableRow>
-                            <CTableDataCell colSpan={10} style={{ opacity: "50%"}}>
+                            <CTableDataCell colSpan={20} style={{ opacity: "50%"}}>
                               <div className='d-flex flex-column align-items-center justify-content-center py-4'>
                                 <CIcon icon={icon.cilTruck} size='4xl'/>
                                 <span>Data not found</span>
@@ -425,6 +314,17 @@ const Schedule = () => {
                         )}
                     </CTableBody>
                   </CTable>
+                  <div className="mt-3 d-flex justify-content-center">
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={Math.ceil(
+                      dataDummies.length > 0
+                        ? dataDummies.length / itemsPerPage
+                        : dataDummies.length / itemsPerPage,
+                    )}
+                    onPageChange={(page) => setCurrentPage(page)}
+                  />
+                </div>
               </CRow>
             </CCardBody>
           </CCard>
@@ -435,24 +335,88 @@ const Schedule = () => {
 
         {/* Modal Upload File */}
         <CModal 
-          visible={showModalUpdate}
-          onClose={() => setShowModalUpdate(false)}
+          visible={showModalInput}
+          onClose={() => setShowModalInput(false)}
+          size='xl'
+          backdrop="static"
         >
           <CModalHeader>
-            <CModalTitle>Upload Schedule Data</CModalTitle>
+            <CModalTitle>Input Receiving</CModalTitle>
           </CModalHeader>
           <CModalBody>
-            <CRow className=''>
-              <CInputGroup className='d-flex flex-column'>
-                <CFormLabel>File Excel (.xlsx)</CFormLabel>
-                <CFormInput className='w-100' type='file'/>
-              </CInputGroup>
-            </CRow>
+            <CRow className='mb-3'>
+                    <CCol md={4} style={{ position: "relative"}}>
+                        <CFormText>DN No</CFormText>
+                        <CFormInput disabled value={formInput.materials[0].dn_no} />
+                    </CCol>
+                  </CRow>
+                  <CRow>
+                    <CCol md={4}>
+                        <CFormText>Material</CFormText>
+                        <Select isClearable  className='w-100' placeholder='Select material'/>
+                    </CCol>
+                    <CCol md={4} className='pt-md-0 pt-3'>
+                      <CFormText>Rack Address</CFormText>
+                      <CFormInput disabled  className='w-100' placeholder='Rack address material'/>
+                    </CCol>
+                    <CCol md={2} xs={6} className='pt-md-0 pt-3'>
+                      <CFormText>Quantity</CFormText>
+                        <CInputGroup>
+                          <CFormInput type='number' inputMode='numeric'/>
+                        </CInputGroup>
+                    </CCol>
+                    <CCol md={2} xs={6} className='d-flex justify-content-end align-items-end'>
+                      <CButton 
+                        // disabled={materialByDN.dn_no === "" || materialByDN.material_desc === "" || materialByDN.rack_address === ""} 
+                        // onClick={()=>handleSubmitReceiving(materialByDN)} 
+                        // color={`${materialByDN.dn_no === "" || materialByDN.material_desc === "" || materialByDN.rack_address === "" ? "warning" : "success"}`} 
+                        color='info'
+                        style={{color: 'white'}} 
+                        className='flex-grow-0 d-flex align-items-center gap-2'
+                        >
+                          {/* <CIcon icon={icon.cilCheckAlt}/>
+                          <div style={{border: "0.5px solid white", height: "10px", width: "2px"}}></div> */}
+                          <span>Add</span>
+                      </CButton>
+                    </CCol>
+                  </CRow>  
+          <CRow className='pt-3'>
+            <CTable responsive bordered hover>
+              <CTableHead color='light'>
+                <CTableRow>
+                  <CTableHeaderCell>DN No</CTableHeaderCell>
+                  <CTableHeaderCell>Material No</CTableHeaderCell>
+                  <CTableHeaderCell>Material Description</CTableHeaderCell>
+                  <CTableHeaderCell>Rack Address</CTableHeaderCell>
+                  <CTableHeaderCell>Planning Quantity</CTableHeaderCell>
+                  <CTableHeaderCell>Actual Quantity</CTableHeaderCell>
+                  <CTableHeaderCell>Difference</CTableHeaderCell>
+                  <CTableHeaderCell>Date</CTableHeaderCell>
+                </CTableRow>
+              </CTableHead>
+              <CTableBody>
+                {formInput.materials && formInput.materials.map((data,index)=>{
+                  return(
+                    <CTableRow key={index} color={`${data.difference !== 0 ? "danger" : ""}`} onClick={()=>addToast(TemplateToast("info", 'info', `clicked row ${index+1}`))}>
+                      <CTableDataCell>{data.dn_no}</CTableDataCell>
+                      <CTableDataCell>{data.material_no}</CTableDataCell>
+                      <CTableDataCell>{data.material_desc}</CTableDataCell>
+                      <CTableDataCell>{data.rack_address}</CTableDataCell>
+                      <CTableDataCell>{data.req_qty}</CTableDataCell>
+                      <CTableDataCell>{data.actual_qty}</CTableDataCell>
+                      <CTableDataCell className='text-center' style={{ borderLeft: '2px solid red', borderRight: '2px solid red', borderTop: "2px solid red", borderBottom: "2px solid red", fontWeight: formInput.difference !== 0 && 'bold'}}>{formInput.difference === 0 ? "-" : formInput.difference}</CTableDataCell>
+                      <CTableDataCell>{data.date}</CTableDataCell>
+                    </CTableRow>
 
+                    )
+                })} 
+              </CTableBody>
+            </CTable>
+          </CRow>
           </CModalBody>
           <CModalFooter>
-            <CButton onClick={()=>setShowModalUpdate(false)} color="secondary">Close</CButton>
-            <CButton color="success" style={{color: "white"}}>Upload</CButton>
+            {/* <CButton onClick={()=>setShowModalInput(false)} color="secondary">Close</CButton> */}
+            <CButton onClick={()=>setShowModalInput(false)} color="success" style={{ color: 'white'}}>Submit</CButton>
           </CModalFooter>
         </CModal>
        
@@ -485,4 +449,4 @@ const Schedule = () => {
   )
 }
 
-export default Schedule
+export default Schedule2

@@ -23,7 +23,7 @@ const useChartData = ({currentItems}) => {
             labels: labelsVendor,
             datasets: [
                 {
-                    backgroundColor: 'red',
+                    // backgroundColor: 'red',
                     xAxisId: "x-arrival",
                     label: "Arrival On Schedule",
                     data: currentItems.map((data) => ({
@@ -78,11 +78,11 @@ const useChartData = ({currentItems}) => {
                     position: "top",
                     // type: "linear",
                     min: 7,
-                    max: 15,
+                    max: 18,
                     ticks: {
                         stepSize: 1,
                         font: {
-                            size: 1, // Ukuran font kecil
+                            size: 10, // Ukuran font kecil
                         },
                         callback: (value) => `${value}:00`,
                     }
