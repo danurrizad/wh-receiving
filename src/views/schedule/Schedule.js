@@ -395,16 +395,17 @@ const Schedule2 = () => {
                 </CTableRow>
               </CTableHead>
               <CTableBody>
-                {formInput.materials && formInput.materials.map((data,index)=>{
+                {formInput.materials && formInput.materials.map((data,index,array)=>{
                   return(
-                    <CTableRow key={index} color={`${data.difference !== 0 ? "danger" : ""}`} onClick={()=>addToast(TemplateToast("info", 'info', `clicked row ${index+1}`))}>
+                    <CTableRow key={index}  onClick={()=>addToast(TemplateToast("info", 'info', `clicked row ${index+1}`))}>
                       <CTableDataCell>{data.dn_no}</CTableDataCell>
                       <CTableDataCell>{data.material_no}</CTableDataCell>
                       <CTableDataCell>{data.material_desc}</CTableDataCell>
                       <CTableDataCell>{data.rack_address}</CTableDataCell>
                       <CTableDataCell>{data.req_qty}</CTableDataCell>
                       <CTableDataCell>{data.actual_qty}</CTableDataCell>
-                      <CTableDataCell className='text-center' style={{ borderLeft: '2px solid red', borderRight: '2px solid red', borderTop: "2px solid red", borderBottom: "2px solid red", fontWeight: formInput.difference !== 0 && 'bold'}}>{formInput.difference === 0 ? "-" : formInput.difference}</CTableDataCell>
+                      <CTableDataCell className='text-center' style={{ color: data.actual_qty<data.req_qty ? "red" : "black" }}>{ data.actual_qty > data.req_qty ? `+${data.actual_qty-data.req_qty}` : data.actual_qty < data.req_qty ? `-${data.req_qty-data.actual_qty}` : "" }</CTableDataCell>
+                      {/* <CTableDataCell className='text-center' style={{ borderLeft: '1px solid red', borderRight: '1px solid red', borderTop: index+1===1 && "1px solid red", borderBottom: array.length-1 === index && "1px solid red", fontWeight: formInput.difference !== 0 && 'bold'}}>{formInput.difference === 0 ? "-" : formInput.difference}</CTableDataCell> */}
                       <CTableDataCell>{data.date}</CTableDataCell>
                     </CTableRow>
 
