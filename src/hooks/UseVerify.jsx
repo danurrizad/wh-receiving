@@ -1,12 +1,11 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { jwtDecode } from 'jwt-decode'
 import { useNavigate } from 'react-router-dom'
 import axiosInstance from '../utils/AxiosInstance.jsx'
 import TemplateToast from '../components/TemplateToast.js'
+import { useToast } from '../App.js'
 
 const useVerify = () => {
-  const [toast, addToast] = useState()
-  const toaster = useRef(null)
   const [name, setName] = useState('')
   const [roleName, setRoleName] = useState('')
   const [warehouseId, setWarehouseId] = useState(0)
@@ -15,6 +14,7 @@ const useVerify = () => {
   const [isWarehouse, setIsWarehouse] = useState(0)
   const [imgProfile, setImgProfile] = useState('')
   const navigate = useNavigate()
+  const addToast = useToast()
 
   useEffect(() => {
     refreshToken()
@@ -22,7 +22,9 @@ const useVerify = () => {
 
   const refreshToken = async () => {
     try {
+      console.log("DISINI BELOM AMBIL TOKEN")
       const response = await axiosInstance.get('/token')
+      console.log("RESPONSE TOKEN :", response.data.accessToken)
       setToken(response.data.accessToken)
       const decoded = jwtDecode(response.data.accessToken)
       setName(decoded.name)
@@ -33,11 +35,12 @@ const useVerify = () => {
       setImgProfile(decoded.img)
     } catch (error) {
       console.error('Error refreshing token:', error)
-      MySwal.fire({
-        icon: 'error',
-        title: 'Oops...',
-        text: 'Token Expired',
-      })
+      addToast("Token expired", 'danger', 'error')
+      // MySwal.fire({
+      //   icon: 'error',
+      //   title: 'Oops...',
+      //   text: 'Token Expired',
+      // })
       navigate('/login')
     }
   }

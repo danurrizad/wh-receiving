@@ -1,12 +1,16 @@
-import axios from 'axios'
-import config from '../utils/config'
+import useVerify from '../hooks/UseVerify'
 
 const useReceivingDataService = () => {
-    const BACKEND_URL = config.BACKEND_URL
+    const { token, axiosJWT } = useVerify()
+
+    const handleError = (error, message) => {
+        console.error(message, error)
+        throw new Error(message + error.message)
+      }
 
     const getReceivingData = async() => {
         try {
-            const response = await axios.get(`${BACKEND_URL}/`)
+            const response = await axiosJWT.get(`${BACKEND_URL}/`)
             return response
         } catch (error) {
             throw error
@@ -15,7 +19,7 @@ const useReceivingDataService = () => {
 
     const uploadExcelReceivingData = async() => {
         try {
-            const response = await axios.post(`${BACKEND_URL}/`)
+            const response = await axiosJWT.post(`${BACKEND_URL}/`)
             return response
         } catch (error) {
             throw error
