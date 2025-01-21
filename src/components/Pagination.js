@@ -18,7 +18,14 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
   }
 
   return (
-    <CPagination aria-label="Page navigation">
+    <CPagination 
+        style={{
+          '--cui-pagination-color': 'green',
+          '--cui-pagination-bg': 'black',
+          '--cui-pagination-active-bg': 'blue'
+        }}
+        aria-label="Page navigation"
+      >
       {/* Tombol Previous */}
       <CPaginationItem
         aria-label="Previous"

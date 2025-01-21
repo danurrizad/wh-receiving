@@ -20,3 +20,31 @@ input::-webkit-inner-spin-button {
   .blink {
     animation: blink 2s infinite;
   }
+
+  .pagination {
+    --cui-pagination-padding-x: 0.75rem;
+    --cui-pagination-padding-y: 0.375rem;
+    --cui-pagination-font-size: 1rem;
+    --cui-pagination-color: var(--cui-info);
+    --cui-pagination-bg: var(--cui-body-bg);
+    --cui-pagination-border-width: var(--cui-border-width);
+    --cui-pagination-border-color: var(--cui-info);
+    --cui-pagination-border-radius: var(--cui-border-radius);
+    --cui-pagination-hover-color: var(--cui-info);
+    --cui-pagination-hover-bg: var(--cui-tertiary-bg);
+    --cui-pagination-hover-border-color: var(--cui-info);
+    --cui-pagination-focus-color: blue;
+    --cui-pagination-focus-bg: var(--cui-secondary-bg);
+    --cui-pagination-focus-box-shadow: 0 0 0 0.25rem rgba(3, 0, 175, 0.25);
+    --cui-pagination-active-color: rgba(255, 255, 255, 0.87);
+    --cui-pagination-active-bg: var(--cui-info);
+    --cui-pagination-active-border-color: var(--cui-info);
+    --cui-pagination-disabled-color: var(--cui-secondary-color);
+    --cui-pagination-disabled-bg: var(--cui-secondary-bg);
+    --cui-pagination-disabled-border-color: var(--cui-border-color);
+    display: flex
+;
+    padding-left: 0;
+    list-style: none;
+  }
+
