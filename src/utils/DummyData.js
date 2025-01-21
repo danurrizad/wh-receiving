@@ -328,7 +328,7 @@ export const dataReceivingDummy = [
     material_no: "B851-0018253",
     material_desc: "DUST MASK N95",
     req_qty: 80,
-    actual_qty: 80,
+    actual_qty: 85,
     difference: 0,
     date: "2025-01-08 14:25:00",
     rack_address: "R010",
