@@ -20,7 +20,7 @@ const Schedule2 = () => {
   const [errMsg, setErrMsg] = useState("")
 
   const [ dataDummies, setDataDummies ] = useState(dataDummy)
-  const [ dataSchedules, setDataSchedules ] = useState(dataSchedulesDummy)
+  // const [ dataSchedules, setDataSchedules ] = useState(dataSchedulesDummy)
   const [ showModalInput, setShowModalInput] = useState(false)
   const [ showModalScanner, setShowModalScanner ] = useState(false)
 
@@ -33,7 +33,7 @@ const Schedule2 = () => {
       }
     }
   })
-  const [ optionsSelectVendor, setOptionsSelectVendor] = useState(defaultOptionsSelectVendor)
+  // const [ optionsSelectVendor, setOptionsSelectVendor] = useState(defaultOptionsSelectVendor)
 
   const [ formInput, setFormInput ] = useState({
     date: "",
@@ -156,15 +156,15 @@ const Schedule2 = () => {
 
   
 
-  const handleChangeFilter = (e) =>{
-    // console.log(e.value)
-    if(e){
-      setQueryFilter({...queryFilter, day: e.value})
-      // getDataScheduleByDay()
-    }else{
-      setQueryFilter({...queryFilter, day: 7})
-    }
-  }
+  // const handleChangeFilter = (e) =>{
+  //   // console.log(e.value)
+  //   if(e){
+  //     setQueryFilter({...queryFilter, day: e.value})
+  //     // getDataScheduleByDay()
+  //   }else{
+  //     setQueryFilter({...queryFilter, day: 7})
+  //   }
+  // }
 
   const handleClearInputDN = () => {
     setQueryFilter({ ...queryFilter, dn_no: ""})
@@ -202,15 +202,15 @@ const Schedule2 = () => {
   }, [queryFilter.day])
 
   
-  const optionsSelectDay = [
-    { label: "Monday", value: 1 },
-    { label: "Tuesday", value: 2 },
-    { label: "Wednesday", value: 3 },
-    { label: "Thursday", value: 4 },
-    { label: "Friday", value: 5 },
-    { label: "Saturday", value: 6 },
-    { label: "Sunday", value: 0 },
-  ]
+  // const optionsSelectDay = [
+  //   { label: "Monday", value: 1 },
+  //   { label: "Tuesday", value: 2 },
+  //   { label: "Wednesday", value: 3 },
+  //   { label: "Thursday", value: 4 },
+  //   { label: "Friday", value: 5 },
+  //   { label: "Saturday", value: 6 },
+  //   { label: "Sunday", value: 0 },
+  // ]
 
   const optionsMaterialByDN = formInput?.materials?.map((material)=>{
     return{
@@ -277,10 +277,10 @@ const Schedule2 = () => {
                         </div>
                       </div>
                 </CCol>
-                <CCol sm='2' className=''>
+                {/* <CCol sm='2' className=''>
                     <CFormText>Filter by Day</CFormText>
                     <Select isClearable options={optionsSelectDay} value={optionsSelectDay.find((option)=>option.value === queryFilter.day) || 7} onChange={handleChangeFilter} placeholder='All day' />
-                </CCol>
+                </CCol> */}
               </CRow>
               <CRow className='mt-3'>
                   <CTable responsive bordered hover>
