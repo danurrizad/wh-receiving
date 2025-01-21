@@ -111,18 +111,18 @@ export const dataSchedulesDummy = [
   },
   {
       vendor_id: "1123187",
-      vendor_name: "Vendor Name Lorem Ipsum",
-      day: 1, // Monday
-      date: "20-01-2025",
-      schedule_from: "07:45",
-      schedule_to: "09:45",
+      vendor_name: "VendorLorem IPSUM",
+      day: 3, // Monday
+      date: "22-01-2025",
+      schedule_from: "13:45",
+      schedule_to: "14:45",
       arrival_time: "",
       status: "",
       delay_time: 0,
   },
   {
       vendor_id: "2234512",
-      vendor_name: "Alpha Vendor",
+      vendor_name: "AlphaVENDOR 2.0",
       day: 2, // Tuesday
       date: "21-01-2025",
       schedule_from: "10:00",
@@ -133,7 +133,7 @@ export const dataSchedulesDummy = [
   },
   {
       vendor_id: "3345623",
-      vendor_name: "Beta Vendor",
+      vendor_name: "Beta Vendor 2.0",
       day: 3, // Wednesday
       date: "22-01-2025",
       schedule_from: "13:00",
@@ -144,7 +144,7 @@ export const dataSchedulesDummy = [
   },
   {
       vendor_id: "4456734",
-      vendor_name: "Gamma Vendor",
+      vendor_name: "Gamma Vendor 2.0",
       day: 4, // Thursday
       date: "23-01-2025",
       schedule_from: "16:00",
@@ -155,7 +155,7 @@ export const dataSchedulesDummy = [
   },
   {
       vendor_id: "5567845",
-      vendor_name: "Delta Vendor",
+      vendor_name: "Delta Vendor 2.0",
       day: 5, // Friday
       date: "24-01-2025",
       schedule_from: "09:00",
@@ -166,7 +166,7 @@ export const dataSchedulesDummy = [
   },
   {
       vendor_id: "6678956",
-      vendor_name: "Epsilon Vendor",
+      vendor_name: "Epsilon Vendor 2.0",
       day: 6, // Saturday
       date: "25-01-2025",
       schedule_from: "08:30",
@@ -177,7 +177,7 @@ export const dataSchedulesDummy = [
   },
   {
       vendor_id: "7789067",
-      vendor_name: "Zeta Vendor",
+      vendor_name: "Zeta Vendor 2.0",
       day: 0, // Sunday
       date: "26-01-2025",
       schedule_from: "14:00",
@@ -188,7 +188,7 @@ export const dataSchedulesDummy = [
   },
   {
       vendor_id: "8890178",
-      vendor_name: "Eta Vendor",
+      vendor_name: "Eta Vendor 2.0",
       day: 1, // Monday
       date: "27-01-2025",
       schedule_from: "17:00",
@@ -199,7 +199,7 @@ export const dataSchedulesDummy = [
   },
   {
       vendor_id: "9901289",
-      vendor_name: "Theta Vendor",
+      vendor_name: "Theta Vendor 2.0",
       day: 2, // Tuesday
       date: "28-01-2025",
       schedule_from: "12:00",
@@ -210,7 +210,7 @@ export const dataSchedulesDummy = [
   },
   {
       vendor_id: "1012390",
-      vendor_name: "Iota Vendor",
+      vendor_name: "Iota Vendor 2.0",
       day: 3, // Wednesday
       date: "29-01-2025",
       schedule_from: "11:00",
