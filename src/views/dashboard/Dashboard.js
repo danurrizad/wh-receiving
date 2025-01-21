@@ -214,12 +214,6 @@ const optionsSelectDN = Array.from(
   </CCardHeader>
   <CCardBody style={{ overflow: "auto" }}>
   <CRow className="d-flex justify-content-center align-items-center">
-  {/* Plant Select aligned left */}
-  <CCol xs="auto">
-    <CFormText style={{ fontSize: "0.6rem" }}>PLANT</CFormText>
-    <Select isClearable />
-  </CCol>
-
   {/* Date and Material Search aligned right */}
   <CCol className="d-flex justify-content-end gap-3">
     <CCol xs="auto">
@@ -263,11 +257,10 @@ const optionsSelectDN = Array.from(
         <CCol sm={7} >
         <CRow>
        <CCol sm="auto">
-       <CCard className="mb-3 mt-1">
+       <CCard className="mb-2 mt-1" style={{ width: "7rem" }}>
       <CCardHeader
         className="text-muted small text-center"
-        style={{ backgroundColor: "#F64242" }}
-      >
+        style={{ backgroundColor: "#F64242" }}>
         <h6 style={{ color: "white", fontSize: "10px" }}>DELAYED</h6>
       </CCardHeader>
       <CCardBody className="text-center">
@@ -277,31 +270,46 @@ const optionsSelectDN = Array.from(
   </CCol>
 
   <CCol sm="auto">
-    <CCard className="mb-3 mt-1">
+    <CCard className="mb-3 mt-1"style={{ width: "7rem" }}>
       <CCardHeader
         className="text-muted small text-center"
         style={{ backgroundColor: "#35A535" }}
       >
-        <h6 style={{ color: "white", fontSize: "7px" }}>ON SCHEDULE</h6>
+        <h6 style={{ color: "white", fontSize: "10px" }}>ON SCHEDULE</h6>
       </CCardHeader>
       <CCardBody className="text-center">
-        <CCardText className="fs-5 fw-bold">25</CCardText>
+        <CCardText className="fs-3 fw-bold">25</CCardText>
       </CCardBody>
     </CCard>
   </CCol>
 
   <CCol sm="auto">
-    <CCard className="mb-3 mt-1">
+    <CCard className="mb-3 mt-1"style={{ width: "7rem" }}>
       <CCardHeader
         className="text-muted small text-center"
         style={{ backgroundColor: "gray" }}
       >
-        <h6 style={{ color: "white", fontSize: "7px" }}>REMAINING</h6>
+        <h6 style={{ color: "white", fontSize: "10px" }}>REMAINING</h6>
       </CCardHeader>
       <CCardBody className="text-center">
-        <CCardText className="fs-5 fw-bold">46</CCardText>
+        <CCardText className="fs-3 fw-bold">46</CCardText>
        </CCardBody>
        </CCard>
+       
+      </CCol>
+      <CCol sm="auto">
+    <CCard className="mb-3 mt-1"style={{ width: "7rem" }}>
+      <CCardHeader
+        className="text-muted small text-center"
+        style={{ backgroundColor: "gray" }}
+      >
+        <h6 style={{ color: "white", fontSize: "10px" }}>TOTAL</h6>
+      </CCardHeader>
+      <CCardBody className="text-center">
+        <CCardText className="fs-3 fw-bold">46</CCardText>
+       </CCardBody>
+       </CCard>
+       
       </CCol>
      </CRow>
      <CRow>
@@ -317,6 +325,29 @@ const optionsSelectDN = Array.from(
    <CCol sm={5} >
    <CRow className='p-2 pt-3'>
     <label>Table Receiv Item</label>
+    <CCard className="p-3">
+  {/* Informasi Header */}
+  <CRow className="mb-3">
+    <CCol sm={12}>
+      <div><strong>Supplier:</strong> Supplier Name</div>
+    </CCol>
+    <CRow>
+    <CCol sm={6}>
+      <div><strong>Day:</strong> Monday</div>
+    </CCol>
+    <CCol sm={6}>
+      <div><strong>Schedule Plan:</strong> 10:00 AM</div>
+    </CCol>
+    </CRow>
+    <CRow>
+    <CCol sm={6}>
+      <div><strong>Arrival:</strong> 9:45 AM</div>
+    </CCol>
+    <CCol sm={6}>
+      <div><strong>Status:</strong>Delay</div>
+    </CCol>
+    </CRow>
+    </CRow>
      <CTable style={{fontSize:'10px'}} bordered>
        <CTableHead color='light'>
          <CTableRow>
@@ -329,34 +360,29 @@ const optionsSelectDN = Array.from(
           </CTableRow>
            </CTableHead>
            <CTableBody>
-           { dataReceiving.map((data, index)=>{
-            return(
-             <CTableRow key={index} color={`${data.difference !== 0 ? "danger" : ""}`}>
-            {/* <CTableRow key={index} style={{ backgroundColor: `${data.difference !== 0 ? "red" : ""}`}}> */}
-              <CTableDataCell>{data.material_desc}</CTableDataCell>
-               <CTableDataCell>{data.rack_address}</CTableDataCell>
-               <CTableDataCell>{data.req_qty}</CTableDataCell>
-                <CTableDataCell>{data.actual_qty}</CTableDataCell>
-                 <CTableDataCell className='text-center' style={{ borderLeft: '2px solid red', borderRight: '2px solid red', borderTop: index===0 && "2px solid red", borderBottom: index === 10 + 2 && "2px solid red", fontWeight: data.difference !== 0 && 'bold'}}>{data.difference === 0 ? "-" : data.difference}</CTableDataCell>
-                 <CTableDataCell>{data.date}</CTableDataCell>
-                  </CTableRow>
-                        )
-                      })}
-                      { dataReceiving.length === 0 && (
-                        <CTableRow>
-                          <CTableDataCell colSpan={10} style={{ opacity: "50%"}}>
-                            <div className='d-flex flex-column align-items-center justify-content-center py-4'>
-                              <CIcon icon={icon.cilInbox} size='4xl'/>
-                              <span>Data not found</span>
-                            </div>
-                          </CTableDataCell>
-                        </CTableRow>
-                      )}
-                    </CTableBody>
-                  </CTable>
-                </CRow>
-                </CCol>
-        </CRow>
+                  {currentItems.map((data, index) => (
+                    <CTableRow key={index}>
+                      <CTableDataCell>{data.material_desc}</CTableDataCell>
+                      <CTableDataCell>{data.rack_address}</CTableDataCell>
+                      <CTableDataCell>{data.req_qty}</CTableDataCell>
+                      <CTableDataCell>{data.actual_qty}</CTableDataCell>
+                      <CTableDataCell>{data.difference || "-"}</CTableDataCell>
+                      <CTableDataCell>{data.date}</CTableDataCell>
+                    </CTableRow>
+                  ))}
+                  {currentItems.length === 0 && (
+                    <CTableRow>
+                      <CTableDataCell colSpan={6} className="text-center">
+                        No data available
+                      </CTableDataCell>
+                    </CTableRow>
+                  )}
+                </CTableBody>
+              </CTable>
+            </CCard>
+          </CRow>
+        </CCol>
+     </CRow>
   </CCardBody>
 </CCard>
 
@@ -460,70 +486,7 @@ const optionsSelectDN = Array.from(
             </CCardBody>
           </CCard>
         </CRow>
-        <CRow>
-          <CCard className='px-0' style={{ maxHeight: `${showCard.receiving ? "2500px" : "50px"}`, overflow: "hidden", transitionDuration: '500ms'}}>
-            <CCardHeader style={{ position: "relative", cursor: "pointer"}} onClick={()=>setShowCard({ ...showCard, receiving: !showCard.receiving})}>
-              <CCardTitle className='text-center'>RECEIVING</CCardTitle> 
-              <CButton onClick={()=>setShowCard({...showCard, receiving: !showCard.receiving})} style={{position: "absolute", top: 0, right: 0, margin: "5px 5px 0 0"}}>
-                <CIcon icon={icon.cilHamburgerMenu}/>
-              </CButton>
-            </CCardHeader>
-            <CCardBody>
-              <CRow className='py-2'>
-                <CCol xs={3} className='d-flex align-items-center gap-4'>
-                  <div>Filter</div>
-                  <Select onChange={handleFilterReceiving} placeholder="All" className='w-100' isClearable options={options} styles={colorStyles}/>
-                </CCol>
-                <CCol xs={9} className='d-flex justify-content-end'>
-                  <Select 
-                      isClearable
-                      className='w-25'
-                      placeholder="Search by Material"
-                      onChange={handleChangeSearch}
-                      options={dataReceiving.map((data) => ({ 
-                          value: data.material_no, 
-                          label: `${data.material_no} - ${data.material_desc}` 
-                      }))} 
-                  />
-                </CCol>
-              </CRow>
-              <CRow className='p-2 pt-3'>
-                <CTable bordered>
-                  <CTableHead color='light'>
-                    <CTableRow>
-                      <CTableHeaderCell>DN No</CTableHeaderCell>
-                      <CTableHeaderCell>Material No</CTableHeaderCell>
-                      <CTableHeaderCell>Material Description</CTableHeaderCell>
-                      <CTableHeaderCell>Req Quantity</CTableHeaderCell>
-                      <CTableHeaderCell>Actual Quantity</CTableHeaderCell>
-                      <CTableHeaderCell>Difference</CTableHeaderCell>
-                      <CTableHeaderCell>Date</CTableHeaderCell>
-                    </CTableRow>
-                  </CTableHead>
-                  <CTableBody>
-                    { dataReceiving.map((data, index)=>{
-                      return(
-                        <CTableRow key={index} color={`${data.difference !== 0 ? "danger" : ""}`}>
-                        {/* <CTableRow key={index} style={{ backgroundColor: `${data.difference !== 0 ? "red" : ""}`}}> */}
-                          <CTableDataCell>{data.dn_no}</CTableDataCell>
-                          <CTableDataCell>{data.material_no}</CTableDataCell>
-                          <CTableDataCell>{data.material_desc}</CTableDataCell>
-                          <CTableDataCell>{data.req_qty}</CTableDataCell>
-                          <CTableDataCell>{data.actual_qty}</CTableDataCell>
-                          <CTableDataCell>{data.difference}</CTableDataCell>
-                          <CTableDataCell>{data.date}</CTableDataCell>
-                        </CTableRow>
-                      )
-                    })}
-                  </CTableBody>
-                </CTable>
-              </CRow>
-              <CRow>
-                
-              </CRow>
-            </CCardBody>
-          </CCard>
-        </CRow>
+       
       </CContainer>
   )
 }

@@ -67,7 +67,9 @@ const useChartData = ({currentItems}) => {
         };
         return data;
     };
-    
+    const handleVendorChange = (vendorName) => {
+        setSelectedVendor(vendorName);
+    };
 
     const getChartOption = () => {
         const data = setChartData()
@@ -131,7 +133,7 @@ const useChartData = ({currentItems}) => {
                 },
                 title: {
                     display: true,
-                    text: 'Scheduling Time Vendor',
+                    text: 'SCHEDULE VENDOR WAREHOUSE',
                 },
             },
             
