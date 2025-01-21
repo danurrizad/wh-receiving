@@ -5,6 +5,10 @@ import { CNavGroup, CNavItem, CNavTitle } from '@coreui/react'
 
 const _nav = [
   {
+    component: CNavTitle,
+    name: 'DASHBOARD',
+  },
+  {
     component: CNavItem,
     name: 'Dashboard',
     to: '/dashboard',
@@ -12,11 +16,11 @@ const _nav = [
   },
   {
     component: CNavTitle,
-    name: 'RWHS INPUT',
+    name: 'RECEIVING ',
   },
   {
     component: CNavGroup,
-    name: 'TWIIS-Inventory',
+    name: 'Receiving Input',
     to: '/order',
     icon: <CIcon icon={icon.cilTablet} customClassName="nav-icon" />,
     items: [
@@ -24,13 +28,13 @@ const _nav = [
         component: CNavItem,
         name: 'Input Receiving',
         to: '/input',
-        icon: <CIcon icon={icon.cilInbox} customClassName="nav-icon" />,
+        icon: <CIcon icon={icon.cilStar} customClassName="nav-icon" />,
       },
       {
         component: CNavItem,
         name: 'Log Receiving',
         to: '/log',
-        icon: <CIcon icon={icon.cilSpreadsheet} customClassName="nav-icon" />,
+        icon: <CIcon icon={icon.cilStar} customClassName="nav-icon" />,
       },
     ],
   },
@@ -43,19 +47,27 @@ const _nav = [
   // },
   {
     component: CNavTitle,
-    name: 'SETUP',
+    name: 'UPLOAD DATA',
   },
   {
+    component: CNavGroup,
+    name: 'Receiving Upload',
+    to: '/order',
+    icon: <CIcon icon={icon.cilTablet} customClassName="nav-icon" />,
+    items: [
+   {    
     component: CNavItem,
     name: 'Vendor Setup',
     to: '/setup/vendor',
-    icon: <CIcon icon={icon.cilTruck} customClassName="nav-icon" />,
-  },
-  {
+    icon: <CIcon icon={icon.cilStar} size="xl" customClassName="nav-icon" />,
+    },  
+   {   
     component: CNavItem,
     name: 'DN Setup',
     to: '/setup/dn',
-    icon: <CIcon icon={icon.cilSettings} customClassName="nav-icon" />,
+    icon: <CIcon icon={icon.cilStar} size="xl" customClassName="nav-icon" />,
+   }
+   ]
   },
   {
     component: CNavTitle,
