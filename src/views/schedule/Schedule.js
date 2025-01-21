@@ -20,7 +20,7 @@ const Schedule2 = () => {
   const [errMsg, setErrMsg] = useState("")
 
   const [ dataDummies, setDataDummies ] = useState(dataDummy)
-  const [ dataSchedules, setDataSchedules ] = useState(dataSchedulesDummy)
+  // const [ dataSchedules, setDataSchedules ] = useState(dataSchedulesDummy)
   const [ showModalInput, setShowModalInput] = useState(false)
   const [ showModalScanner, setShowModalScanner ] = useState(false)
 
@@ -33,7 +33,7 @@ const Schedule2 = () => {
       }
     }
   })
-  const [ optionsSelectVendor, setOptionsSelectVendor] = useState(defaultOptionsSelectVendor)
+  // const [ optionsSelectVendor, setOptionsSelectVendor] = useState(defaultOptionsSelectVendor)
 
   const [ formInput, setFormInput ] = useState({
     date: "",
@@ -44,6 +44,9 @@ const Schedule2 = () => {
     schedule_to: "",
     arrival_time: "",
     status: "",
+    selected_material: "",
+    selected_rack_address: "",
+    selected_actual_qty: "",
     
     materials: [{
       vendor_id: "",
@@ -64,7 +67,7 @@ const Schedule2 = () => {
   })
 
   const [currentPage, setCurrentPage] = useState(1)
-  const [itemsPerPage, setItemsPerPage] = useState(10)
+  const [itemsPerPage, setItemsPerPage] = useState(15)
   const indexOfLastItem = currentPage * itemsPerPage
   const indexOfFirstItem = indexOfLastItem - itemsPerPage
   const currentItems =
@@ -92,6 +95,9 @@ const Schedule2 = () => {
       schedule_to: data.schedule_to,
       arrival_time: data.arrival_time,
       status: data.status,
+      selected_material: "",
+      selected_rack_address: "",
+      selected_actual_qty: "",
 
       materials: data.materials.map((material)=>{return({
         vendor_id: material.vendor_id,
@@ -150,15 +156,15 @@ const Schedule2 = () => {
 
   
 
-  const handleChangeFilter = (e) =>{
-    // console.log(e.value)
-    if(e){
-      setQueryFilter({...queryFilter, day: e.value})
-      // getDataScheduleByDay()
-    }else{
-      setQueryFilter({...queryFilter, day: 7})
-    }
-  }
+  // const handleChangeFilter = (e) =>{
+  //   // console.log(e.value)
+  //   if(e){
+  //     setQueryFilter({...queryFilter, day: e.value})
+  //     // getDataScheduleByDay()
+  //   }else{
+  //     setQueryFilter({...queryFilter, day: 7})
+  //   }
+  // }
 
   const handleClearInputDN = () => {
     setQueryFilter({ ...queryFilter, dn_no: ""})
@@ -179,6 +185,12 @@ const Schedule2 = () => {
       }
     } 
   }
+
+  const handleSelectReceivingDN = (data) => {
+    setFormInput({ ...formInput, selected_material: data.material_desc, selected_rack_address: data.rack_address, selected_actual_qty: data.actual_qty})
+    console.log("data :", data)
+  }
+
   
   useEffect(()=>{
     // getDataSchedules()
@@ -190,16 +202,35 @@ const Schedule2 = () => {
   }, [queryFilter.day])
 
   
-  const optionsSelectDay = [
-    { label: "Monday", value: 1 },
-    { label: "Tuesday", value: 2 },
-    { label: "Wednesday", value: 3 },
-    { label: "Thursday", value: 4 },
-    { label: "Friday", value: 5 },
-    { label: "Saturday", value: 6 },
-    { label: "Sunday", value: 0 },
-  ]
+  // const optionsSelectDay = [
+  //   { label: "Monday", value: 1 },
+  //   { label: "Tuesday", value: 2 },
+  //   { label: "Wednesday", value: 3 },
+  //   { label: "Thursday", value: 4 },
+  //   { label: "Friday", value: 5 },
+  //   { label: "Saturday", value: 6 },
+  //   { label: "Sunday", value: 0 },
+  // ]
 
+  const optionsMaterialByDN = formInput?.materials?.map((material)=>{
+    return{
+      label: material.material_desc,
+      value: material.material_desc,
+    }
+  })
+
+  const handleChangeMaterialByDN = (e, data) => {
+    if(e){
+      if(e.value !== ""){
+        const matchesMaterial = data.find((material)=>material.material_desc === e.value)
+        if(matchesMaterial){
+          setFormInput({ ...formInput, selected_material: e.value, selected_rack_address: matchesMaterial.rack_address, selected_actual_qty: matchesMaterial.actual_qty})
+        }
+      }
+    } else{
+      setFormInput({ ...formInput, selected_material: "", selected_rack_address: "", selected_actual_qty: ""})
+    }
+  }
 
 
   
@@ -246,16 +277,15 @@ const Schedule2 = () => {
                         </div>
                       </div>
                 </CCol>
-                <CCol sm='2' className=''>
+                {/* <CCol sm='2' className=''>
                     <CFormText>Filter by Day</CFormText>
                     <Select isClearable options={optionsSelectDay} value={optionsSelectDay.find((option)=>option.value === queryFilter.day) || 7} onChange={handleChangeFilter} placeholder='All day' />
-                </CCol>
+                </CCol> */}
               </CRow>
               <CRow className='mt-3'>
                   <CTable responsive bordered hover>
                     <CTableHead color='light'>
                       <CTableRow align='middle' className='text-center'>
-                        <CTableHeaderCell rowSpan={2}>No</CTableHeaderCell>
                         <CTableHeaderCell rowSpan={2}>DN No</CTableHeaderCell>
                         <CTableHeaderCell rowSpan={2}>Vendor Code</CTableHeaderCell>
                         <CTableHeaderCell rowSpan={2}>Vendor Name</CTableHeaderCell>
@@ -265,7 +295,7 @@ const Schedule2 = () => {
                         <CTableHeaderCell rowSpan={2}>Arrival Time</CTableHeaderCell>
                         <CTableHeaderCell rowSpan={2}>Status</CTableHeaderCell>
                         <CTableHeaderCell rowSpan={2}>Delay Time</CTableHeaderCell>
-                        <CTableHeaderCell rowSpan={2}>Input</CTableHeaderCell>
+                        <CTableHeaderCell rowSpan={2}>Input Material</CTableHeaderCell>
                       </CTableRow>
                       <CTableRow align='middle' className='text-center'>
                         <CTableHeaderCell >From</CTableHeaderCell>
@@ -277,7 +307,6 @@ const Schedule2 = () => {
                           const daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
                           return(
                             <CTableRow key={index}>
-                              <CTableDataCell>{index+1}</CTableDataCell>
                               <CTableDataCell>{data.materials[0].dn_no}</CTableDataCell>
                               <CTableDataCell>{data.vendor_id}</CTableDataCell>
                               <CTableDataCell>{data.vendor_name}</CTableDataCell>
@@ -293,9 +322,13 @@ const Schedule2 = () => {
                                 </CTableDataCell>
                               <CTableDataCell style={{ color: data.status === "Delayed" ? "#F64242" : ""}}> {data.delay_time !== 0 ? `- ${data.delay_time}` : ""}</CTableDataCell>
                               <CTableDataCell className='text-center'>
-                                { !data.arrival_time && 
+                                { !data.arrival_time ?  
                                   <CButton onClick={()=>handleClickInput(data)} color='info' style={{ color: "white", padding: "5px 5px 0 5px"}}>
                                     <CIcon size='lg' icon={icon.cilInput}/>
+                                  </CButton>  
+                                    :
+                                  <CButton onClick={()=>handleClickInput(data)} color='warning' style={{ color: "white", padding: "5px 5px 0 5px"}}>
+                                    <CIcon size='lg' icon={icon.cilColorBorder}/>
                                   </CButton> 
                                 }
                               </CTableDataCell>
@@ -345,24 +378,24 @@ const Schedule2 = () => {
           </CModalHeader>
           <CModalBody>
             <CRow className='mb-3'>
-                    <CCol md={4} style={{ position: "relative"}}>
-                        <CFormText>DN No</CFormText>
-                        <CFormInput disabled value={formInput.materials[0].dn_no} />
-                    </CCol>
+                  <CCol md={4} style={{ position: "relative"}}>
+                      <CFormText>DN No</CFormText>
+                      <CFormInput disabled value={formInput.materials[0].dn_no} />
+                  </CCol>
                   </CRow>
                   <CRow>
                     <CCol md={4}>
                         <CFormText>Material</CFormText>
-                        <Select isClearable  className='w-100' placeholder='Select material'/>
+                        <Select isClearable options={optionsMaterialByDN} value={optionsMaterialByDN.find((opt)=>opt.value === formInput.selected_material) || ""} onChange={(e)=>handleChangeMaterialByDN(e, formInput.materials)} className='w-100' placeholder='Select material'/>
                     </CCol>
                     <CCol md={4} className='pt-md-0 pt-3'>
                       <CFormText>Rack Address</CFormText>
-                      <CFormInput disabled  className='w-100' placeholder='Rack address material'/>
+                      <CFormInput disabled value={formInput.selected_rack_address}  className='w-100' placeholder='Rack address material'/>
                     </CCol>
                     <CCol md={2} xs={6} className='pt-md-0 pt-3'>
                       <CFormText>Quantity</CFormText>
                         <CInputGroup>
-                          <CFormInput type='number' inputMode='numeric'/>
+                          <CFormInput type='number' value={formInput.selected_actual_qtyactual_qty} onChange={()=>setFormInput({ ...formInput, selected_actual_qty: e.target.value})} inputMode='numeric'/>
                         </CInputGroup>
                     </CCol>
                     <CCol md={2} xs={6} className='d-flex justify-content-end align-items-end'>
@@ -397,7 +430,7 @@ const Schedule2 = () => {
               <CTableBody>
                 {formInput.materials && formInput.materials.map((data,index,array)=>{
                   return(
-                    <CTableRow key={index}  onClick={()=>addToast(TemplateToast("info", 'info', `clicked row ${index+1}`))}>
+                    <CTableRow key={index}  onClick={()=>handleSelectReceivingDN(data)}>
                       <CTableDataCell>{data.dn_no}</CTableDataCell>
                       <CTableDataCell>{data.material_no}</CTableDataCell>
                       <CTableDataCell>{data.material_desc}</CTableDataCell>

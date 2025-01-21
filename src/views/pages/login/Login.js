@@ -18,8 +18,8 @@ import CIcon from '@coreui/icons-react'
 import { cilLockLocked, cilUser } from '@coreui/icons'
 import ImageBG from '../../../assets/images/bg-login.jpg'
 // import { Player } from '@lottiefiles/react-lottie-player';
-import Lottie from 'lottie-react'
-import animationData from '../../../assets/lottie/lottie-login.json'
+// import Lottie from 'lottie-react'
+// import animationData from '../../../assets/lottie/lottie-login.json'
 // import lottieAnimation from '../../../assets/lottie/lottie-login.json'
 import LogoTWIIS from 'src/assets/images/logo-twiis.png';
 
@@ -81,7 +81,7 @@ const Login = () => {
               <CCard color='info' className="text-white py- p-0" style={{ width: '44%' }}>
                 <CCardBody className="text-cente">
                   <CImage src={LogoTWIIS}/>
-                  <Lottie animationData={animationData} width={1000} loop={true} />
+                  {/* <Lottie animationData={animationData} width={1000} loop={true} /> */}
 
                 </CCardBody>
               </CCard>
