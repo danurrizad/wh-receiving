@@ -3,7 +3,7 @@ import CIcon from '@coreui/icons-react'
 import * as icon from '@coreui/icons'
 import { CButton, CButtonGroup, CCard, CCardBody, CCardHeader, CCardTitle, CCol, CContainer, CFormInput, CFormLabel, CFormText, CInputGroup, CModal, CModalBody, CModalFooter, CModalHeader, CModalTitle, CRow, CTable, CTableBody, CTableDataCell, CTableHead, CTableHeaderCell, CTableRow, CToaster } from '@coreui/react'
 import { dataReceivingDummy, dataSchedulesDummy, dataDummy } from '../../utils/DummyData'
-import { DatePicker } from 'rsuite';
+import { DatePicker, DateRangePicker } from 'rsuite';
 import  colorStyles from '../../utils/StyleReactSelect'
 import Select from 'react-select'
 import CreatableSelect from 'react-select/creatable'
@@ -14,7 +14,7 @@ import BarcodeScannerComponent from "react-qr-barcode-scanner";
 import Receiving from './../receiving/Receiving';
 
 
-const Schedule2 = () => {
+const Book = () => {
   const [toast, addToast] = useState()
   const toaster = useRef(null)
   const [errMsg, setErrMsg] = useState("")
@@ -79,10 +79,7 @@ const Schedule2 = () => {
   }, [currentPage])
 
  
-  const handleClickInput = (data) => {
-    // const selectedDataReceiving = dataReceivingDummy.filter((dataReceiving)=>dataReceiving.vendor_id === data.vendor_id)
-    // console.log('selectedDataReceiving :', selectedDataReceiving)
-    console.log("data :", data)
+  const handleClickDetail = (data) => {
     setFormInput({
       date: data.date,
       day: data.day,
@@ -209,46 +206,28 @@ const Schedule2 = () => {
     <CContainer fluid>
         <CToaster className="p-3" placement="top-end" push={toast} ref={toaster} />
         
-        <CRow className='pt-4'>
+        <CRow>
           <CCard className='p-0'>
             <CCardHeader>
-              <CCardTitle>SCHEDULE DATA</CCardTitle>
+              <CCardTitle>LOGS DATA</CCardTitle>
             </CCardHeader>
             <CCardBody>
-              <CRow className='d-flex justify-content-between align-items-start'>
-                <CCol md={4} style={{ position: "relative"}} className=''>
-                    <CFormText>DN No</CFormText>
-                      <div>
-                        <div style={{ position: "relative"}}>
-                        <CInputGroup>
-                          <CFormInput 
-                            type='number'
-                            inputMode='numeric'
-                            placeholder='Insert DN Number'
-                            onKeyDown={
-                              (e)=>{
-                                if(e.key === 'Enter'){
-                                  console.log('here')
-                                }
-                              }
-                            }
-                            value={queryFilter.dn_no}
-                            onChange={handleChangeInputDN}
-                            />
-                            { queryFilter.dn_no !== "" && 
-                              <CButton onClick={handleClearInputDN} className='p-0 px-1' style={{border: "0", position: "absolute", top: '50%', right: '50px', translate: "0 -50%", zIndex: "50"}}>
-                                <CIcon icon={icon.cilX}/> 
-                              </CButton>
-                            } 
-                          <CButton onClick={()=>setShowModalScanner(true)} color='success' style={{ color: "white"}}><CIcon icon={icon.cilQrCode}/></CButton>
-                        </CInputGroup>
-                        <CFormText style={{ color: "red", opacity: '75%'}}>{errMsg}</CFormText>
-                        </div>
-                      </div>
+              <CRow className=''>
+                
+                <CCol sm='4' className=''>
+                    <CFormText>Search vendor</CFormText>
+                    <Select options={optionsSelectVendor} isClearable placeholder='Vendor code or name' />
                 </CCol>
-                <CCol sm='2' className=''>
-                    <CFormText>Filter by Day</CFormText>
-                    <Select isClearable options={optionsSelectDay} value={optionsSelectDay.find((option)=>option.value === queryFilter.day) || 7} onChange={handleChangeFilter} placeholder='All day' />
+
+                <CCol className='d-flex justify-content-end gap-4'>
+                  <CCol sm='4' className=''>
+                      <CFormText>Filter by Date</CFormText>
+                      <DateRangePicker showOneCalendar placeholder='All time' position='start' />
+                  </CCol>
+                  <CCol sm='3' className=''>
+                      <CFormText>Filter by Day</CFormText>
+                      <Select isClearable options={optionsSelectDay} value={optionsSelectDay.find((option)=>option.value === queryFilter.day) || 7} onChange={handleChangeFilter} placeholder='All day' />
+                  </CCol>
                 </CCol>
               </CRow>
               <CRow className='mt-3'>
@@ -260,12 +239,12 @@ const Schedule2 = () => {
                         <CTableHeaderCell rowSpan={2}>Vendor Code</CTableHeaderCell>
                         <CTableHeaderCell rowSpan={2}>Vendor Name</CTableHeaderCell>
                         <CTableHeaderCell rowSpan={2}>Day</CTableHeaderCell>
-                        {/* <CTableHeaderCell rowSpan={2}>Date</CTableHeaderCell> */}
+                        <CTableHeaderCell rowSpan={2}>Date</CTableHeaderCell>
                         <CTableHeaderCell colSpan={2}>Schedule Time Plan</CTableHeaderCell>
                         <CTableHeaderCell rowSpan={2}>Arrival Time</CTableHeaderCell>
                         <CTableHeaderCell rowSpan={2}>Status</CTableHeaderCell>
                         <CTableHeaderCell rowSpan={2}>Delay Time</CTableHeaderCell>
-                        <CTableHeaderCell rowSpan={2}>Input</CTableHeaderCell>
+                        <CTableHeaderCell rowSpan={2}>Log</CTableHeaderCell>
                       </CTableRow>
                       <CTableRow align='middle' className='text-center'>
                         <CTableHeaderCell >From</CTableHeaderCell>
@@ -282,7 +261,7 @@ const Schedule2 = () => {
                               <CTableDataCell>{data.vendor_id}</CTableDataCell>
                               <CTableDataCell>{data.vendor_name}</CTableDataCell>
                               <CTableDataCell>{daysOfWeek[data.day]}</CTableDataCell>
-                              {/* <CTableDataCell>{data.date}</CTableDataCell> */}
+                              <CTableDataCell>{data.date}</CTableDataCell>
                               <CTableDataCell>{data.schedule_from}</CTableDataCell>
                               <CTableDataCell>{data.schedule_to}</CTableDataCell>
                               <CTableDataCell>{data.arrival_time}</CTableDataCell>
@@ -293,11 +272,9 @@ const Schedule2 = () => {
                                 </CTableDataCell>
                               <CTableDataCell style={{ color: data.status === "Delayed" ? "#F64242" : ""}}> {data.delay_time !== 0 ? `- ${data.delay_time}` : ""}</CTableDataCell>
                               <CTableDataCell className='text-center'>
-                                { !data.arrival_time && 
-                                  <CButton onClick={()=>handleClickInput(data)} color='info' style={{ color: "white", padding: "5px 5px 0 5px"}}>
-                                    <CIcon size='lg' icon={icon.cilInput}/>
+                                  <CButton onClick={()=>handleClickDetail(data)} color='info' style={{ color: "white", padding: "5px 5px 0 5px"}}>
+                                    <CIcon size='lg' icon={icon.cilClone}/>
                                   </CButton> 
-                                }
                               </CTableDataCell>
                             </CTableRow>
                           )
@@ -341,45 +318,20 @@ const Schedule2 = () => {
           backdrop="static"
         >
           <CModalHeader>
-            <CModalTitle>Input Receiving</CModalTitle>
+            <CModalTitle>Log Receiving</CModalTitle>
           </CModalHeader>
           <CModalBody>
-            <CRow className='mb-3'>
-                    <CCol md={4} style={{ position: "relative"}}>
-                        <CFormText>DN No</CFormText>
-                        <CFormInput disabled value={formInput.materials[0].dn_no} />
-                    </CCol>
-                  </CRow>
-                  <CRow>
-                    <CCol md={4}>
-                        <CFormText>Material</CFormText>
-                        <Select isClearable  className='w-100' placeholder='Select material'/>
-                    </CCol>
-                    <CCol md={4} className='pt-md-0 pt-3'>
-                      <CFormText>Rack Address</CFormText>
-                      <CFormInput disabled  className='w-100' placeholder='Rack address material'/>
-                    </CCol>
-                    <CCol md={2} xs={6} className='pt-md-0 pt-3'>
-                      <CFormText>Quantity</CFormText>
-                        <CInputGroup>
-                          <CFormInput type='number' inputMode='numeric'/>
-                        </CInputGroup>
-                    </CCol>
-                    <CCol md={2} xs={6} className='d-flex justify-content-end align-items-end'>
-                      <CButton 
-                        // disabled={materialByDN.dn_no === "" || materialByDN.material_desc === "" || materialByDN.rack_address === ""} 
-                        // onClick={()=>handleSubmitReceiving(materialByDN)} 
-                        // color={`${materialByDN.dn_no === "" || materialByDN.material_desc === "" || materialByDN.rack_address === "" ? "warning" : "success"}`} 
-                        color='info'
-                        style={{color: 'white'}} 
-                        className='flex-grow-0 d-flex align-items-center gap-2'
-                        >
-                          {/* <CIcon icon={icon.cilCheckAlt}/>
-                          <div style={{border: "0.5px solid white", height: "10px", width: "2px"}}></div> */}
-                          <span>Add</span>
-                      </CButton>
-                    </CCol>
-                  </CRow>  
+            <CRow>
+              <CCol md={4}>
+                  <CFormText>Vendor Code</CFormText>
+                  <CFormInput disabled value={formInput.vendor_id} className='w-100' placeholder='Vendor code'/>
+              </CCol>
+              <CCol md={4} className='pt-md-0 pt-3'>
+                <CFormText>Vendor Name</CFormText>
+                <CFormInput disabled value={formInput.vendor_name} className='w-100' placeholder='Vendor name'/>
+              </CCol>
+             
+            </CRow>  
           <CRow className='pt-3'>
             <CTable responsive bordered hover>
               <CTableHead color='light'>
@@ -415,10 +367,7 @@ const Schedule2 = () => {
             </CTable>
           </CRow>
           </CModalBody>
-          <CModalFooter>
-            {/* <CButton onClick={()=>setShowModalInput(false)} color="secondary">Close</CButton> */}
-            <CButton onClick={()=>setShowModalInput(false)} color="success" style={{ color: 'white'}}>Submit</CButton>
-          </CModalFooter>
+          
         </CModal>
        
        
@@ -450,4 +399,4 @@ const Schedule2 = () => {
   )
 }
 
-export default Schedule2
+export default Book
