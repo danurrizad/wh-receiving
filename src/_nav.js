@@ -12,14 +12,29 @@ const _nav = [
   },
   {
     component: CNavTitle,
-    name: 'RWHS',
+    name: 'RWHS INPUT',
   },
   {
-    component: CNavItem,
-    name: 'Input Receiving',
-    to: '/input',
-    icon: <CIcon icon={icon.cilInbox} customClassName="nav-icon" />,
+    component: CNavGroup,
+    name: 'TWIIS-Inventory',
+    to: '/order',
+    icon: <CIcon icon={icon.cilTablet} customClassName="nav-icon" />,
+    items: [
+      {
+        component: CNavItem,
+        name: 'Input Receiving',
+        to: '/input',
+        icon: <CIcon icon={icon.cilInbox} customClassName="nav-icon" />,
+      },
+      {
+        component: CNavItem,
+        name: 'Log Receiving',
+        to: '/log',
+        icon: <CIcon icon={icon.cilSpreadsheet} customClassName="nav-icon" />,
+      },
+    ],
   },
+ 
   // {
   //   component: CNavItem,
   //   name: 'Receiving',

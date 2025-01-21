@@ -17,7 +17,7 @@ import {
   CButtonGroup,
   CCard,
   CCardBody,
-  CCardFooter,
+  CBadge,
   CCardHeader,
   CCardText,
   CCardTitle,
@@ -390,19 +390,19 @@ const optionsSelectDN = Array.from(
         <CRow className='mb-3'>
           <CCard className='px-0' style={{ maxHeight: `${showCard.schedule ? "2000px" : "50px"}`, overflow: "hidden", transitionDuration: '500ms'}}>
             <CCardHeader style={{ position: "relative", cursor: "pointer"}} onClick={()=>setShowCard({ ...showCard, schedule: !showCard.schedule})}>
-                <CCardTitle className='text-center'>ARRIVAL SCHEDULE</CCardTitle>
+                <CCardTitle className='text-center'>VENDOR ARRIVAL SCHEDULE </CCardTitle>
                 <CButton onClick={()=>setShowCard({ ...showCard, schedule: !showCard.schedule})} style={{ position: 'absolute', top: 0, right: 0, margin: '5px 5px 0 0'}}>
                   <CIcon icon={icon.cilHamburgerMenu}/>
                 </CButton>
             </CCardHeader>
             <CCardBody style={{overflow: 'auto'}}>
               <CRow className='py-3'>
-                <CCol className='d-flex gap-2' xxl={7} md={12}>
-                  <div style={{ backgroundColor: '#FFBB00', color: "white", fontWeight: "bold", borderRadius: '5px'}} className='px-4 py-2'>ARRIVAL PLAN</div>
-                  <div style={{ backgroundColor: '#F64242', color: "white", fontWeight: "bold", borderRadius: '5px'}} className='px-4 py-2'>ARRIVAL DELAYED</div>
-                  <div style={{ backgroundColor: '#35A535', color: "white", fontWeight: "bold", borderRadius: '5px'}} className='px-4 py-2'>ARRIVAL ON SCHEDULE</div>
+                <CCol className='d-flex gap-2' xxl={7} md={8}>
+                <h5><CBadge color="primary">ARRIVAL PLAN</CBadge> </h5>
+                <h5><CBadge color="danger">ARRIVAL DELAYED</CBadge></h5>
+                <h5><CBadge color="success">ARRIVAL ON SCHEDULE</CBadge></h5>
                 </CCol>
-                <CCol className='d-flex gap-2 align-items-center justify-content-end'>
+                <CCol className='d-flex gap-2 align-items-center justify-content-end'xxl={5} md={4}>
                     <span>Filter by Status</span>
                     <Select onChange={handleFilterSchedule} placeholder="All" isClearable className='w-50' styles={colorStyles} options={[{label: "On Schedule", value: "On Schedule"}, {label: "Delayed", value: "Delayed"}]}/>
                 </CCol>
