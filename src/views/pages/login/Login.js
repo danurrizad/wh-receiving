@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import {
   CButton,
@@ -22,18 +22,25 @@ import ImageBG from '../../../assets/images/bg-login.jpg'
 // import animationData from '../../../assets/lottie/lottie-login.json'
 // import lottieAnimation from '../../../assets/lottie/lottie-login.json'
 import LogoTWIIS from 'src/assets/images/logo-twiis.png';
+// import { useToast } from '../../../App'
+import { useToast } from './../../../App';
 
 const Login = () => {
+  const addToast = useToast()
 
-  const defaultOptions = {
-    loop: true,
-    autoplay: true, 
-    animationData: animationData,
-    rendererSettings: {
-      preserveAspectRatio: 'xMidYMid slice'
-    }
-  };
-  console.log('defaultOptions :', defaultOptions)
+  // const defaultOptions = {
+  //   loop: true,
+  //   autoplay: true, 
+  //   animationData: animationData,
+  //   rendererSettings: {
+  //     preserveAspectRatio: 'xMidYMid slice'
+  //   }
+  // };
+  // console.log('defaultOptions :', defaultOptions)
+
+  const handleTestToast = () => {
+    addToast('This is a toast message!', 'success', 'success')
+  }
 
   return (
     <div className="bg-body-tertiary min-vh-100 d-flex flex-row align-items-center">
@@ -65,7 +72,7 @@ const Login = () => {
                     </CInputGroup>
                     <CRow>
                       <CCol xs={6}>
-                        <CButton color="primary" className="px-4">
+                        <CButton onClick={handleTestToast} color="primary" className="px-4">
                           Login
                         </CButton>
                       </CCol>

@@ -291,15 +291,16 @@ const Schedule2 = () => {
                         <CTableHeaderCell rowSpan={2}>Vendor Name</CTableHeaderCell>
                         <CTableHeaderCell rowSpan={2}>Day</CTableHeaderCell>
                         {/* <CTableHeaderCell rowSpan={2}>Date</CTableHeaderCell> */}
-                        <CTableHeaderCell colSpan={2}>Schedule Time Plan</CTableHeaderCell>
+                        <CTableHeaderCell colSpan={3}>Schedule Plan</CTableHeaderCell>
                         <CTableHeaderCell rowSpan={2}>Arrival Time</CTableHeaderCell>
                         <CTableHeaderCell rowSpan={2}>Status</CTableHeaderCell>
                         <CTableHeaderCell rowSpan={2}>Delay Time</CTableHeaderCell>
                         <CTableHeaderCell rowSpan={2}>Input Material</CTableHeaderCell>
                       </CTableRow>
                       <CTableRow align='middle' className='text-center'>
-                        <CTableHeaderCell >From</CTableHeaderCell>
-                        <CTableHeaderCell >To</CTableHeaderCell>
+                        <CTableHeaderCell >Date</CTableHeaderCell>
+                        <CTableHeaderCell >Time From</CTableHeaderCell>
+                        <CTableHeaderCell >Time To</CTableHeaderCell>
                       </CTableRow>
                     </CTableHead>
                     <CTableBody>
@@ -311,7 +312,7 @@ const Schedule2 = () => {
                               <CTableDataCell>{data.vendor_id}</CTableDataCell>
                               <CTableDataCell>{data.vendor_name}</CTableDataCell>
                               <CTableDataCell>{daysOfWeek[data.day]}</CTableDataCell>
-                              {/* <CTableDataCell>{data.date}</CTableDataCell> */}
+                              <CTableDataCell>{data.date}</CTableDataCell>
                               <CTableDataCell>{data.schedule_from}</CTableDataCell>
                               <CTableDataCell>{data.schedule_to}</CTableDataCell>
                               <CTableDataCell>{data.arrival_time}</CTableDataCell>
@@ -348,16 +349,16 @@ const Schedule2 = () => {
                     </CTableBody>
                   </CTable>
                   <div className="mt-3 d-flex justify-content-center">
-                  <Pagination
-                    currentPage={currentPage}
-                    totalPages={Math.ceil(
-                      dataDummies.length > 0
-                        ? dataDummies.length / itemsPerPage
-                        : dataDummies.length / itemsPerPage,
-                    )}
-                    onPageChange={(page) => setCurrentPage(page)}
-                  />
-                </div>
+                    <Pagination
+                      currentPage={currentPage}
+                      totalPages={Math.ceil(
+                        dataDummies.length > 0
+                          ? dataDummies.length / itemsPerPage
+                          : dataDummies.length / itemsPerPage,
+                      )}
+                      onPageChange={(page) => setCurrentPage(page)}
+                    />
+                  </div>
               </CRow>
             </CCardBody>
           </CCard>

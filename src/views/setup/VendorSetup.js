@@ -1,4 +1,4 @@
-import React,{useState,Suspense} from 'react'
+import React,{useState,Suspense, useRef, useEffect} from 'react'
 import CIcon from '@coreui/icons-react'
 import * as icon from '@coreui/icons'
 import 'primereact/resources/themes/nano/theme.css'
@@ -28,13 +28,109 @@ import {
   CTableRow,
   CTableHeaderCell,
   CTableBody,
+  CToaster,
+  CTableDataCell,
 } from '@coreui/react'
+import useScheduleDataService from '../../services/ScheduleDataService'
+import { useToast } from '../../App'
+import { classNames } from 'primereact/utils';
+import { FilterMatchMode, FilterOperator } from 'primereact/api';
+import { DataTable } from 'primereact/datatable';
+import { Column } from 'primereact/column';
+import { InputText } from 'primereact/inputtext';
+import { IconField } from 'primereact/iconfield';
+import { InputIcon } from 'primereact/inputicon';
+import { Dropdown } from 'primereact/dropdown';
+import { MultiSelect } from 'primereact/multiselect';
+import { Tag } from 'primereact/tag';
+import { TriStateCheckbox } from 'primereact/tristatecheckbox';
+
 
 const VendorSetup = () => {
-     const [dnsetup, setDnsetup] = useState([])
+      const addToast = useToast()
+      const [dnsetup, setDnsetup] = useState([])
       const [modalUpload, setModalUpload] = useState(false)
       const [date, setDate] = useState(new Date().toLocaleDateString('en-CA'))
       const [loadingImport, setLoadingImport] = useState(false)
+      const [uploadData, setUploadData] = useState({
+        file: null,
+        importDate: new Date()
+      })
+      const { getScheduleAllData, uploadFileScheduleData } = useScheduleDataService()
+      const [dataSchedule, setDataSchedule] = useState([])
+
+      const getScheduleAll = async(plantId, day) => {
+        try {
+          const response = await getScheduleAllData(plantId, day)
+          console.log("RESPONSE DATA SCHEDULE :", response.data.data)
+          setDataSchedule(response.data.data)
+        } catch (error) {
+          addToast(error, 'error', 'error')
+        } finally{
+          setLoading(false)
+        }
+      }
+
+      useEffect(()=>{
+        getScheduleAll("", 1)
+      }, [])
+
+
+      const [filters, setFilters] = useState({
+        day: { value: null, matchMode: FilterMatchMode.EQUALS },
+        plant: { value: null, matchMode: FilterMatchMode.EQUALS },
+      });
+      const [loading, setLoading] = useState(true);
+      const [days] = useState(['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']);
+      const [plants] = useState(['Karawang 1', 'Karawang 2', 'Karawang 3', 'Sunter 1', 'Sunter 2']);
+      
+      const getDays = (days) => {
+        switch (days) {
+            case 'Sunday':
+                return 0;
+
+            case 'Monday':
+                return 1;
+
+            case 'Tuesday':
+                return 2;
+
+            case 'Wednesday':
+                return 3;
+
+            case 'Thursday':
+                return 4;
+
+            case 'Friday':
+                return 5;
+
+            case 'Saturday':
+                return 6;
+
+            case 0:
+                return 'Sunday';
+
+            case 1:
+                return 'Monday';
+
+            case 2:
+                return 'Tuesday';
+
+            case 3:
+                return 'Wednesday';
+
+            case 4:
+                return 'Thursday';
+
+            case 5:
+                return 'Friday';
+
+            case 6:
+                return 'Saturday';
+        }
+    };
+
+
       const exportExcel = () => {
         import('xlsx').then((xlsx) => {
           const mappedData = dnsetup.map((item) => ({
@@ -105,6 +201,40 @@ const VendorSetup = () => {
           }
         })
       }
+
+
+      const handleUploadFileSchedule = async(file, importDate) => {
+        try {
+          // console.log("file :", file)
+          // console.log("date :", importDate)
+          
+          const formData = new FormData()
+          formData.append('file', file)
+          formData.append('importDate', importDate)
+          // console.log("formData :", formData)
+
+          // Log FormData contents
+            for (let [key, value] of formData.entries()) {
+              console.log(`${key} blabla:`, value);
+          }
+
+          const response = await uploadFileScheduleData(formData)
+          console.log("Response upload :", response)
+          // addToast(TemplateToast("success", "success", response.message))
+          addToast("File uploaded", 'success', 'success')
+
+        } catch (error) {
+          console.log("Error response upload :", error)
+          addToast("Upload error!", 'error', 'error')
+          
+        }
+      }
+
+      const formatTime = (dateStr) => {
+        const date = new Date(dateStr);
+        return date.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+      };
+
   return (
     <CContainer fluid>
         <CRow className=''>
@@ -137,7 +267,18 @@ const VendorSetup = () => {
                         </div>
                    </CCol>
                     </CRow>
-                    <CTable bordered responsive className='mt-3'>
+                    <DataTable className='py-2 px-1' showGridlines value={dataSchedule} paginator rows={10} dataKey="id" filters={filters} filterDisplay="row" loading={loading} emptyMessage="No schedules found.">
+                        <Column field="" header="No" body={(rowData, { rowIndex }) => rowIndex + 1}/>
+                        <Column field='Supplier.supplierCode' header="Vendor Code"  />
+                        <Column field='Supplier.SupplierName' header="Vendor Name"  />
+                        <Column field="schedule" header="Day" body={(rowData) => getDays(rowData.schedule)} />
+                        <Column field="arrival" header="Arrival Time" dataType="date" body={(rowData) => formatTime(rowData.arrival)}   />
+                        <Column field="departure" header="Departure Time" dataType="date" body={(rowData) => formatTime(rowData.departure)}  />
+                        <Column field="rit" header="Rit" dataType="number"   />
+                        <Column field="Plant.PlantName" header="Plant" />
+                        <Column field="truckStation" header="Truck Station"   />
+                    </DataTable>
+                    {/* <CTable bordered responsive className='mt-3'>
                         <CTableHead>
                             <CTableRow>
                                 <CTableHeaderCell>No</CTableHeaderCell>
@@ -152,11 +293,29 @@ const VendorSetup = () => {
                             </CTableRow>
                         </CTableHead>
                         <CTableBody>
-                            <CTableRow>
-                                
+                          { dataSchedule?.map((data, index)=>{
+                            const dateArrival = new Date(data.arrival) 
+                            const timeArrival = dateArrival.toISOString().substring(11, 19);
+                            
+                            const dateDeparture = new Date(data.departure)
+                            const timeDeparture = dateDeparture.toISOString().substring(11, 19);
+                            
+                            return(
+                            <CTableRow key={index}>
+                                <CTableDataCell>{index+1}</CTableDataCell>
+                                <CTableDataCell>{data.Supplier.supplierCode}</CTableDataCell>
+                                <CTableDataCell>{data.Supplier.SupplierName}</CTableDataCell>
+                                <CTableDataCell>{data.schedule}</CTableDataCell>
+                                <CTableDataCell>{timeArrival}</CTableDataCell>
+                                <CTableDataCell>{timeDeparture}</CTableDataCell>
+                                <CTableDataCell>{data.rit}</CTableDataCell>
+                                <CTableDataCell>{data.Plant.PlantName}</CTableDataCell>
+                                <CTableDataCell>{data.truckStation}</CTableDataCell>
                             </CTableRow>
+                            )
+                          })}
                         </CTableBody>
-                    </CTable>
+                    </CTable> */}
                        <CModal visible={modalUpload} onClose={() => setModalUpload(false)}>
                                <CModalHeader>
                               <CModalTitle id="LiveDemoExampleLabel">Upload Master Material</CModalTitle>
@@ -193,7 +352,8 @@ const VendorSetup = () => {
                                 </div>
                                 }
                               >
-                             <CButton color="primary" onClick={() => handleImport()}>
+                             {/* <CButton color="primary" onClick={() => handleImport()}> */}
+                             <CButton color="primary" onClick={() => handleUploadFileSchedule(uploadData.file, uploadData.importDate)}>
                                  {loadingImport ? (
                                  <>
                                  <CSpinner component="span" size="sm" variant="grow" className="me-2" />
