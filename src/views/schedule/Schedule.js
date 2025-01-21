@@ -240,7 +240,7 @@ const Schedule2 = () => {
     <CContainer fluid>
         <CToaster className="p-3" placement="top-end" push={toast} ref={toaster} />
         
-        <CRow className='pt-4'>
+        <CRow>
           <CCard className='p-0'>
             <CCardHeader>
               <CCardTitle>SCHEDULE DATA</CCardTitle>
