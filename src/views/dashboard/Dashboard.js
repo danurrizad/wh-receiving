@@ -71,6 +71,10 @@ const Dashboard = () => {
   const [itemsPerPage, setItemsPerPage] = useState(10)
   const indexOfLastItem = currentPage * itemsPerPage
   const indexOfFirstItem = indexOfLastItem - itemsPerPage
+  const [selectedPlant, setSelectedPlant] = useState({ value: 'all', label: 'All' })
+  const [plant, setPlant] = useState([])
+  const [isVisible, setIsVisible] = useState(true); // State to control visibility
+  const toggleVisibility = () => setIsVisible(!isVisible); // Toggle function
   const currentItems =
     dataSchedules.length > 0
         ? dataSchedules.slice(indexOfFirstItem, indexOfLastItem)
@@ -184,6 +188,23 @@ const optionsSelectDN = Array.from(
       </div>
     )
   }
+  const plantOptions = [
+    { value: 'all', label: 'All' }, // Menambahkan opsi "All" di awal
+    ...plant.map((plant) => ({
+      value: plant.id,
+      label: plant.plantName,
+    })),
+  ]
+
+  const handlePlantChange = (selectedPlant) => {
+    if (selectedPlant && selectedPlant.value !== 'all' && selectedPlant.value !== '') {
+    
+    } else {
+      setSelectedPlant({ value: 'all', label: 'All' })
+    
+    }
+  }
+
   return (
       <CContainer fluid>
         <CRow className='mb-3'>
@@ -196,138 +217,156 @@ const optionsSelectDN = Array.from(
   }}
 >
   <CCardHeader
-    style={{
-      position: "relative",
-      cursor: "pointer",
-      backgroundColor: "#000957", // Warna latar belakang header tetap putih
-      color: "white",           // Warna teks header tetap hitam
-    }}
-    onClick={() => setShowCard({ ...showCard, summary: !showCard.summary })}
-  >
-    <CCardTitle className="text-center">SUMMARY RECEIVING WAREHOUSE</CCardTitle>
-    <CButton
-      onClick={() => setShowCard({ ...showCard, summary: !showCard.summary })}
-      style={{ position: "absolute", top: 0, right: 0, margin: "5px 5px 0 0" }}
-    >
-      <CIcon icon={icon.cilHamburgerMenu} />
-    </CButton>
+     style={{
+     position: "relative",
+     cursor: "pointer",
+     backgroundColor: "#000957", // Warna latar belakang header tetap putih
+     color: "white", }}
+     onClick={() => setShowCard({ ...showCard, summary: !showCard.summary })} >
+      <CCardTitle className="text-center">SUMMARY RECEIVING WAREHOUSE</CCardTitle>
   </CCardHeader>
-  <CCardBody style={{ overflow: "auto" }}>
-  <CRow className="d-flex justify-content-center align-items-center">
-  {/* Date and Material Search aligned right */}
-  <CCol className="d-flex justify-content-end gap-3">
-    <CCol xs="auto">
-    <div className="d-flex flex-wrap justify-content-end">{renderHeader()}</div>
-    </CCol>
-
-    <CCol xs="auto">
+    <CCardBody style={{ overflow: "auto" }}>
+    <CRow className="d-flex justify-content-between align-items-center">
+  {/* Tombol Hide/Show di pojok kiri */}
+  <CCol md={2} className="d-flex justify-content-start">
+    <button className="btn btn-primary" onClick={toggleVisibility}>
+      {isVisible ? "Hide Detail" : "Show Detail"}
+    </button>
+  </CCol>
+  <CCol md={2} >
+   <Select
+     className="basic-single"
+       classNamePrefix="select"
+       isClearable
+        options={plantOptions} // plantOptions termasuk "All"
+        value={selectedPlant} // Menetapkan state sebagai value yang dipilih
+        id="plant"
+         onChange={handlePlantChange}/>
+   </CCol>
+  {/* Elemen Header dan Date Picker di pojok kanan */}
+  <CCol md={6} className="d-flex justify-content-end gap-3">
+    <div>{renderHeader()}</div>
     <div
-    className="flatpickr-wrapper"
-    style={{ position: 'relative', width: '300px', height: '36px' }}
+      className="flatpickr-wrapper"
+      style={{ position: "relative", width: "50%" }} // Atur ukuran date picker sesuai kebutuhan
     >
-    
       <Flatpickr
-        value={dates}
-         onChange={(selectedDates) => setDates(selectedDates)}
-           options={{
-            mode: 'range',
-             dateFormat: 'Y-m-d',}}
-              className="form-control"
-              placeholder="Select a date"
-              style={{
-               paddingLeft: '40px', // Beri ruang untuk ikon
-               height: '80%',}}/>
-                <CIcon
-       icon={cilCalendar}
-       size="lg"
+        onChange={(selectedDates) => setDates(selectedDates)}
+        options={{
+          mode: "range",
+          dateFormat: "Y-m-d",
+        }}
+        className="form-control"
+        placeholder="Select a date"
         style={{
-           position: 'absolute',
-            top: '40%',
-            right: '10px',
-             transform: 'translateY(-50%)',
-              pointerEvents: 'none',
-              color: 'black',  // Set the color of the icon here
-               }}
-                />
-           </div>
-       </CCol>
-     </CCol>
-     </CRow>
+          paddingLeft: "40px", // Beri ruang untuk ikon
+          height: "100%",
+        }}
+      />
+      <CIcon
+        icon={cilCalendar}
+        size="lg"
+        style={{
+          position: "absolute",
+          top: "50%",
+          right: "10px",
+          transform: "translateY(-50%)",
+          pointerEvents: "none",
+          color: "black", // Warna ikon
+        }}
+      />
+    </div>
+  </CCol>
+</CRow>
+
+     <hr className="m-1" />
       <CRow>
-        <CCol sm={7} >
-        <CRow>
-       <CCol sm="auto">
-       <CCard className="mb-2 mt-1" style={{ width: "7rem" }}>
-      <CCardHeader
-        className="text-muted small text-center"
-        style={{ backgroundColor: "#F64242" }}>
-        <h6 style={{ color: "white", fontSize: "10px" }}>DELAYED</h6>
-      </CCardHeader>
-      <CCardBody className="text-center">
-        <CCardText className="fs-3 fw-bold">46</CCardText>
-      </CCardBody>
-    </CCard>
-  </CCol>
-
-  <CCol sm="auto">
-    <CCard className="mb-3 mt-1"style={{ width: "7rem" }}>
-      <CCardHeader
-        className="text-muted small text-center"
-        style={{ backgroundColor: "#35A535" }}
-      >
-        <h6 style={{ color: "white", fontSize: "10px" }}>ON SCHEDULE</h6>
-      </CCardHeader>
-      <CCardBody className="text-center">
-        <CCardText className="fs-3 fw-bold">25</CCardText>
-      </CCardBody>
-    </CCard>
-  </CCol>
-
-  <CCol sm="auto">
-    <CCard className="mb-3 mt-1"style={{ width: "7rem" }}>
-      <CCardHeader
-        className="text-muted small text-center"
-        style={{ backgroundColor: "gray" }}
-      >
-        <h6 style={{ color: "white", fontSize: "10px" }}>REMAINING</h6>
-      </CCardHeader>
-      <CCardBody className="text-center">
-        <CCardText className="fs-3 fw-bold">46</CCardText>
+        <CCol xs={12} sm={7} md={7} xl={7} >
+        <label className="fs-5 fw-bold text-center d-block">ARRIVAL MONITORING</label>
+        <CCard style={{ backgroundColor: "transparent", border: "2px solid white",padding: "0.5rem"}}>
+        <CRow className="justify-content-center gap-0">
+        <CCol  xs={6} sm={3} md={3} xl={3}>
+        <CCard 
+         className="mb-2 mt-1 bg-transparent" 
+         style={{ border: "1px solid white" }}
+        >
+          <CCardHeader
+          className="text-muted small text-center"
+          style={{ backgroundColor: "#F64242" }}>
+          <h6 style={{ color: "white", fontSize: "11px" }}>DELAYED</h6>
+          </CCardHeader>
+          <CCardBody className="text-center ">
+         <CCardText className="fs-3 fw-bold" style={{ color: "white" }}>46</CCardText>
        </CCardBody>
-       </CCard>
-       
+     </CCard>
+     </CCol>
+
+     <CCol  xs={6} sm={3} md={3} xl={3}>
+     <CCard 
+         className="mb-2 mt-1 bg-transparent" 
+         style={{ border: "1px solid white" }}
+        >
+        <CCardHeader
+         className="text-muted small text-center"
+         style={{ backgroundColor: "#35A535" }}
+         >
+         <h6 style={{ color: "white", fontSize: "11px" }}>ON SCHEDULE</h6>
+         </CCardHeader>
+         <CCardBody className="text-center">
+        <CCardText className="fs-3 fw-bold" style={{ color: "white" }}>25</CCardText>
+      </CCardBody>
+    </CCard>
+  </CCol>
+
+  <CCol  xs={6} sm={3} md={3} xl={3}>
+    <CCard 
+         className="mb-2 mt-1 bg-transparent" 
+         style={{ border: "1px solid white" }}
+        >
+      <CCardHeader
+        className="text-muted small text-center"
+        style={{ backgroundColor: "gray" }}>
+         <h6 style={{ color: "white", fontSize: "11px" }}>REMAINING</h6>
+        </CCardHeader>
+          <CCardBody className="text-center">
+           <CCardText className="fs-3 fw-bold" style={{ color: "white" }}>46</CCardText>
+         </CCardBody>
+        </CCard>    
       </CCol>
-      <CCol sm="auto">
-    <CCard className="mb-3 mt-1"style={{ width: "7rem" }}>
+      <CCol  xs={6} sm={3} md={3} xl={3}>
+      <CCard 
+         className="mb-2 mt-1 bg-transparent" 
+         style={{ border: "1px solid white" }}
+        >
       <CCardHeader
         className="text-muted small text-center"
-        style={{ backgroundColor: "gray" }}
+        style={{ backgroundColor: "white" }}
       >
-        <h6 style={{ color: "white", fontSize: "10px" }}>TOTAL</h6>
+        <h6 style={{ color: "black", fontSize: "10px" }}>TOTAL</h6>
       </CCardHeader>
-      <CCardBody className="text-center">
-        <CCardText className="fs-3 fw-bold">46</CCardText>
-       </CCardBody>
+        <CCardBody className="text-center">
+          <CCardText className="fs-3 fw-bold"style={{ color: "white" }}>46</CCardText>
+        </CCardBody>
        </CCard>
-       
       </CCol>
      </CRow>
-     <CRow>
-        <CCard>
+      <hr className="m-0" />
+        <CRow>
         <Bar 
         options={getChartOption()} 
         data={setChartData()} 
         height={200} // Tinggi chart
        />
-       </CCard>
       </CRow>
+      </CCard>
      </CCol>
+     {/* //untuk tabel */}
+
    <CCol sm={5} >
-   <CRow className='p-2 pt-3'>
-    <label>Table Receiv Item</label>
-    <CCard className="p-3">
+    <label className="fs-5 fw-bold text-center d-block">TABLE RECEIVING MATERIAL</label>
+    <CCard className="p-1">
   {/* Informasi Header */}
-  <CRow className="mb-3">
+  <CRow className="mb-1">
     <CCol sm={12}>
       <div><strong>Supplier:</strong> Supplier Name</div>
     </CCol>
@@ -358,16 +397,16 @@ const optionsSelectDN = Array.from(
           <CTableHeaderCell>Diff</CTableHeaderCell>
            <CTableHeaderCell>Date</CTableHeaderCell>
           </CTableRow>
-           </CTableHead>
-           <CTableBody>
-                  {currentItems.map((data, index) => (
-                    <CTableRow key={index}>
-                      <CTableDataCell>{data.material_desc}</CTableDataCell>
-                      <CTableDataCell>{data.rack_address}</CTableDataCell>
-                      <CTableDataCell>{data.req_qty}</CTableDataCell>
-                      <CTableDataCell>{data.actual_qty}</CTableDataCell>
-                      <CTableDataCell>{data.difference || "-"}</CTableDataCell>
-                      <CTableDataCell>{data.date}</CTableDataCell>
+            </CTableHead>
+             <CTableBody>
+              {currentItems.map((data, index) => (
+              <CTableRow key={index}>
+               <CTableDataCell>{data.material_desc}</CTableDataCell>
+                <CTableDataCell>{data.rack_address}</CTableDataCell>
+                  <CTableDataCell>{data.req_qty}</CTableDataCell>
+                   <CTableDataCell>{data.actual_qty}</CTableDataCell>
+                    <CTableDataCell>{data.difference || "-"}</CTableDataCell>
+                    <CTableDataCell>{data.date}</CTableDataCell>
                     </CTableRow>
                   ))}
                   {currentItems.length === 0 && (
@@ -380,21 +419,17 @@ const optionsSelectDN = Array.from(
                 </CTableBody>
               </CTable>
             </CCard>
-          </CRow>
-        </CCol>
-     </CRow>
-  </CCardBody>
-</CCard>
-
+          </CCol>
         </CRow>
+      </CCardBody>
+       </CCard>
+        </CRow>
+        {isVisible && (
         <CRow className='mb-3'>
           <CCard className='px-0' style={{ maxHeight: `${showCard.schedule ? "2000px" : "50px"}`, overflow: "hidden", transitionDuration: '500ms'}}>
             <CCardHeader style={{ position: "relative", cursor: "pointer"}} onClick={()=>setShowCard({ ...showCard, schedule: !showCard.schedule})}>
                 <CCardTitle className='text-center'>VENDOR ARRIVAL SCHEDULE </CCardTitle>
-                <CButton onClick={()=>setShowCard({ ...showCard, schedule: !showCard.schedule})} style={{ position: 'absolute', top: 0, right: 0, margin: '5px 5px 0 0'}}>
-                  <CIcon icon={icon.cilHamburgerMenu}/>
-                </CButton>
-            </CCardHeader>
+                </CCardHeader>
             <CCardBody style={{overflow: 'auto'}}>
               <CRow className='py-3'>
                 <CCol className='d-flex gap-2' xxl={7} md={8}>
@@ -468,8 +503,7 @@ const optionsSelectDN = Array.from(
                           )
                         })}
                     </CTableBody>
-                  </CTable>
-                        
+                  </CTable>    
                 </CCard>
                 <div className="mt-3 d-flex justify-content-center">
                   <Pagination
@@ -486,7 +520,7 @@ const optionsSelectDN = Array.from(
             </CCardBody>
           </CCard>
         </CRow>
-       
+       )}
       </CContainer>
   )
 }

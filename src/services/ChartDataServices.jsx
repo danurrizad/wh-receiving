@@ -86,6 +86,7 @@ const useChartData = ({currentItems}) => {
                         font: {
                             size: 10, // Ukuran font kecil
                         },
+                        color: 'white', // Warna putih untuk label x
                         callback: (value) => `${value}:00`,
                     }
                 },
@@ -95,8 +96,8 @@ const useChartData = ({currentItems}) => {
                     ticks: {
                         font: {
                             size: 9, // Ukuran font kecil untuk sumbu-y
-                            
                         },
+                        color: 'white', // Warna putih untuk label x
                     },
                 },
             },
@@ -134,6 +135,7 @@ const useChartData = ({currentItems}) => {
                 title: {
                     display: true,
                     text: 'SCHEDULE VENDOR WAREHOUSE',
+                    color: 'white', // Warna putih untuk label x
                 },
             },
             
