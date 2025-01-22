@@ -22,9 +22,7 @@ const useVerify = () => {
 
   const refreshToken = async () => {
     try {
-      console.log("DISINI BELOM AMBIL TOKEN")
       const response = await axiosInstance.get('/token')
-      console.log("RESPONSE TOKEN :", response.data.accessToken)
       setToken(response.data.accessToken)
       const decoded = jwtDecode(response.data.accessToken)
       setName(decoded.name)
