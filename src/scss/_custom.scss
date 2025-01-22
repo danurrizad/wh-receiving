@@ -48,3 +48,54 @@ input::-webkit-inner-spin-button {
     list-style: none;
   }
 
+/* custom-datatable.css */
+.custom-datatable .p-datatable-thead > tr > th,
+.custom-datatable .p-datatable-tbody > tr > td {
+  border: 1px solid #dee2e6;
+  padding: 0 5px 0 5px;
+}
+.custom-datatable .p-datatable-tbody > tr > td {
+  padding: 10px 5px 10px 5px;
+}
+
+.custom-datatable .p-datatable-thead > tr > th {
+  background-color: #f8f9fa;
+}
+
+.custom-datatable .p-datatable-tbody > tr > td {
+  background-color: #ffffff;
+  font-size: 10pt;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+input.p-inputnumber-input.p-inputtext.p-component.p-filled {
+  width: 90px;
+  height: 24px;
+  font-size: 10pt;
+}
+
+td input.p-inputtext.p-component {
+  height: 24px;
+  font-size: 10pt;
+}
+
+.p-paginator .p-paginator-pages .p-paginator-page.p-highlight{
+  background-color: rgb(21, 132, 184);
+  color: white !important;
+  border-radius: 10px;
+}
+
+.p-paginator-page.p-paginator-element.p-link,
+.p-paginator-first.p-paginator-element.p-link,
+.p-paginator-prev.p-paginator-element.p-link,
+.p-paginator-next.p-paginator-element.p-link,
+.p-paginator-last.p-paginator-element.p-link
+{
+  border-radius: 10px;
+}
+
+.p-paginator-pages{
+  display: flex;
+  gap: 5px;
+}
