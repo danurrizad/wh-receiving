@@ -267,19 +267,22 @@ const Input = () => {
                       <p style={{ fontWeight: "bold", color: "black"}}>INPUT DN NUMBER</p>
                     </CCardHeader>
                     <CCardBody className='d-flex flex-column gap-1'>
-                      <CRow className='px-2'>
-                        <CFormText className='px-1'>DN Number</CFormText>
-                        <CFormInput 
-                          min={0} // Minimum value
-                          max={99} // Maximum value (5 digits)
-                          className=''
-                          type='text'
-                          inputMode='numeric'
-                          placeholder='Insert DN Number'
-                          value={formInput.dn_no}
-                          onChange={handleChangeInputDN}
-                          onKeyDown={handleOnEnterInputDN}
-                          />
+                      <CRow className='px-0 d-flex'>
+                        <CFormText className='px-3'>DN Number</CFormText>
+                        <div className='px-2' style={{ position: "relative"}}>
+                          <CFormInput 
+                            min={0} // Minimum value
+                            max={99} // Maximum value (5 digits)
+                            className=''
+                            type='text'
+                            inputMode='numeric'
+                            placeholder='Insert DN Number'
+                            value={formInput.dn_no}
+                            onChange={handleChangeInputDN}
+                            onKeyDown={handleOnEnterInputDN}
+                            />
+                            { formInput.dn_no.length !== 0 && <CButton onClick={handleClearInputDN} style={{ border: "0", position: "absolute", top: 0, right: "10px" }}><CIcon icon={icon.cilX}/></CButton>}
+                        </div>
                       </CRow>
                       <CRow className=''>
                           <CFormText>Rit</CFormText>
