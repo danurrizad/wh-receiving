@@ -8,27 +8,37 @@ const useReceivingDataService = () => {
         throw new Error(message + error.message)
       }
 
-    const getReceivingData = async() => {
+    const getMaterialByDNData = async(dnNumber) => {
         try {
-            const response = await axiosJWT.get(`${BACKEND_URL}/`)
+            const response = await axiosJWT.get(`/delivery-note?dn=${dnNumber}`)
             return response
         } catch (error) {
-            throw error
+            handleError(error, "Error fetching file:")
         }
     }
 
-    const uploadExcelReceivingData = async() => {
-        try {
-            const response = await axiosJWT.post(`${BACKEND_URL}/`)
-            return response
-        } catch (error) {
-            throw error
-        }
-    }
+    // const getReceivingData = async() => {
+    //     try {
+    //         const response = await axiosJWT.get(`${BACKEND_URL}/`)
+    //         return response
+    //     } catch (error) {
+    //         throw error
+    //     }
+    // }
+
+    // const uploadExcelReceivingData = async() => {
+    //     try {
+    //         const response = await axiosJWT.post(`${BACKEND_URL}/`)
+    //         return response
+    //     } catch (error) {
+    //         throw error
+    //     }
+    // }
 
     return{
-        getReceivingData,
-        uploadExcelReceivingData
+        getMaterialByDNData
+        // getReceivingData,
+        // uploadExcelReceivingData
     }
 }
 

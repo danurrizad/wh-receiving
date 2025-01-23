@@ -11,7 +11,7 @@ const useScheduleDataService = () => {
     
       const getScheduleAllData = async(plantId, day) =>{
         try {
-            const response = await axiosJWT.get(`/delivery-schedule?limit=15&page=1&plantId=${plantId}&day=${day}`, {
+            const response = await axiosJWT.get(`/delivery-schedule?limit=15&page=1&plantId=${plantId}&day=1`, {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
