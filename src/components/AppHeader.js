@@ -14,6 +14,7 @@ import {
   CNavItem,
   useColorModes,
   CNavbarText,
+  CImage,
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import * as icon from "@coreui/icons";
@@ -21,6 +22,7 @@ import * as icon from "@coreui/icons";
 import {
   cilMenu,
 } from '@coreui/icons'
+import LogoTWIIS2 from 'src/assets/images/logo-twiis-2.png'
 
 
 
@@ -57,12 +59,8 @@ const AppHeader = () => {
         >
           <CIcon icon={cilMenu} size="lg" />
         </CHeaderToggler>
-        <CHeaderNav className="d-none d-md-flex">
-          <CNavItem>
-            <h4 style={{ color: 'red'}}>
-              TOYOTA
-            </h4>
-          </CNavItem>
+        <CHeaderNav style={{ position: 'fixed', top: "10px", left: "50px"}}>
+          <CImage className="" src={LogoTWIIS2} height={52} />
         </CHeaderNav>
         <CHeaderNav className="ms-auto">
           <CNavItem>
@@ -78,7 +76,7 @@ const AppHeader = () => {
                 hour: 'numeric',
                 minute: 'numeric',
                 second: '2-digit',
-                hour12: true,
+                hourCycle: 'h24'
               })}
             </CNavLink>
           </CNavItem>
