@@ -1,12 +1,16 @@
 import useVerify from '../hooks/UseVerify'
+import { useToast } from '../App'
 
 
 const useScheduleDataService = () => {
     const { token, axiosJWT } = useVerify()
+    const addToast = useToast()
 
     const handleError = (error, message) => {
         console.error(message, error)
-        throw new Error(message + error.message)
+        addToast(error.response.data.message, 'error', 'danger')
+        // throw addToast("TES ERROR", 'error', 'danger')
+        throw new Error(message + error.message + error.response.data.message)
       }
     
       const getScheduleAllData = async(plantId, day) =>{
@@ -18,7 +22,7 @@ const useScheduleDataService = () => {
             })
             return response
         } catch (error) {
-            handleError(error, "Error uploading files:")
+            handleError(error, "Error fetching files:")
         }
       }
 
