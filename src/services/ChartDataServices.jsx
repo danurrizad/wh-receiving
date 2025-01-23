@@ -52,7 +52,7 @@ const useChartData = ({currentItems}) => {
                     })),
                    
                     backgroundColor:[
-                        'rgba(255, 187, 0, 0.29)',
+                        'rgba(255, 213, 0, 0.56)',
                     ],
                     borderColor: [
                         'rgb(255, 205, 86)',
@@ -86,34 +86,40 @@ const useChartData = ({currentItems}) => {
                         font: {
                             size: 10, // Ukuran font kecil
                         },
-                        color: 'white', // Warna putih untuk label x
+                      
+                        color: 'black', // Warna putih untuk label x
                         callback: (value) => `${value}:00`,
-                    }
+                    },
+                    grid: {
+                    color: "white"},       
                 },
                 y: {
                     stacked: true,
                     beginAtZero: false,
                     ticks: {
                         font: {
-                            size: 9, // Ukuran font kecil untuk sumbu-y
+                            size: 10, // Ukuran font kecil untuk sumbu-y
                         },
-                        color: 'white', // Warna putih untuk label x
+                        color: 'black', // Warna putih untuk label x
+                    },
+                    grid: {
+                        color: "white", // Warna putih untuk garis kotak-kotak di sumbu y
                     },
                 },
             },
             elements: {
                 bar: {
-                    borderWidth: 2,
+                    borderWidth: 3,
 
                 },
             },
             responsive: true,
             plugins: {
                 backgroundColor: {
-                    color: 'black',
+                    color: 'white',
                   },
                 tooltip: {
-                    backgroundColor: "rgba(0, 0, 0, 0.7)", // Latar belakang tooltip semi-transparan
+                    backgroundColor: "rgba(84, 70, 70, 0.7)", // Latar belakang tooltip semi-transparan
                     callbacks: {
                         label: (context) => {
                             const dataIndex = context.dataIndex; // Get the index of the data point
@@ -135,7 +141,7 @@ const useChartData = ({currentItems}) => {
                 title: {
                     display: true,
                     text: 'SCHEDULE VENDOR WAREHOUSE',
-                    color: 'white', // Warna putih untuk label x
+                    color: 'black', // Warna putih untuk label x
                 },
             },
             
