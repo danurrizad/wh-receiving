@@ -75,6 +75,7 @@ const useChartData = ({currentItems}) => {
         const data = setChartData()
         const config = {
             indexAxis: 'y',
+            maintainAspectRatio: false,
             scales: {
                 x: {
                     position: "top",
