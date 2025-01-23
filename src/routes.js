@@ -1,7 +1,7 @@
 import React from 'react'
 
 const Dashboard = React.lazy(() => import('./views/dashboard/Dashboard'))
-const Schedule = React.lazy(() => import('./views/schedule/Schedule'))
+const Schedule = React.lazy(() => import('./views/input/Input'))
 const Book = React.lazy(() => import('./views/logbook/Book'))
 const VendorSetup = React.lazy(() => import('./views/setup/VendorSetup'))
 const DNSetup = React.lazy(() => import('./views/setup/DNSetup'))
