@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react'
-import { dataSchedulesDummy, dataReceivingDummy } from '../../utils/DummyData'
+import { dataSchedulesDummy, dataReceivingDummy,dataDummy } from '../../utils/DummyData'
 import  colorStyles from '../../utils/StyleReactSelect'
 import Select from 'react-select'
 import Flatpickr from 'react-flatpickr'
 import 'flatpickr/dist/flatpickr.css'
 import Pagination from '../../components/Pagination'
+import { DatePicker, DateRangePicker } from 'rsuite';
 import 'primeicons/primeicons.css'
 import { IconField } from 'primereact/iconfield'
 import { InputIcon } from 'primereact/inputicon'
@@ -66,6 +67,7 @@ const Dashboard = () => {
   const [ dataSchedules, setDataSchedules ] = useState(dataSchedulesDummy)
   const [ dataReceiving, setDataReceiving ] = useState(dataReceivingDummy)
   const [globalFilterValue, setGlobalFilterValue] = useState('');
+  const [ dataDummies, setDataDummies ] = useState(dataDummy)
   const [currentPage, setCurrentPage] = useState(1)
   const [dates, setDates] = useState([null, null]) // State for date range
   const [itemsPerPage, setItemsPerPage] = useState(10)
@@ -75,11 +77,40 @@ const Dashboard = () => {
   const [plant, setPlant] = useState([])
   const [isVisible, setIsVisible] = useState(true); // State to control visibility
   const toggleVisibility = () => setIsVisible(!isVisible); // Toggle function
+   const defaultOptionsSelectVendor = dataDummies?.map((data)=>{
+      return{
+        label: `${data.vendor_id} - ${data.vendor_name}`,
+        value: {
+          id: data.vendor_id,
+          name: data.vendor_name,
+        }
+      }
+    })
+    const [ optionsSelectVendor, setOptionsSelectVendor] = useState(defaultOptionsSelectVendor)
   const currentItems =
     dataSchedules.length > 0
         ? dataSchedules.slice(indexOfFirstItem, indexOfLastItem)
         : dataSchedules.slice(indexOfFirstItem, indexOfLastItem)
-
+ const [ formInput, setFormInput ] = useState({
+    date: "",
+    day: "",
+    vendor_id: "",
+    vendor_name: "",
+    schedule_from: "",
+    schedule_to: "",
+    arrival_time: "",
+    status: "",
+    
+    materials: [{
+      vendor_id: "",
+      dn_no: "",
+      material_no: "",
+      material_desc: "",
+      rack_address: "",
+      req_qty: "",
+      actual_qty: "",
+    }],
+  })
   useEffect(()=>{
      const currentItems = dataSchedules.length > 0
         ? dataSchedules.slice(indexOfFirstItem, indexOfLastItem)
@@ -204,6 +235,31 @@ const optionsSelectDN = Array.from(
     
     }
   }
+  const handleClickDetail = (data) => {
+    setFormInput({
+      date: data.date,
+      day: data.day,
+      vendor_id: data.vendor_id,
+      vendor_name: data.vendor_name,
+      schedule_from: data.schedule_from,
+      schedule_to: data.schedule_to,
+      arrival_time: data.arrival_time,
+      status: data.status,
+
+      materials: data.materials.map((material)=>{return({
+        vendor_id: material.vendor_id,
+        dn_no: material.dn_no,
+        material_no: material.material_no,
+        material_desc: material.material_desc,
+        rack_address: material.rack_address,
+        date: material.date,
+        req_qty: material.req_qty,
+        actual_qty: material.actual_qty,
+        difference: material.difference,
+      })})
+    })
+    setShowModalInput(true)
+  }
 
   return (
   <CContainer fluid>
@@ -230,63 +286,81 @@ const optionsSelectDN = Array.from(
     <CCardBody style={{ overflow: "auto"  }}>
     <CRow className="d-flex justify-content-between align-items-center">
   {/* Tombol Hide/Show di pojok kiri */}
-      <CCol md={7} className="d-flex justify-content-start gap-2">
-            <button
-              className="btn"
-              style={{
-              backgroundColor: "#D9EAFD",
-              color: "#000",}}
-              onClick={toggleVisibility}
-              >
-              {isVisible ? "Hide Detail" : "Show Detail"}
-            </button>
-         <Select
-            className="basic-single"
-            classNamePrefix="select"
-            isClearable
-            options={plantOptions} // plantOptions termasuk "All"
-            value={selectedPlant} // Menetapkan state sebagai value yang dipilih
-            id="plant"
-            onChange={handlePlantChange}/>
-         <Select 
-       onChange={handleFilterSchedule} 
-       placeholder="All" 
-       isClearable  
-       styles={colorStyles} 
-       options={[{label: "On Schedule", value: "On Schedule"}, {label: "Delayed", value: "Delayed"}]}/>
-   </CCol>
+  <CCol
+  md={6}
+  className="d-flex justify-content-center align-items-start gap-1" // Atur agar rata tengah dengan jarak antar kolom
+>
+  {/* Kolom pertama */}
+  <CCol
+  sm={7}
+  className="d-flex justify-content-center-start gap-3" // Kolom horizontal dengan elemen di tengah
+>
+  {/* Filter Detail */}
+  <div className="d-flex flex-column align-items-center">
+    <CFormText style={{ alignSelf: "flex-start" }}>Filter Detail</CFormText>
+    <button
+      className="btn"
+      style={{
+        backgroundColor: "#D9EAFD",
+        color: "#000",
+      }}
+      onClick={toggleVisibility}
+    >
+      {isVisible ? "Hide Detail" : "Show Detail"}
+    </button>
+  </div>
+
+  {/* Filter Plant */}
+  <div className="d-flex flex-column align-items-center" style={{ width: "60%" }}>
+  <CFormText style={{ alignSelf: "flex-start" }}>Filter Plant</CFormText>
+    <Select
+      className="basic-single"
+      classNamePrefix="select"
+      isClearable
+      options={plantOptions} // plantOptions termasuk "All"
+      value={selectedPlant} // Menetapkan state sebagai value yang dipilih
+      id="plant"
+      onChange={handlePlantChange}
+      styles={{
+        container: (provided) => ({
+          ...provided,
+          width: "100%", // Memanfaatkan penuh lebar kolom
+        }),
+      }}
+    />
+  </div>
+</CCol>
+
+
+
+  {/* Kolom kedua */}
+  <CCol sm={5}>
+    <CFormText>Filter by Date</CFormText>
+    <Select
+      onChange={handleFilterSchedule}
+      placeholder="All"
+      isClearable
+      styles={colorStyles}
+      options={[
+        { label: "On Schedule", value: "On Schedule" },
+        { label: "Delayed", value: "Delayed" },
+      ]}
+    />
+  </CCol>
+</CCol>
+
   {/* Elemen Header dan Date Picker di pojok kanan */}
-  <CCol md={5} className="d-flex justify-content-end gap-3">
-    <div>{renderHeader()}</div>
+  <CCol md={6} className="d-flex justify-content-end gap-3">
+    <div>
+          <CFormText>Search vendor</CFormText>
+         <Select options={optionsSelectVendor} isClearable placeholder='Vendor code or name' />
+     </div>
     <div
       className="flatpickr-wrapper"
       style={{ position: "relative", width: "50%" }} // Atur ukuran date picker sesuai kebutuhan
     >
-      <Flatpickr
-        onChange={(selectedDates) => setDates(selectedDates)}
-        options={{
-          mode: "range",
-          dateFormat: "Y-m-d",
-        }}
-        className="form-control"
-        placeholder="Select a date"
-        style={{
-          paddingLeft: "40px", // Beri ruang untuk ikon
-          height: "100%",
-        }}
-      />
-      <CIcon
-        icon={cilCalendar}
-        size="lg"
-        style={{
-          position: "absolute",
-          top: "50%",
-          right: "10px",
-          transform: "translateY(-50%)",
-          pointerEvents: "none",
-          color: "black", // Warna ikon
-        }}
-      />
+         <CFormText>Filter by Date</CFormText>
+         <DateRangePicker showOneCalendar placeholder='All time' position='start' />
     </div>
   </CCol>
 </CRow>
@@ -450,8 +524,6 @@ const optionsSelectDN = Array.from(
                 <h5><CBadge color="success">ARRIVAL ON SCHEDULE</CBadge></h5>
                 </CCol>
                 <CCol className='d-flex gap-2 align-items-center justify-content-end'xxl={5} md={4}>
-                    <span>Filter by Status</span>
-                  
                 </CCol>
               </CRow>
               <CRow className='p-3'>
@@ -473,57 +545,79 @@ const optionsSelectDN = Array.from(
                   />
                 </div>
               </CRow>
-              <CRow className='p-3'>
-                <CCard className='p-3'>
-                  <CTable bordered>
+              <CRow className='mt-3'>
+                  <CTable responsive bordered hover>
                     <CTableHead color='light'>
-                      <CTableRow align='middle'>
+                      <CTableRow align='middle' className='text-center'>
                         <CTableHeaderCell rowSpan={2}>No</CTableHeaderCell>
-                        <CTableHeaderCell rowSpan={2}>Vendor ID</CTableHeaderCell>
+                        <CTableHeaderCell rowSpan={2}>DN No</CTableHeaderCell>
+                        <CTableHeaderCell rowSpan={2}>Vendor Code</CTableHeaderCell>
                         <CTableHeaderCell rowSpan={2}>Vendor Name</CTableHeaderCell>
                         <CTableHeaderCell rowSpan={2}>Day</CTableHeaderCell>
-                        <CTableHeaderCell rowSpan={2}>Date</CTableHeaderCell>
-                        <CTableHeaderCell colSpan={2}>Schedule Time</CTableHeaderCell>
-                        <CTableHeaderCell rowSpan={2}>Arrival Time</CTableHeaderCell>
+                        <CTableHeaderCell colSpan={3}>Schedule Time Plan</CTableHeaderCell>
+                        <CTableHeaderCell colSpan={3}>Arrival Time</CTableHeaderCell>
                         <CTableHeaderCell rowSpan={2}>Status</CTableHeaderCell>
                         <CTableHeaderCell rowSpan={2}>Delay Time</CTableHeaderCell>
+                        <CTableHeaderCell rowSpan={2}>Log</CTableHeaderCell>
                       </CTableRow>
-                      <CTableRow>
-                        <CTableHeaderCell >From</CTableHeaderCell>
-                        <CTableHeaderCell >To</CTableHeaderCell>
+                      <CTableRow align='middle' className='text-center'>
+                        <CTableHeaderCell>Date</CTableHeaderCell>
+                        <CTableHeaderCell >Arrival</CTableHeaderCell>
+                        <CTableHeaderCell >Derpature</CTableHeaderCell>
+                        <CTableHeaderCell>Date</CTableHeaderCell>
+                        <CTableHeaderCell >Arrival</CTableHeaderCell>
+                        <CTableHeaderCell >Derpature</CTableHeaderCell>
                       </CTableRow>
                     </CTableHead>
                     <CTableBody>
                         { currentItems.map((data, index)=> {
+                          const daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
                           return(
                             <CTableRow key={index}>
                               <CTableDataCell>{index+1}</CTableDataCell>
+                              <CTableDataCell>{data?.materials?.dn_no}</CTableDataCell>
                               <CTableDataCell>{data.vendor_id}</CTableDataCell>
                               <CTableDataCell>{data.vendor_name}</CTableDataCell>
-                              <CTableDataCell>{data.day}</CTableDataCell>
+                              <CTableDataCell>{daysOfWeek[data.day]}</CTableDataCell>
                               <CTableDataCell>{data.date}</CTableDataCell>
                               <CTableDataCell>{data.schedule_from}</CTableDataCell>
                               <CTableDataCell>{data.schedule_to}</CTableDataCell>
+                              <CTableDataCell>{data.date}</CTableDataCell>
+                              <CTableDataCell>{data.schedule_from}</CTableDataCell>
                               <CTableDataCell>{data.arrival_time}</CTableDataCell>
                               <CTableDataCell className='text-center'>
-                                <div className="py-1 px-2 " style={{ backgroundColor: data.status === "Delayed" ? "#F64242" : "#35A535", color: 'white', borderRadius: '5px'}}>
+                                <div className={`py-1 px-2 ${data.status.toLowerCase() === 'delayed' && "blink"}`} style={{ backgroundColor: data.status === "Delayed" ? "#F64242" : data.status === "On Schedule" ? "#35A535" : "transparent", color: 'white', borderRadius: '5px'}}>
                                   {data.status.toUpperCase()}  
                                   </div>
                                 </CTableDataCell>
                               <CTableDataCell style={{ color: data.status === "Delayed" ? "#F64242" : ""}}> {data.delay_time !== 0 ? `- ${data.delay_time}` : ""}</CTableDataCell>
+                              <CTableDataCell className='text-center'>
+                                  <CButton onClick={()=>handleClickDetail(data)} color='info' style={{ color: "white", padding: "5px 5px 0 5px"}}>
+                                    <CIcon size='lg' icon={icon.cilClone}/>
+                                  </CButton> 
+                              </CTableDataCell>
                             </CTableRow>
                           )
                         })}
+                        { currentItems.length === 0 && (
+                          <CTableRow>
+                            <CTableDataCell colSpan={20} style={{ opacity: "50%"}}>
+                              <div className='d-flex flex-column align-items-center justify-content-center py-4'>
+                                <CIcon icon={icon.cilTruck} size='4xl'/>
+                                <span>Data not found</span>
+                              </div>
+                            </CTableDataCell>
+                          </CTableRow>
+                        )}
                     </CTableBody>
-                  </CTable>    
-                </CCard>
-                <div className="mt-3 d-flex justify-content-center">
+                  </CTable>
+                  <div className="mt-3 d-flex justify-content-center">
                   <Pagination
                     currentPage={currentPage}
                     totalPages={Math.ceil(
-                      dataReceiving.length > 0
-                        ? dataReceiving.length / itemsPerPage
-                        : dataReceiving.length / itemsPerPage,
+                      dataDummies.length > 0
+                        ? dataDummies.length / itemsPerPage
+                        : dataDummies.length / itemsPerPage,
                     )}
                     onPageChange={(page) => setCurrentPage(page)}
                   />

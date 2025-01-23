@@ -205,7 +205,6 @@ const Book = () => {
   return (
     <CContainer fluid>
         <CToaster className="p-3" placement="top-end" push={toast} ref={toaster} />
-        
         <CRow>
           <CCard className='p-0'>
             <CCardHeader>

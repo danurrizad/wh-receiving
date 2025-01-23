@@ -91,7 +91,7 @@ const useChartData = ({currentItems}) => {
                         callback: (value) => `${value}:00`,
                     },
                     grid: {
-                    color: "white"},       
+                    color: "#F8FAFC"},       
                 },
                 y: {
                     stacked: true,
@@ -103,7 +103,7 @@ const useChartData = ({currentItems}) => {
                         color: 'black', // Warna putih untuk label x
                     },
                     grid: {
-                        color: "white", // Warna putih untuk garis kotak-kotak di sumbu y
+                        color: "#D9EAFD", // Warna putih untuk garis kotak-kotak di sumbu y
                     },
                 },
             },
