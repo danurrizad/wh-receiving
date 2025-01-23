@@ -143,15 +143,18 @@ const Input = () => {
   const getMaterialByDN = async(dnNumber) => {
     try {
       const response = await getMaterialByDNData(dnNumber)
-      console.log("Response :", response)
-      console.log("Response Vendor:", response.data.data[0].vendorSchedules)
+      // console.log("Response :", response)
+      // console.log("Response Vendor:", response.data.data[0].vendorSchedules)
       
       setDataMaterialsByDN(response.data.data[0].deliveryNotes)
       setDataVendorByDN(response.data.data[0].vendorSchedules)
-    
       
     } catch (error) {
-      // console.error('error :', error)
+      console.error('error :', error)
+      if(dataMaterialsByDN.length !== 0){
+        console.log("here")
+        handleClearInputDN()
+      }
       // addToast(error.message, 'error', 'error')
     }
   }
