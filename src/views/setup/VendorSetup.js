@@ -4,6 +4,11 @@ import * as icon from '@coreui/icons'
 import 'primereact/resources/themes/nano/theme.css'
 import 'primeicons/primeicons.css'
 import 'primereact/resources/primereact.min.css'
+// import 'primeicons/primeicons.css'
+// import 'primereact/resources/themes/nano/theme.css'
+// import 'primereact/resources/primereact.min.css'
+import 'primeflex/primeflex.css';
+
 import { Button } from 'primereact/button'
 import Flatpickr from 'react-flatpickr'
 import {
@@ -62,7 +67,6 @@ const VendorSetup = () => {
       const getScheduleAll = async(plantId, day) => {
         try {
           const response = await getScheduleAllData(plantId, day)
-          console.log("RESPONSE DATA SCHEDULE :", response.data.data)
           setDataSchedule(response.data.data)
         } catch (error) {
           addToast(error, 'error', 'error')
@@ -84,51 +88,33 @@ const VendorSetup = () => {
       const [days] = useState(['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']);
       const [plants] = useState(['Karawang 1', 'Karawang 2', 'Karawang 3', 'Sunter 1', 'Sunter 2']);
       
-      const getDays = (days) => {
-        switch (days) {
-            case 'Sunday':
-                return 0;
+      const getDays = (day) => {
+        const daysMap = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        if (typeof day === 'number') return daysMap[day];
+        return daysMap.indexOf(day);
+      };
 
-            case 'Monday':
-                return 1;
+      const dayRowFilterTemplate = (options) => {
+        console.log("Options in dayRowFilterTemplate:", options); // Log options for debugging
+        return (
+          <Dropdown
+            value={options.value || null} // Ensure value is defined
+            options={days}
+            itemTemplate={dayItemTemplate}
+            onChange={(e) => {
+              console.log("Selected value:", e.value); // Log selected value
+              options.filterApplyCallback(e.value); // Apply the filter
+            }}
+            placeholder="Select day"
+            className="p-column-filter"
+            showClear
+            style={{ minWidth: '12rem' }}
+          />
+        );
+      };
+      
 
-            case 'Tuesday':
-                return 2;
-
-            case 'Wednesday':
-                return 3;
-
-            case 'Thursday':
-                return 4;
-
-            case 'Friday':
-                return 5;
-
-            case 'Saturday':
-                return 6;
-
-            case 0:
-                return 'Sunday';
-
-            case 1:
-                return 'Monday';
-
-            case 2:
-                return 'Tuesday';
-
-            case 3:
-                return 'Wednesday';
-
-            case 4:
-                return 'Thursday';
-
-            case 5:
-                return 'Friday';
-
-            case 6:
-                return 'Saturday';
-        }
-    };
+      const dayItemTemplate = (option) => <Tag value={option} />;
 
 
       const exportExcel = () => {
@@ -267,55 +253,44 @@ const VendorSetup = () => {
                         </div>
                    </CCol>
                     </CRow>
-                    <DataTable className='py-2 px-1' showGridlines value={dataSchedule} paginator rows={10} dataKey="id" filters={filters} filterDisplay="row" loading={loading} emptyMessage="No schedules found.">
-                        <Column field="" header="No" body={(rowData, { rowIndex }) => rowIndex + 1}/>
-                        <Column field='Supplier.supplierCode' header="Vendor Code"  />
-                        <Column field='Supplier.SupplierName' header="Vendor Name"  />
-                        <Column field="schedule" header="Day" body={(rowData) => getDays(rowData.schedule)} />
-                        <Column field="arrival" header="Arrival Time" dataType="date" body={(rowData) => formatTime(rowData.arrival)}   />
-                        <Column field="departure" header="Departure Time" dataType="date" body={(rowData) => formatTime(rowData.departure)}  />
-                        <Column field="rit" header="Rit" dataType="number"   />
-                        <Column field="Plant.PlantName" header="Plant" />
-                        <Column field="truckStation" header="Truck Station"   />
+                    <CRow>
+                      <CCol xs={2}>
+                        <Dropdown
+                          // value={filters['Address_Rack.Storage.Plant.plantName'].value}
+                          options={plants}
+                          // onChange={handlePlantChange}
+                          placeholder="Select plant"
+                          className="p-column-filter mb-2"
+                          showClear
+                          style={{ width: '100%', borderRadius: '5px' }}
+                          // id={filters['Address_Rack.Storage.Plant.id']?.value}
+                        />
+                      </CCol>
+                      <CCol xs={2}>
+                        <Dropdown
+                          // value={filters['Address_Rack.Storage.Plant.plantName'].value}
+                          options={days}
+                          // onChange={handlePlantChange}
+                          placeholder="Select day"
+                          className="p-column-filter mb-2"
+                          showClear
+                          style={{ width: '100%', borderRadius: '5px' }}
+                          // id={filters['Address_Rack.Storage.Plant.id']?.value}
+                        />
+                      </CCol>
+                    </CRow>
+                    <DataTable className='p-datatable-gridlines p-datatable-sm custom-datatable text-nowrap' size='small' showGridlines value={dataSchedule} paginator rows={10} dataKey="id" filters={filters} onFilter={(e) => setFilters(e.filters)}  filterDisplay="row" loading={loading} emptyMessage="No schedules found.">
+                        <Column className='' field="" header="No" body={(rowData, { rowIndex }) => rowIndex + 1}/>
+                        <Column className='' field='Supplier.supplierCode' header="Vendor Code"  />
+                        <Column className='' field='Supplier.SupplierName' header="Vendor Name"  />
+                        <Column className='' field="schedule" header="Day" body={(rowData) => getDays(rowData.schedule)} filter filterElement={dayRowFilterTemplate}/>
+                        <Column className='' field="arrival" header="Arrival Time" dataType="date" body={(rowData) => formatTime(rowData.arrival)}   />
+                        <Column className='' field="departure" header="Departure Time" dataType="date" body={(rowData) => formatTime(rowData.departure)}  />
+                        <Column className='' field="rit" header="Rit" dataType="number"   />
+                        <Column className='' field="Plant.PlantName" header="Plant" />
+                        <Column className='' field="truckStation" header="Truck Station"   />
                     </DataTable>
-                    {/* <CTable bordered responsive className='mt-3'>
-                        <CTableHead>
-                            <CTableRow>
-                                <CTableHeaderCell>No</CTableHeaderCell>
-                                <CTableHeaderCell>Vendor Code</CTableHeaderCell>
-                                <CTableHeaderCell>Vendor Name</CTableHeaderCell>
-                                <CTableHeaderCell>Day</CTableHeaderCell>
-                                <CTableHeaderCell>Arrival Time</CTableHeaderCell>
-                                <CTableHeaderCell>Departure Time</CTableHeaderCell>
-                                <CTableHeaderCell>Rit</CTableHeaderCell>
-                                <CTableHeaderCell>Plant</CTableHeaderCell>
-                                <CTableHeaderCell>Truck Station</CTableHeaderCell>
-                            </CTableRow>
-                        </CTableHead>
-                        <CTableBody>
-                          { dataSchedule?.map((data, index)=>{
-                            const dateArrival = new Date(data.arrival) 
-                            const timeArrival = dateArrival.toISOString().substring(11, 19);
-                            
-                            const dateDeparture = new Date(data.departure)
-                            const timeDeparture = dateDeparture.toISOString().substring(11, 19);
-                            
-                            return(
-                            <CTableRow key={index}>
-                                <CTableDataCell>{index+1}</CTableDataCell>
-                                <CTableDataCell>{data.Supplier.supplierCode}</CTableDataCell>
-                                <CTableDataCell>{data.Supplier.SupplierName}</CTableDataCell>
-                                <CTableDataCell>{data.schedule}</CTableDataCell>
-                                <CTableDataCell>{timeArrival}</CTableDataCell>
-                                <CTableDataCell>{timeDeparture}</CTableDataCell>
-                                <CTableDataCell>{data.rit}</CTableDataCell>
-                                <CTableDataCell>{data.Plant.PlantName}</CTableDataCell>
-                                <CTableDataCell>{data.truckStation}</CTableDataCell>
-                            </CTableRow>
-                            )
-                          })}
-                        </CTableBody>
-                    </CTable> */}
+                    
                        <CModal visible={modalUpload} onClose={() => setModalUpload(false)}>
                                <CModalHeader>
                               <CModalTitle id="LiveDemoExampleLabel">Upload Master Material</CModalTitle>
