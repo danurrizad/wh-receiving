@@ -34,12 +34,8 @@ const useVerify = () => {
     } catch (error) {
       console.error('Error refreshing token:', error)
       addToast("Token expired", 'danger', 'error')
-      // MySwal.fire({
-      //   icon: 'error',
-      //   title: 'Oops...',
-      //   text: 'Token Expired',
-      // })
-      navigate('/login')
+      
+      navigate('/')
     }
   }
 
