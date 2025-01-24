@@ -43,13 +43,7 @@ const Input = () => {
     departure_date_actual: "",
     departure_time_actual: "",
   })
-
-  const [formQuantity, setFormQuantity] = useState({
-    enabledEdit: false,
-    material_desc: "",
-    dn_no: "",
-    actual_qty: 0,
-  })
+  const [qtyEachMaterials, setQtyEachMaterials] = useState({}) 
 
   const optionsSelectRit = dataVendorByDN.map((data)=>{
     return{
@@ -60,16 +54,12 @@ const Input = () => {
 
   const getCurrentDateTime = () => {
     const now = new Date();
-  
     // Format date as YYYY-MM-DD
     const date = now.toISOString().split('T')[0];
-  
     // Get hours and minutes
     const padZero = (num) => String(num).padStart(2, '0');
     const hours = padZero(now.getHours());
     const minutes = padZero(now.getMinutes());
-  
-  
     // Format time as HH:MM - HH:MM
     const time = `${hours}:${minutes}`;
   
@@ -92,9 +82,9 @@ const Input = () => {
 
     // Allow only numeric input and respect maxLength
     if (/^\d*$/.test(inputValue) && inputValue.length <= 10) {
-      setFormInput({ ...formInput, dn_no: e.target.value})
+      // setFormInput({ ...formInput, dn_no: e.target.value})
+      setFormInput({ ...formInput, dn_no: 2100198514})
     }
-    // setFormInput({ ...formInput, dn_no: 2100198514})
   }
 
   const handleClearInputDN = () => {
@@ -117,8 +107,10 @@ const Input = () => {
       departure_date_actual: "",
       departure_time_actual: "",
     })
+    setSelectedRit(0)
     setDataMaterialsByDN([])
     setDataVendorByDN([])
+    setQtyEachMaterials({})
   }
 
   const handleOnEnterInputDN = async(e) => {
@@ -145,9 +137,23 @@ const Input = () => {
       const response = await getMaterialByDNData(dnNumber)
       // console.log("Response :", response)
       // console.log("Response Vendor:", response.data.data[0].vendorSchedules)
-      
+      const responseDN = response.data.data[0].deliveryNotes
+      console.log("Response :", responseDN)
       setDataMaterialsByDN(response.data.data[0].deliveryNotes)
       setDataVendorByDN(response.data.data[0].vendorSchedules)
+      // setQtyEachMaterials(
+      //   responseDN.map((data) => ({
+      //     material: data.materialNo, 
+      //     qty: data.receivedQuantity
+      //   }))
+      // );
+      setQtyEachMaterials({
+        incomingId: responseDN.map((data) => Number(data.incomingId)),
+        qty: responseDN.map((data) => Number(data.receivedQuantity)),
+      });
+      // setQtyEachMaterials({
+      //   recQtyMaterial: responseDN.map((data) => data.receivedQuantity),
+      // });
       
     } catch (error) {
       console.error('error :', error)
@@ -160,9 +166,9 @@ const Input = () => {
   }
 
   const getArrivalNow = (rit) => {
+    console.log("reqQtyMaterial :", qtyEachMaterials.qty)
     const { date, time } = getCurrentDateTime();
     const statusSchedule = getStatusBasedOnTime()
-    console.log(rit)
     const matchesVendor = dataVendorByDN.find((data)=> data.rit === rit)
     console.log("MATCHES :", matchesVendor)
     setFormInput({ 
@@ -190,35 +196,36 @@ const Input = () => {
 
   };
 
-  const handleInputChangeQty = (value, rowIndex) => {
-    setDataMaterialsByDN((prevData) => {
-      const updatedData = [...prevData];
-      updatedData[rowIndex].receivedQuantity = value; // Update the specific row
-      return updatedData;
-    });
+  const handleInputChangeQty = (rowIndex, eValue) => {
+    setQtyEachMaterials((prevState) => ({
+      ...prevState,
+      qty: prevState.qty.map((value, index) =>
+        index === rowIndex ? Number(eValue) : value
+      ),
+    }));
   };
 
   // Received Quantity body template
-  const receivedQuantityBodyTemplate = (rowData) => {
+  const receivedQuantityBodyTemplate = (rowData, rowIndex) => {
     const isInputEnabled = enabledRows.includes(rowData.description); 
-
+    const indexMaterial = rowIndex.rowIndex
     return (
       <div className="d-flex align-items-center justify-content-center gap-2">
         {/* Input Field */}
         <InputText
            ref={(el) => (inputRefs.current[rowData.description] = el)}
            id={`inputQty-${rowData.description}`}
+           type='number'
           disabled={!isInputEnabled}
-          value={rowData.receivedQuantity}
-          // onChange={(e) => (handleInputChangeQty(e.target.value, rowData))} // Update the value
+          value={qtyEachMaterials.qty[indexMaterial]}
+          onChange={(e)=>handleInputChangeQty(indexMaterial, e.target.value)}
+
           // onChange={(e) => (rowData.receivedQuantity = e.target.value)} // Update the value
-          onKeyDown={(e)=>console.log(e.key)}
           style={{ width: "50px"}}
         />
 
         { isInputEnabled ? (
           <CButton
-            for='inputQty'
             color=''
             className="p-button-sm p-button-secondary text-white"
             // onClick={() => handleClickEditQuantity(rowData)}
@@ -228,7 +235,6 @@ const Input = () => {
           </CButton>
         ) : (
           <CButton
-            for='inputQty'
             color=''
             className="p-button-sm p-button-secondary text-white"
             // onClick={() => handleClickEditQuantity(rowData)}
@@ -241,6 +247,33 @@ const Input = () => {
       </div>
     );
   };
+  
+  const createFormBody = (formInput, qtyEachMaterials) => {
+    const { date, time } = getCurrentDateTime();
+    return {
+      dnNumber: formInput.dnNumber,
+      arrivalActualDate: formInput.arrival_date_actual,
+      arrivalActualTime: formInput.arrival_time_actual,
+      departureActualDate: date,
+      departureActualTime: time,
+      rit: formInput.rit,
+      incomingIds: qtyEachMaterials.incomingId,
+      receivedQuantities: qtyEachMaterials.qty
+    }
+  }
+
+  const handleSubmitMaterials = () => {
+    const { date, time } = getCurrentDateTime();
+    setFormInput({
+      ...formInput,
+      departure_date_actual: date,
+      departure_time_actual: time
+    })
+    console.log("----------------------SUBMIT LOG---------------------", )
+    const formBody = createFormBody(formInput, qtyEachMaterials)
+
+    console.log(formBody)
+  }
 
 
   const statusBodyTemplate = (rowData) => {
@@ -321,17 +354,20 @@ const Input = () => {
                         <CCol>
                           <p style={{ fontWeight: 'bold', fontSize: "10px", color: "#6482AD"}}>RECEIVE PLAN </p>
                           <CFormLabel className='col-12' style={{fontWeight: "light"}}>Date : <span style={{ fontWeight: "normal"}}>{formInput.arrival_date_plan !== "" ? formInput?.arrival_date_plan : " -"}</span></CFormLabel>
-                          <CFormLabel className='col-12' style={{fontWeight: "light", marginTop: "20px"}}>Time : <span style={{ fontWeight: "normal"}}>{formInput?.arrival_time_plan} - {formInput?.departure_time_plan}</span></CFormLabel>
+                          <p style={{ fontWeight: 'bold', fontSize: "10px", color: "transparent", userSelect: "none"}}>Divider </p>
+                          <CFormLabel className='col-12' style={{fontWeight: "light"}}>Time : <span style={{ fontWeight: "normal"}}>{formInput?.arrival_time_plan} - {formInput?.departure_time_plan}</span></CFormLabel>
                         </CCol>
                         <CCol>
                           <p style={{ fontWeight: 'bold', fontSize: "10px", color: "#6482AD"}}>ARRIVAL </p>
                           <CFormLabel className='col-12' style={{fontWeight: "light"}}>Date : <span style={{ fontWeight: "normal"}}>{formInput.arrival_date_actual ? formInput.arrival_date_actual : " -"}</span></CFormLabel>
-                          <CFormLabel className='col-12' style={{fontWeight: "light", marginTop: "20px"}}>Time : <span style={{ fontWeight: "normal"}}>{formInput.arrival_time_actual ? formInput.arrival_time_actual : "-"}</span></CFormLabel>
+                          <p style={{ fontWeight: 'bold', fontSize: "10px", color: "transparent", userSelect: "none"}}>Divider </p>
+                          <CFormLabel className='col-12' style={{fontWeight: "light"}}>Time : <span style={{ fontWeight: "normal"}}>{formInput.arrival_time_actual ? formInput.arrival_time_actual : "-"}</span></CFormLabel>
                         </CCol>
                         <CCol>
                           <p style={{ fontWeight: 'bold', fontSize: "10px", color: "#6482AD"}}>DEPARTURE </p>
                           <CFormLabel className='col-12' style={{fontWeight: "light"}}>Date : <span style={{ fontWeight: "normal"}}>{formInput.departure_date_actual ? formInput.departure_date_actual : "-"}</span></CFormLabel>
-                          <CFormLabel className='col-12' style={{fontWeight: "lighter", marginTop: "20px"}}>Time : <span style={{ fontWeight: "normal"}}>{formInput.departure_time_actual ? formInput.departure_time_actual : "-"}</span></CFormLabel>
+                          <p style={{ fontWeight: 'bold', fontSize: "10px", color: "transparent", userSelect: "none"}}>Divider </p>
+                          <CFormLabel className='col-12' style={{fontWeight: "lighter"}}>Time : <span style={{ fontWeight: "normal"}}>{formInput.departure_time_actual ? formInput.departure_time_actual : "-"}</span></CFormLabel>
                         </CCol>
                       </CRow>
                     </CCardBody>
@@ -358,14 +394,14 @@ const Input = () => {
               <CRow className='mt-4'>
                   
                   {/* Table */}
-                  <DataTable className='p-datatable-gridlines p-datatable-sm custom-datatable text-nowrap' size='small' showGridlines value={dataMaterialsByDN} paginator rows={10} dataKey="id" emptyMessage="No materials found.">
+                  <DataTable className='p-datatable-gridlines p-datatable-sm custom-datatable text-nowrap' size='small' showGridlines value={dataMaterialsByDN} paginator rows={10} dataKey="materialNo" emptyMessage="No materials found.">
                       <Column className='' field="" header="No" body={(rowData, { rowIndex }) => rowIndex + 1}/>
                       <Column className='' field='materialNo' header="Material No"  />
                       <Column className='' field='description' header="Material Description"  />
                       <Column className='' field="address" header="Rack Address" />
                       <Column className='' field="reqQuantity" header="Req. Qty"  />
                       <Column className='' field="receivedQuantity" header="Act. Qty" body={receivedQuantityBodyTemplate} />
-                      <Column className='' field="uom" header="UoM" body={<p>Kilogram</p>} />
+                      <Column className='' field="uom" header="UoM" />
                       <Column className='' field="remain" header="Remain" dataType="Remain"   />
                       <Column className='' field="" header="Status Qty" body={statusBodyTemplate}/>
                       {/* <Column className='' field="" header="Action" body={actionBodyTemplate} /> */}
@@ -373,7 +409,7 @@ const Input = () => {
               </CRow>
               <CRow className='d-flex justify-content-end'>
                 <CCol xs='auto'>
-                  <CButton style={{ backgroundColor: "#5B913B"}} className='text-white'>Submit</CButton>
+                  <CButton style={{ backgroundColor: "#5B913B"}} className='text-white' onClick={handleSubmitMaterials}>Submit</CButton>
                 </CCol>
               </CRow>
             </CCardBody>
