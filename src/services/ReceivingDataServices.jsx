@@ -7,7 +7,7 @@ const useReceivingDataService = () => {
 
     const handleError = (error, message) => {
         console.error(message, error)
-        addToast(error.response.data.message, 'error', 'error')
+        addToast(error.response.data.message, 'danger', 'error')
         throw new Error(message + error.message)
       }
 
@@ -20,26 +20,28 @@ const useReceivingDataService = () => {
         }
     }
 
-    // const getReceivingData = async() => {
-    //     try {
-    //         const response = await axiosJWT.get(`${BACKEND_URL}/`)
-    //         return response
-    //     } catch (error) {
-    //         throw error
-    //     }
-    // }
+    const getDNByDateData = async(importDate) => {
+        try {
+            const response = await axiosJWT.get(`/delivery-note-date?importDate=${importDate}`)
+            return response
+        } catch (error) {
+            handleError(error, "Error fetching file:")
+        }
+    }
 
-    // const uploadExcelReceivingData = async() => {
-    //     try {
-    //         const response = await axiosJWT.post(`${BACKEND_URL}/`)
-    //         return response
-    //     } catch (error) {
-    //         throw error
-    //     }
-    // }
+    const submitMaterialByDNData = async(warehouseId, bodyForm) => {
+        try {
+            const response = await axiosJWT.post(`/delivery-note-submit/${warehouseId}`, bodyForm)
+            return response
+        } catch (error) {
+            handleError(error, "Error submitting:")
+        }
+    }
 
     return{
-        getMaterialByDNData
+        getMaterialByDNData,
+        getDNByDateData,
+        submitMaterialByDNData
         // getReceivingData,
         // uploadExcelReceivingData
     }

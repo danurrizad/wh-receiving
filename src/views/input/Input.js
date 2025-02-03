@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef} from 'react'
 import CIcon from '@coreui/icons-react'
 import * as icon from '@coreui/icons'
-import { CButton, CTooltip, CButtonGroup, CCard, CCardBody, CCardHeader, CCardTitle, CCol, CContainer, CFormInput, CFormLabel, CFormText, CInputGroup, CModal, CModalBody, CModalFooter, CModalHeader, CModalTitle, CRow, CTable, CTableBody, CTableDataCell, CTableHead, CTableHeaderCell, CTableRow, CToaster } from '@coreui/react'
+import { CButton, CTooltip, CButtonGroup, CCard, CCardBody, CCardHeader, CCardTitle, CCol, CContainer, CFormInput, CFormLabel, CFormText, CInputGroup, CModal, CModalBody, CModalFooter, CModalHeader, CModalTitle, CRow, CTable, CTableBody, CTableDataCell, CTableHead, CTableHeaderCell, CTableRow, CToaster, CSpinner } from '@coreui/react'
 import { dataReceivingDummy, dataSchedulesDummy, dataDummy } from '../../utils/DummyData'
 import { Button, DatePicker } from 'rsuite';
 import Select from 'react-select'
@@ -12,17 +12,20 @@ import { Column } from 'primereact/column'
 import useReceivingDataService from './../../services/ReceivingDataServices';
 import { useToast } from '../../App'
 import { InputText } from 'primereact/inputtext'
-import { FaCircleXmark } from "react-icons/fa6";
+import { FaCircleCheck, FaCircleExclamation, FaCircleXmark } from "react-icons/fa6";
+import Swal from 'sweetalert2'
 
 const Input = () => {
+  const [loading, setLoading] = useState(false)
   const addToast = useToast()
   const [errMsg, setErrMsg] = useState("")
   const inputRefs = useRef({})
 
-  const { getMaterialByDNData } = useReceivingDataService()
+  const { getMaterialByDNData, submitMaterialByDNData } = useReceivingDataService()
 
   const [dataVendorByDN, setDataVendorByDN] = useState([])
   const [dataMaterialsByDN, setDataMaterialsByDN] = useState([])
+  const [stateVendorArrived, setStateVendorArrived] = useState(false)
 
   const [selectedRit, setSelectedRit] = useState(0)
   const [formInput, setFormInput] = useState({
@@ -44,7 +47,7 @@ const Input = () => {
     departure_time_actual: "",
   })
   const [qtyEachMaterials, setQtyEachMaterials] = useState({}) 
-
+  const [remainQty, setRemainQty] = useState({})
   const optionsSelectRit = dataVendorByDN.map((data)=>{
     return{
       label: `${data.rit} (${data.arrivalPlanTime} - ${data.departurePlanTime})`,
@@ -71,21 +74,24 @@ const Input = () => {
   
     // Compare times
     if (time <= dataVendorByDN.departurePlanTime) {
-      return 'ON SCHEDULE'; // Status if current time is within the range
+      return 'on schedule'; // Status if current time is within the range
     } else {
-      return 'DELAYED'; // Status if current time is outside the range
+      return 'delayed'; // Status if current time is outside the range
     }
   };
 
-  const handleChangeInputDN = (e) => {
+  const handleChangeInputDN = async(e) => {
     const inputValue = e.target.value;
 
     // Allow only numeric input and respect maxLength
     if (/^\d*$/.test(inputValue) && inputValue.length <= 10) {
-      // setFormInput({ ...formInput, dn_no: e.target.value})
-      setFormInput({ ...formInput, dn_no: 2100198514})
+      setFormInput({ ...formInput, dn_no: e.target.value})
+      if(inputValue.length === 10){
+        await getMaterialByDN(inputValue)
+      }
     }
   }
+
 
   const handleClearInputDN = () => {
     setFormInput({ 
@@ -111,9 +117,17 @@ const Input = () => {
     setDataMaterialsByDN([])
     setDataVendorByDN([])
     setQtyEachMaterials({})
+    setRemainQty({})
+    setStateVendorArrived(false)
   }
 
   const handleOnEnterInputDN = async(e) => {
+    if(e.key === "-"){
+      setFormInput({ ...formInput, dn_no: 21001985})
+    } else if(e.key === "-") {
+      setFormInput({ ...formInput, dn_no: 21001985})
+    }
+
     if(e.key === 'Enter'){
       if(formInput.dn_no === ""){
         addToast("Please insert the DN number!", 'error', 'error')
@@ -134,43 +148,55 @@ const Input = () => {
   
   const getMaterialByDN = async(dnNumber) => {
     try {
+      setLoading(true)
       const response = await getMaterialByDNData(dnNumber)
-      // console.log("Response :", response)
-      // console.log("Response Vendor:", response.data.data[0].vendorSchedules)
-      const responseDN = response.data.data[0].deliveryNotes
-      console.log("Response :", responseDN)
-      setDataMaterialsByDN(response.data.data[0].deliveryNotes)
-      setDataVendorByDN(response.data.data[0].vendorSchedules)
-      // setQtyEachMaterials(
-      //   responseDN.map((data) => ({
-      //     material: data.materialNo, 
-      //     qty: data.receivedQuantity
-      //   }))
-      // );
-      setQtyEachMaterials({
-        incomingId: responseDN.map((data) => Number(data.incomingId)),
-        qty: responseDN.map((data) => Number(data.receivedQuantity)),
-      });
-      // setQtyEachMaterials({
-      //   recQtyMaterial: responseDN.map((data) => data.receivedQuantity),
-      // });
-      
+
+      if(response.data.data.length !== 0){
+        const responseDN = response.data.data[0].deliveryNotes
+        const responseVendor = response.data.data[0].vendorSchedules
+        const responseStateArrived = response.data.viewOnly
+        
+        console.log("Response:", response.data)
+        console.log("Response DN:", responseDN)
+        console.log("Response Vendor:", responseVendor)
+        console.log("Response State Arrived:", responseStateArrived)
+  
+        setDataMaterialsByDN(responseDN)
+        setDataVendorByDN(responseVendor)
+        setQtyEachMaterials({
+          incomingId: responseDN.map((data) => Number(data.incomingId)),
+          qty: responseDN.map((data) => data.receivedQuantity === null ? "" : data.receivedQuantity),
+        });
+        setRemainQty({
+          qty: responseDN.map((data)=> Number(data.remain)),
+          status: responseDN.map((data)=>data.status)
+        })
+        setStateVendorArrived(responseStateArrived)
+  
+        if(responseStateArrived){
+          setSelectedRit(1)
+        }
+      }else{
+        addToast("Invalid DN Number!", 'danger', 'error')
+      }
+
     } catch (error) {
       console.error('error :', error)
       if(dataMaterialsByDN.length !== 0){
-        console.log("here")
         handleClearInputDN()
       }
       // addToast(error.message, 'error', 'error')
+    } finally {
+      setLoading(false)
     }
   }
 
   const getArrivalNow = (rit) => {
-    console.log("reqQtyMaterial :", qtyEachMaterials.qty)
+    setLoading(true)
     const { date, time } = getCurrentDateTime();
     const statusSchedule = getStatusBasedOnTime()
     const matchesVendor = dataVendorByDN.find((data)=> data.rit === rit)
-    console.log("MATCHES :", matchesVendor)
+    // console.log("MATCHES :", matchesVendor)
     setFormInput({ 
       ...formInput, 
       arrival_date_plan: matchesVendor.arrivalPlanDate,
@@ -183,6 +209,7 @@ const Input = () => {
       arrival_time_actual: time,
       status: statusSchedule,
     })
+    setLoading(false)
   }
   
   const [enabledRows, setEnabledRows] = React.useState([]); // Array of enabled row IDs
@@ -196,11 +223,43 @@ const Input = () => {
 
   };
 
-  const handleInputChangeQty = (rowIndex, eValue) => {
+  const handleDisableInput = (rowData) => {
+    setEnabledRows((prev) => prev.filter((id) => id !== rowData.description)); // Remove row ID from enabled rows
+  };
+
+  const handleEnterInputQty = (rowIndex, rowData, e) => {
+      if (e.key === "Enter"){
+        handleSubmitChangeQty(rowIndex, rowData)
+      }
+  }
+
+  const handleSubmitChangeQty = (rowIndex, rowData) => {
+    handleDisableInput(rowData)
+
+    const remainInData = rowData.remain
+    const inputAct = Number(qtyEachMaterials.qty[rowIndex.rowIndex])
+    const newRemainQty = remainInData + inputAct
+
+    setRemainQty((prevState) => ({
+      ...prevState,
+      qty: prevState.qty.map((value, index) =>
+        index === rowIndex.rowIndex ? Number(newRemainQty) : value
+      ),
+      status: prevState.status.map((value, index) => 
+        index === rowIndex.rowIndex && newRemainQty === 0 ? "completed" : 
+        index === rowIndex.rowIndex && newRemainQty === rowData.remain ? "not complete" : 
+        index === rowIndex.rowIndex && newRemainQty !== rowData.remain && newRemainQty < 0 ? "partial" : 
+        index === rowIndex.rowIndex && newRemainQty !== rowData.remain && newRemainQty > 0 ? "completed" : 
+        value
+      )
+    }));
+  }
+
+  const handleInputChangeQty = (rowIndex, rowData, eValue) => {
     setQtyEachMaterials((prevState) => ({
       ...prevState,
       qty: prevState.qty.map((value, index) =>
-        index === rowIndex ? Number(eValue) : value
+        index === rowIndex && Number(eValue) <= rowData.reqQuantity ? ''+Number(eValue) : value
       ),
     }));
   };
@@ -215,25 +274,27 @@ const Input = () => {
         <InputText
            ref={(el) => (inputRefs.current[rowData.description] = el)}
            id={`inputQty-${rowData.description}`}
-           type='number'
+           type='text'
           disabled={!isInputEnabled}
+          placeholder='-'
           value={qtyEachMaterials.qty[indexMaterial]}
-          onChange={(e)=>handleInputChangeQty(indexMaterial, e.target.value)}
-
-          // onChange={(e) => (rowData.receivedQuantity = e.target.value)} // Update the value
+          onChange={(e)=>handleInputChangeQty(indexMaterial, rowData, e.target.value)}
+          onKeyDown={(e)=>handleEnterInputQty(rowIndex, rowData, e)}
+          onBlur={()=>handleSubmitChangeQty(rowIndex, rowData)}
+          // onBlur={(e)=>handleEnterInputQty(rowIndex, rowData, e)}
           style={{ width: "50px"}}
         />
 
-        { isInputEnabled ? (
+        { !stateVendorArrived && formInput.rit !== 0 && isInputEnabled ? (
           <CButton
             color=''
             className="p-button-sm p-button-secondary text-white"
             // onClick={() => handleClickEditQuantity(rowData)}
-            onClick={()=>handleEnableInput(rowData)}
+            onClick={()=>handleSubmitChangeQty(rowIndex, rowData)}
           >
             <CIcon style={{ color: "green"}} icon={icon.cilCheck}/>
           </CButton>
-        ) : (
+        ) : !stateVendorArrived && formInput.rit !== 0 && !isInputEnabled ? (
           <CButton
             color=''
             className="p-button-sm p-button-secondary text-white"
@@ -243,7 +304,7 @@ const Input = () => {
             <CIcon style={{ color: "gray"}} icon={icon.cilPen}/>
           </CButton>
 
-        )}
+        ) : ""}
       </div>
     );
   };
@@ -251,40 +312,160 @@ const Input = () => {
   const createFormBody = (formInput, qtyEachMaterials) => {
     const { date, time } = getCurrentDateTime();
     return {
-      dnNumber: formInput.dnNumber,
+      // dnNumber: "2100198514",
+      dnNumber: formInput.dn_no,
       arrivalActualDate: formInput.arrival_date_actual,
       arrivalActualTime: formInput.arrival_time_actual,
       departureActualDate: date,
       departureActualTime: time,
       rit: formInput.rit,
       incomingIds: qtyEachMaterials.incomingId,
-      receivedQuantities: qtyEachMaterials.qty
+      receivedQuantities: qtyEachMaterials.qty.map(Number)
     }
   }
 
-  const handleSubmitMaterials = () => {
-    const { date, time } = getCurrentDateTime();
-    setFormInput({
-      ...formInput,
-      departure_date_actual: date,
-      departure_time_actual: time
-    })
-    console.log("----------------------SUBMIT LOG---------------------", )
-    const formBody = createFormBody(formInput, qtyEachMaterials)
+  const handleSubmitMaterials = async() => {
+      const { date, time } = getCurrentDateTime();
+      setFormInput({
+        ...formInput,
+        departure_date_actual: date,
+        departure_time_actual: time
+      })
 
-    console.log(formBody)
+      console.log("----------------------SUBMIT LOG---------------------", )
+      const formBody = createFormBody(formInput, qtyEachMaterials)
+      const warehouseId = dataMaterialsByDN[0].warehouseId
+
+      console.log("formBody to submit :", formBody)
+      console.log("warehouseId :", dataMaterialsByDN[0].warehouseId)
+
+      Swal.fire({
+        title: "Submit confirmation",
+        text: "Please verify the material quantities before submitting!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Submit",
+        preConfirm: async () => {
+          try {
+            const response = await submitMaterialByDNData(warehouseId, formBody)
+            console.log("Response submit :", response)
+            await getMaterialByDN(formBody.dnNumber)
+            return response.data.message
+          } catch (error) {
+            console.error(error)
+          } 
+        }
+      }).then(async(result) => {
+        if (result.isConfirmed) {
+          Swal.fire({
+            title: "Submitted!",
+            text: result.value,
+            icon: "success"
+          });
+        }
+      });
+      
+      
+      
   }
 
+  
 
-  const statusBodyTemplate = (rowData) => {
+  const remainBodyTemplate = (rowData, rowIndex) => {
+    return(
+      <p style={{ color: Number(remainQty.qty[rowIndex.rowIndex]) < 0 ? "#FF0000" : "black"}}>{remainQty.qty[rowIndex.rowIndex]}</p>
+    )
+  }
+
+  const statusBodyTemplate = (rowData, rowIndex) => {
+    const indexMaterial = rowIndex.rowIndex
     return(
       <div className='d-flex justify-content-center'>
-        <CTooltip content="NOT DELIVERED" placement="top">
+        <CTooltip 
+          content={ 
+            remainQty.status[indexMaterial] === "not complete" ? "NOT DELIVERED" : 
+            remainQty.status[indexMaterial] === "partial" ? "NOT COMPLETED" : 
+            remainQty.status[indexMaterial] === "completed" ? "COMPLETED" : 
+            "COMPLETED"
+          } 
+          placement="top"
+          >
           <CButton style={{ border: 0}}>
-            <FaCircleXmark style={{ color: "#FF0000", fontSize: "24px"}}/>
+            { remainQty.status[indexMaterial] === "not complete" ? <FaCircleXmark style={{ color: "#FF0000", fontSize: "24px"}}/> : 
+              remainQty.status[indexMaterial] === "partial" ? <FaCircleExclamation style={{ color: "#FFD43B", fontSize: "24px"}}/> : 
+              remainQty.status[indexMaterial] === "completed" ? <FaCircleCheck style={{ color: "#00DB42", fontSize: "24px"}}/> : 
+              <FaCircleCheck style={{ color: "#00DB42", fontSize: "24px"}}/>
+            }
+            
           </CButton>
         </CTooltip>
       </div>
+    )
+  }
+
+
+  const renderTruckStation = () => {
+    const arrivedVendor = dataVendorByDN.find((data)=>data.status!=='schedule plan')
+    return(
+      arrivedVendor ? arrivedVendor.truckStation : formInput.truckStation !== "" ? formInput?.truckStation : "-"
+    )
+  }
+  const renderRit = () => {
+    const arrivedVendor = dataVendorByDN.find((data)=>data.status!=='schedule plan')
+    return(
+      arrivedVendor ? arrivedVendor.rit : formInput.rit !== 0 ? formInput?.rit : "-"
+    )
+  }
+
+  const renderArrivalDatePlan = () => {
+    const arrivedVendor = dataVendorByDN.find((data)=>data.status!=='schedule plan')
+    return(
+      arrivedVendor ? arrivedVendor.arrivalPlanDate : formInput.arrival_date_plan !== "" ? formInput?.arrival_date_plan : " -"
+    )
+  }
+  
+  const renderArrivalTimePlan = () => {
+    const arrivedVendor = dataVendorByDN.find((data)=>data.status!=='schedule plan')
+    return(
+      arrivedVendor ? arrivedVendor.arrivalPlanTime : formInput.arrival_time_plan !== "" ? formInput?.arrival_time_plan : " -"
+    )
+  }
+
+  const renderArrivalDateAct = () => {
+    const arrivedVendor = dataVendorByDN.find((data)=>data.status!=='schedule plan')
+    return(
+      arrivedVendor ? arrivedVendor.arrivalActualDate : formInput.arrival_date_actual ? formInput.arrival_date_actual : " -"
+    )
+  }
+
+  const renderArrivalTimeAct = () => {
+    const arrivedVendor = dataVendorByDN.find((data)=>data.status!=='schedule plan')
+    return(
+      arrivedVendor ? arrivedVendor.arrivalActualTime : formInput.arrival_time_actual ? formInput.arrival_time_actual : " -"
+    )
+  }
+
+  const renderDepartureDateAct = () => {
+    const arrivedVendor = dataVendorByDN.find((data)=>data.status!=='schedule plan')
+    return(
+      arrivedVendor ? arrivedVendor.departureActualDate : formInput.departure_date_actual ? formInput.departure_date_actual : " -"
+    )
+  }
+
+  const renderDepartureTimeAct = () => {
+    const arrivedVendor = dataVendorByDN.find((data)=>data.status!=='schedule plan')
+    return(
+      arrivedVendor ? arrivedVendor.departureActualTime : formInput.departure_time_actual ? formInput.departure_time_actual : " -"
+    )
+  }
+
+  const renderStatusVendor = () => {
+    const arrivedVendor = dataVendorByDN.find((data)=>data.status!=='schedule plan')
+    // console.log(arrivedVendor)
+    return(
+      arrivedVendor ? arrivedVendor.status.toUpperCase() : formInput.status ? formInput.status.toUpperCase() : " -"
     )
   }
 
@@ -309,6 +490,7 @@ const Input = () => {
                           <CFormInput 
                             min={0} // Minimum value
                             max={99} // Maximum value (5 digits)
+                            disabled={formInput.rit !== 0}
                             className=''
                             type='text'
                             inputMode='numeric'
@@ -322,10 +504,10 @@ const Input = () => {
                       </CRow>
                       <CRow className=''>
                           <CFormText>Rit</CFormText>
-                          <Select isDisabled={optionsSelectRit.length===0} isClearable className='px-2' placeholder='Select Rit' value={optionsSelectRit.find((opt)=>opt.value === selectedRit) || 0} options={optionsSelectRit} onChange={handleChangeSelectRit}/>
+                          <Select isDisabled={optionsSelectRit.length===0 || stateVendorArrived || formInput.rit !== 0} isClearable className='px-2' placeholder='Select Rit' value={optionsSelectRit.find((opt)=>opt.value === selectedRit) || 0} options={optionsSelectRit} onChange={handleChangeSelectRit}/>
                       </CRow>
                       <CRow className='mt-1 px-2'>
-                          <CButton disabled={selectedRit === 0} onClick={() => formInput.rit === 0 ? getArrivalNow(selectedRit) : handleClearInputDN()} className='' style={{ color: "white", backgroundColor: formInput.arrival_date_actual === "" ? "#7FA1C3" : "#758694"}}>{formInput.arrival_date_actual === "" ? "Process" : "Clear"}</CButton>
+                          <CButton disabled={selectedRit === 0 || stateVendorArrived} onClick={() => formInput.rit === 0 ? getArrivalNow(selectedRit) : handleClearInputDN()} className='' style={{ color: "white", backgroundColor: formInput.arrival_date_actual === "" ? "#7FA1C3" : "#758694"}}>{formInput.arrival_date_actual === "" ? "Process" : "Clear"}</CButton>
                       </CRow>
                     </CCardBody>
                   </CCard>
@@ -335,7 +517,8 @@ const Input = () => {
                     <CCardHeader style={{ backgroundColor: "#F5EDED", borderBottom: "1px solid black"}}>
                       <p style={{ fontWeight: 'bold', color: "black"}}>DELIVERY INFORMATION</p>
                     </CCardHeader>
-                    <CCardBody className=''>
+                    <CCardBody className='' style={{ position: "relative"}}>
+                      { loading && <div className='d-flex justify-content-center align-items-center flex-column' style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", backgroundColor: "#ffffff9f", borderRadius: "0 0 5px 5px"}}><CSpinner/>Loading...</div> }
                       <CRow className=''>
                         <CCol xs={12}>
                           <p style={{fontWeight: "bold", fontSize: "10px", color: "#6482AD"}}>VENDOR NAME</p>
@@ -345,29 +528,33 @@ const Input = () => {
                       <CRow className='mt-1 w-100'>
                         <CCol xs={3}>
                           <p style={{fontWeight: "bold", fontSize: "10px", color: "#6482AD"}}>TRUCK STATION</p>
-                          <CFormLabel>{formInput.truckStation !== "" ? formInput?.truckStation : "-"}</CFormLabel>
+                          <CFormLabel>{renderTruckStation()}</CFormLabel>
+                          {/* <CFormLabel>{formInput.truckStation !== "" ? formInput?.truckStation : "-"}</CFormLabel> */}
                           
                           <p style={{fontWeight: "bold", fontSize: "10px", color: "#6482AD"}}>RIT</p>
-                          <CFormLabel>{formInput.rit !== 0 ? formInput?.rit : "-"}</CFormLabel>
+                          <CFormLabel>{renderRit()}</CFormLabel>
+                          {/* <CFormLabel>{formInput.rit !== 0 ? formInput?.rit : "-"}</CFormLabel> */}
                         </CCol>
 
                         <CCol>
                           <p style={{ fontWeight: 'bold', fontSize: "10px", color: "#6482AD"}}>RECEIVE PLAN </p>
-                          <CFormLabel className='col-12' style={{fontWeight: "light"}}>Date : <span style={{ fontWeight: "normal"}}>{formInput.arrival_date_plan !== "" ? formInput?.arrival_date_plan : " -"}</span></CFormLabel>
+                          <CFormLabel className='col-12' style={{fontWeight: "light"}}>Date : <span style={{ fontWeight: "normal"}}>{renderArrivalDatePlan()}</span></CFormLabel>
+                          {/* <CFormLabel className='col-12' style={{fontWeight: "light"}}>Date : <span style={{ fontWeight: "normal"}}>{formInput.arrival_date_plan !== "" ? formInput?.arrival_date_plan : " -"}</span></CFormLabel> */}
                           <p style={{ fontWeight: 'bold', fontSize: "10px", color: "transparent", userSelect: "none"}}>Divider </p>
-                          <CFormLabel className='col-12' style={{fontWeight: "light"}}>Time : <span style={{ fontWeight: "normal"}}>{formInput?.arrival_time_plan} - {formInput?.departure_time_plan}</span></CFormLabel>
+                          <CFormLabel className='col-12' style={{fontWeight: "light"}}>Time : <span style={{ fontWeight: "normal"}}>{renderArrivalTimePlan()}</span></CFormLabel>
+                          {/* <CFormLabel className='col-12' style={{fontWeight: "light"}}>Time : <span style={{ fontWeight: "normal"}}>{formInput?.arrival_time_plan} - {formInput?.departure_time_plan}</span></CFormLabel> */}
                         </CCol>
                         <CCol>
                           <p style={{ fontWeight: 'bold', fontSize: "10px", color: "#6482AD"}}>ARRIVAL </p>
-                          <CFormLabel className='col-12' style={{fontWeight: "light"}}>Date : <span style={{ fontWeight: "normal"}}>{formInput.arrival_date_actual ? formInput.arrival_date_actual : " -"}</span></CFormLabel>
+                          <CFormLabel className='col-12' style={{fontWeight: "light"}}>Date : <span style={{ fontWeight: "normal"}}>{renderArrivalDateAct()}</span></CFormLabel>
                           <p style={{ fontWeight: 'bold', fontSize: "10px", color: "transparent", userSelect: "none"}}>Divider </p>
-                          <CFormLabel className='col-12' style={{fontWeight: "light"}}>Time : <span style={{ fontWeight: "normal"}}>{formInput.arrival_time_actual ? formInput.arrival_time_actual : "-"}</span></CFormLabel>
+                          <CFormLabel className='col-12' style={{fontWeight: "light"}}>Time : <span style={{ fontWeight: "normal"}}>{renderArrivalTimeAct()}</span></CFormLabel>
                         </CCol>
                         <CCol>
                           <p style={{ fontWeight: 'bold', fontSize: "10px", color: "#6482AD"}}>DEPARTURE </p>
-                          <CFormLabel className='col-12' style={{fontWeight: "light"}}>Date : <span style={{ fontWeight: "normal"}}>{formInput.departure_date_actual ? formInput.departure_date_actual : "-"}</span></CFormLabel>
+                          <CFormLabel className='col-12' style={{fontWeight: "light"}}>Date : <span style={{ fontWeight: "normal"}}>{renderDepartureDateAct()}</span></CFormLabel>
                           <p style={{ fontWeight: 'bold', fontSize: "10px", color: "transparent", userSelect: "none"}}>Divider </p>
-                          <CFormLabel className='col-12' style={{fontWeight: "lighter"}}>Time : <span style={{ fontWeight: "normal"}}>{formInput.departure_time_actual ? formInput.departure_time_actual : "-"}</span></CFormLabel>
+                          <CFormLabel className='col-12' style={{fontWeight: "lighter"}}>Time : <span style={{ fontWeight: "normal"}}>{renderDepartureTimeAct()}</span></CFormLabel>
                         </CCol>
                       </CRow>
                     </CCardBody>
@@ -379,13 +566,15 @@ const Input = () => {
                       <p style={{ fontWeight: 'bold'}}>DELIVERY STATUS</p>
                     </CCardHeader>
                     <CCardBody style={{backgroundColor: 
-                            formInput.status === "ON SCHEDULE" ? "#00DB42" : 
-                            formInput.status === "DELAYED" ? "#F64242" : 
+                            stateVendorArrived && dataVendorByDN[0]?.status === "on schedule" ? "#00DB42" : 
+                            formInput.status === "on schedule" ? "#00DB42" : 
+                            stateVendorArrived && dataVendorByDN[0]?.status === "delayed" ? "#F64242" : 
+                            formInput.status === "delayed" ? "#F64242" : 
                             "transparent"
                             }} className='d-flex justify-content-center align-items-center' >
                       <h4 
                         style={{ 
-                          color: 'white', padding: '10px', borderRadius: "10px"}}>{formInput.status}</h4>
+                          color: 'white', padding: '10px', borderRadius: "10px"}}>{renderStatusVendor()}</h4>
                       {/* <h6 style={{backgroundColor: "#F64242", color: 'white', padding: '10px', borderRadius: "10px"}}>DELAYED</h6> */}
                     </CCardBody>
                   </CCard>
@@ -402,14 +591,17 @@ const Input = () => {
                       <Column className='' field="reqQuantity" header="Req. Qty"  />
                       <Column className='' field="receivedQuantity" header="Act. Qty" body={receivedQuantityBodyTemplate} />
                       <Column className='' field="uom" header="UoM" />
-                      <Column className='' field="remain" header="Remain" dataType="Remain"   />
+                      <Column className='' field="remain" header="Remain" body={remainBodyTemplate}/>
                       <Column className='' field="" header="Status Qty" body={statusBodyTemplate}/>
                       {/* <Column className='' field="" header="Action" body={actionBodyTemplate} /> */}
                   </DataTable>
               </CRow>
               <CRow className='d-flex justify-content-end'>
                 <CCol xs='auto'>
-                  <CButton style={{ backgroundColor: "#5B913B"}} className='text-white' onClick={handleSubmitMaterials}>Submit</CButton>
+                  { stateVendorArrived ? <CButton style={{ backgroundColor: "#758694"}} className='text-white' onClick={handleClearInputDN}>Clear</CButton> 
+                      : 
+                  <CButton disabled={formInput.rit === 0} style={{ backgroundColor: "#5B913B"}} className='text-white' onClick={handleSubmitMaterials}>Submit</CButton>
+                        }
                 </CCol>
               </CRow>
             </CCardBody>

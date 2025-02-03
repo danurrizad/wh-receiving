@@ -86,9 +86,11 @@ td input.p-inputtext.p-component {
 }
 
 .p-paginator .p-paginator-pages .p-paginator-page.p-highlight{
-  background-color: rgb(21, 132, 184);
+  background-color: rgb(21, 132, 184) !important;
   color: white !important;
-  border-radius: 10px;
+  border-radius: 10px !important;
+  width: 32px !important;
+  height: 32px !important;
 }
 
 .p-paginator-page.p-paginator-element.p-link,
@@ -100,7 +102,21 @@ td input.p-inputtext.p-component {
   border-radius: 10px;
 }
 
+.p-datatable.p-datatable-gridlines .p-paginator-bottom,
+.p-datatable .p-paginator-bottom
+{
+  border: 0;
+}
+
 .p-paginator-pages{
   display: flex;
   gap: 5px;
+}
+
+.btn.disabled{
+  background-color: #D9D9D9 !important;
+  color: #989898 !important;
+  opacity: 100%;
+  cursor: pointer !important;
+  border: 0;
 }
