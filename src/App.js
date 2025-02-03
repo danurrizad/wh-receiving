@@ -23,6 +23,13 @@ const App = () => {
   const [toasts, setToasts] = useState([])
 
   const addToast = (message, type = 'info') => {
+    // const color = {
+    //   success: 'success',
+    //   info: 'info',
+    //   warning: 'warning',
+    //   error: 'danger',
+    //   failed: 'danger',
+    // }[type] || 'info'
     const color = {
       success: '#29d93e',
       info: '#6799FF',
@@ -46,7 +53,7 @@ const App = () => {
   return (
     <ToastContext.Provider value={addToast}>
       <HashRouter>
-        <CToaster style={{ position: "absolute", right: "10px", top: "10px"}}>
+        <CToaster style={{ position: "fixed", right: "10px", top: "10px"}}>
           {toasts.map(({ id, message, type, color }) => (
             <CToast
               key={id}
@@ -71,7 +78,7 @@ const App = () => {
                     fill={color}
                   />
                 </svg>
-                <strong className="me-auto">{type.toUpperCase()}</strong>
+                <strong className="me-auto">{type === 'danger' ? 'ERROR' : type.toUpperCase()}</strong>
               </CToastHeader>
               <CToastBody style={{ backgroundColor: 'white' }}>
                 {message}
