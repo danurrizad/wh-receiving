@@ -1,10 +1,13 @@
 import useVerify from '../hooks/UseVerify'
+import { useToast } from '../App'
 
 const useReceivingDataService = () => {
     const { token, axiosJWT } = useVerify()
+    const addToast = useToast()
 
     const handleError = (error, message) => {
         console.error(message, error)
+        addToast(error.response.data.message, 'error', 'error')
         throw new Error(message + error.message)
       }
 

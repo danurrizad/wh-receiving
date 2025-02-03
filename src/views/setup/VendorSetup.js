@@ -283,7 +283,7 @@ const VendorSetup = () => {
                         <Column className='' field="" header="No" body={(rowData, { rowIndex }) => rowIndex + 1}/>
                         <Column className='' field='Supplier.supplierCode' header="Vendor Code"  />
                         <Column className='' field='Supplier.SupplierName' header="Vendor Name"  />
-                        <Column className='' field="schedule" header="Day" body={(rowData) => getDays(rowData.schedule)} filter filterElement={dayRowFilterTemplate}/>
+                        <Column className='' field="schedule" header="Day" body={(rowData) => getDays(rowData.schedule)} />
                         <Column className='' field="arrival" header="Arrival Time" dataType="date" body={(rowData) => formatTime(rowData.arrival)}   />
                         <Column className='' field="departure" header="Departure Time" dataType="date" body={(rowData) => formatTime(rowData.departure)}  />
                         <Column className='' field="rit" header="Rit" dataType="number"   />

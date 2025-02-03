@@ -49,9 +49,14 @@ input::-webkit-inner-spin-button {
   }
 
 /* custom-datatable.css */
+// .custom-datatable .p-datatable-thead > tr > th{
+//   background-color: blue;
+//   color: white;
+// }
+
 .custom-datatable .p-datatable-thead > tr > th,
 .custom-datatable .p-datatable-tbody > tr > td {
-  border: 1px solid #dee2e6;
+  border: 1px solid gray;
   padding: 0 5px 0 5px;
 }
 .custom-datatable .p-datatable-tbody > tr > td {

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef} from 'react'
 import CIcon from '@coreui/icons-react'
 import * as icon from '@coreui/icons'
-import { CButton, CButtonGroup, CCard, CCardBody, CCardHeader, CCardTitle, CCol, CContainer, CFormInput, CFormLabel, CFormText, CInputGroup, CModal, CModalBody, CModalFooter, CModalHeader, CModalTitle, CRow, CTable, CTableBody, CTableDataCell, CTableHead, CTableHeaderCell, CTableRow, CToaster } from '@coreui/react'
+import { CButton, CTooltip, CButtonGroup, CCard, CCardBody, CCardHeader, CCardTitle, CCol, CContainer, CFormInput, CFormLabel, CFormText, CInputGroup, CModal, CModalBody, CModalFooter, CModalHeader, CModalTitle, CRow, CTable, CTableBody, CTableDataCell, CTableHead, CTableHeaderCell, CTableRow, CToaster } from '@coreui/react'
 import { dataReceivingDummy, dataSchedulesDummy, dataDummy } from '../../utils/DummyData'
 import { Button, DatePicker } from 'rsuite';
 import Select from 'react-select'
@@ -12,58 +12,54 @@ import { Column } from 'primereact/column'
 import useReceivingDataService from './../../services/ReceivingDataServices';
 import { useToast } from '../../App'
 import { InputText } from 'primereact/inputtext'
-
+import { FaCircleXmark } from "react-icons/fa6";
 
 const Input = () => {
   const addToast = useToast()
   const [errMsg, setErrMsg] = useState("")
+  const inputRefs = useRef({})
 
   const { getMaterialByDNData } = useReceivingDataService()
 
   const [dataVendorByDN, setDataVendorByDN] = useState([])
   const [dataMaterialsByDN, setDataMaterialsByDN] = useState([])
+
+  const [selectedRit, setSelectedRit] = useState(0)
   const [formInput, setFormInput] = useState({
     dn_no: "",
     material_desc: "",
     vendor_code: "",
     vendor_name: "",
     status: "",
+
+    arrival_date_plan: "",
+    arrival_time_plan: "",
+    departure_time_plan: "",
+    rit: 0,
+    truckStation: "",
+
     arrival_date_actual: "",
     arrival_time_actual: "",
     departure_date_actual: "",
     departure_time_actual: "",
-
-    
   })
+  const [qtyEachMaterials, setQtyEachMaterials] = useState({}) 
 
-  const [formQuantity, setFormQuantity] = useState({
-    enabledEdit: false,
-    material_desc: "",
-    dn_no: "",
-    actual_qty: 0,
-  })
-
-  const [ dataDummies, setDataDummies ] = useState(dataDummy)
-  
-  const [queryFilter, setQueryFilter] = useState({
-    date: new Date(),
-    sortType: "",
-    day: new Date().getDay(),
-    dn_no: ""
+  const optionsSelectRit = dataVendorByDN.map((data)=>{
+    return{
+      label: `${data.rit} (${data.arrivalPlanTime} - ${data.departurePlanTime})`,
+      value: Number(data.rit),
+    }
   })
 
   const getCurrentDateTime = () => {
     const now = new Date();
-  
     // Format date as YYYY-MM-DD
     const date = now.toISOString().split('T')[0];
-  
     // Get hours and minutes
     const padZero = (num) => String(num).padStart(2, '0');
     const hours = padZero(now.getHours());
     const minutes = padZero(now.getMinutes());
-  
-  
     // Format time as HH:MM - HH:MM
     const time = `${hours}:${minutes}`;
   
@@ -82,205 +78,305 @@ const Input = () => {
   };
 
   const handleChangeInputDN = (e) => {
-    setFormInput({ ...formInput, dn_no: e.target.value})
+    const inputValue = e.target.value;
+
+    // Allow only numeric input and respect maxLength
+    if (/^\d*$/.test(inputValue) && inputValue.length <= 10) {
+      // setFormInput({ ...formInput, dn_no: e.target.value})
+      setFormInput({ ...formInput, dn_no: 2100198514})
+    }
   }
 
   const handleClearInputDN = () => {
     setFormInput({ 
       ...formInput, 
-      dn_no: "", 
+      dn_no: "",
+      material_desc: "",
+      vendor_code: "",
+      vendor_name: "",
+      status: "",
+
+      arrival_date_plan: "",
+      arrival_time_plan: "",
+      departure_time_plan: "",
+      rit: 0,
+      truckStation: "",
+
       arrival_date_actual: "",
       arrival_time_actual: "",
-      status: ""
+      departure_date_actual: "",
+      departure_time_actual: "",
     })
+    setSelectedRit(0)
     setDataMaterialsByDN([])
     setDataVendorByDN([])
+    setQtyEachMaterials({})
   }
 
-  const handleClickArrival = async() => {
-    if(formInput.dn_no === ""){
-      addToast("Please insert the DN number!", 'error', 'error')
-    }else{
-      await getMaterialByDN(formInput.dn_no)
+  const handleOnEnterInputDN = async(e) => {
+    if(e.key === 'Enter'){
+      if(formInput.dn_no === ""){
+        addToast("Please insert the DN number!", 'error', 'error')
+      }else{
+        await getMaterialByDN(formInput.dn_no)
+      }
     }
   }
 
-  const handleClickEditQuantity = (data) => {
-    console.log("Clicked data :", data)
-    console.log("Form input qty :", {
-      dn_no: data.dnNumber,
-      material_desc: data.description,
-      actual_qty: data.actual_qty,
-      enabledEdit: true
-    } )
-    setFormQuantity({
-      dn_no: data.dnNumber,
-      material_desc: data.description,
-      actual_qty: data.actual_qty,
-      enabledEdit: true
-    })
+  const handleChangeSelectRit = (e) => {
+    if(e){
+      setSelectedRit(e.value)
+    }else{
+      setSelectedRit(0)
+    }
   }
 
   
   const getMaterialByDN = async(dnNumber) => {
-    const { date, time } = getCurrentDateTime();
-    const statusSchedule = getStatusBasedOnTime()
     try {
       const response = await getMaterialByDNData(dnNumber)
-      console.log("Response :", response)
-      
+      // console.log("Response :", response)
+      // console.log("Response Vendor:", response.data.data[0].vendorSchedules)
+      const responseDN = response.data.data[0].deliveryNotes
+      console.log("Response :", responseDN)
       setDataMaterialsByDN(response.data.data[0].deliveryNotes)
-      setDataVendorByDN(response.data.data[0].vendorSchedules[0])
-    
-      setFormInput({ 
-        ...formInput, 
-        arrival_date_actual: date,
-        arrival_time_actual: time,
-        status: statusSchedule
-      })
+      setDataVendorByDN(response.data.data[0].vendorSchedules)
+      // setQtyEachMaterials(
+      //   responseDN.map((data) => ({
+      //     material: data.materialNo, 
+      //     qty: data.receivedQuantity
+      //   }))
+      // );
+      setQtyEachMaterials({
+        incomingId: responseDN.map((data) => Number(data.incomingId)),
+        qty: responseDN.map((data) => Number(data.receivedQuantity)),
+      });
+      // setQtyEachMaterials({
+      //   recQtyMaterial: responseDN.map((data) => data.receivedQuantity),
+      // });
+      
     } catch (error) {
       console.error('error :', error)
-      addToast(error.message, 'error', 'error')
+      if(dataMaterialsByDN.length !== 0){
+        console.log("here")
+        handleClearInputDN()
+      }
+      // addToast(error.message, 'error', 'error')
     }
   }
 
-  // useEffect(()=>{
-  //   setInterval(()=>{
-  //     console.log("CHANGES ON FORM QUANTITY :", formQuantity)
-  //   }, 10000)
-  // })
+  const getArrivalNow = (rit) => {
+    console.log("reqQtyMaterial :", qtyEachMaterials.qty)
+    const { date, time } = getCurrentDateTime();
+    const statusSchedule = getStatusBasedOnTime()
+    const matchesVendor = dataVendorByDN.find((data)=> data.rit === rit)
+    console.log("MATCHES :", matchesVendor)
+    setFormInput({ 
+      ...formInput, 
+      arrival_date_plan: matchesVendor.arrivalPlanDate,
+      arrival_time_plan: matchesVendor.arrivalPlanTime,
+      departure_time_plan: matchesVendor.departurePlanTime,
+      truckStation: matchesVendor.truckStation,
+      rit: matchesVendor.rit,
+
+      arrival_date_actual: date,
+      arrival_time_actual: time,
+      status: statusSchedule,
+    })
+  }
+  
+  const [enabledRows, setEnabledRows] = React.useState([]); // Array of enabled row IDs
+  const handleEnableInput = (rowData) => {
+    setEnabledRows((prev) => [...prev, rowData.description]); // Add row ID to the enabled rows
+
+    const refKey = rowData.description; // Use the row's unique identifier
+    setTimeout(()=>{
+      inputRefs.current[refKey]?.focus(); // Focus the specific input field
+    }, 0)
+
+  };
+
+  const handleInputChangeQty = (rowIndex, eValue) => {
+    setQtyEachMaterials((prevState) => ({
+      ...prevState,
+      qty: prevState.qty.map((value, index) =>
+        index === rowIndex ? Number(eValue) : value
+      ),
+    }));
+  };
 
   // Received Quantity body template
-  const receivedQuantityBodyTemplate = (rowData) => {
-    const isInputEnabled = enabledRows.includes(rowData.id); // Check if this row is enabled
-
-    const handleEnableInput = () => {
-      setEnabledRows((prev) => [...prev, rowData.id]); // Add row ID to the enabled rows
-    };
-
+  const receivedQuantityBodyTemplate = (rowData, rowIndex) => {
+    const isInputEnabled = enabledRows.includes(rowData.description); 
+    const indexMaterial = rowIndex.rowIndex
     return (
       <div className="d-flex align-items-center justify-content-center gap-2">
         {/* Input Field */}
         <InputText
+           ref={(el) => (inputRefs.current[rowData.description] = el)}
+           id={`inputQty-${rowData.description}`}
+           type='number'
           disabled={!isInputEnabled}
-          value={rowData.receivedQuantity}
-          onChange={(e) => (rowData.receivedQuantity = e.target.value)} // Update the value
+          value={qtyEachMaterials.qty[indexMaterial]}
+          onChange={(e)=>handleInputChangeQty(indexMaterial, e.target.value)}
+
+          // onChange={(e) => (rowData.receivedQuantity = e.target.value)} // Update the value
           style={{ width: "50px"}}
         />
+
+        { isInputEnabled ? (
+          <CButton
+            color=''
+            className="p-button-sm p-button-secondary text-white"
+            // onClick={() => handleClickEditQuantity(rowData)}
+            onClick={()=>handleEnableInput(rowData)}
+          >
+            <CIcon style={{ color: "green"}} icon={icon.cilCheck}/>
+          </CButton>
+        ) : (
+          <CButton
+            color=''
+            className="p-button-sm p-button-secondary text-white"
+            // onClick={() => handleClickEditQuantity(rowData)}
+            onClick={()=>handleEnableInput(rowData)}
+          >
+            <CIcon style={{ color: "gray"}} icon={icon.cilPen}/>
+          </CButton>
+
+        )}
       </div>
     );
   };
+  
+  const createFormBody = (formInput, qtyEachMaterials) => {
+    const { date, time } = getCurrentDateTime();
+    return {
+      dnNumber: formInput.dnNumber,
+      arrivalActualDate: formInput.arrival_date_actual,
+      arrivalActualTime: formInput.arrival_time_actual,
+      departureActualDate: date,
+      departureActualTime: time,
+      rit: formInput.rit,
+      incomingIds: qtyEachMaterials.incomingId,
+      receivedQuantities: qtyEachMaterials.qty
+    }
+  }
+
+  const handleSubmitMaterials = () => {
+    const { date, time } = getCurrentDateTime();
+    setFormInput({
+      ...formInput,
+      departure_date_actual: date,
+      departure_time_actual: time
+    })
+    console.log("----------------------SUBMIT LOG---------------------", )
+    const formBody = createFormBody(formInput, qtyEachMaterials)
+
+    console.log(formBody)
+  }
 
 
-  const [enabledRows, setEnabledRows] = React.useState([]); // Array of enabled row IDs
-  // Action body template
-  const actionBodyTemplate = (rowData) => {
-    return (
-      <div className="flex items-center gap-2">
-        {/* Button Field */}
-        <CButton
-          color='info'
-          className="p-button-sm p-button-secondary text-white"
-          // onClick={() => handleClickEditQuantity(rowData)}
-          // onClick={handleEnableInput}
-        >
-          <CIcon icon={icon.cilPen}/>
-        </CButton>
+  const statusBodyTemplate = (rowData) => {
+    return(
+      <div className='d-flex justify-content-center'>
+        <CTooltip content="NOT DELIVERED" placement="top">
+          <CButton style={{ border: 0}}>
+            <FaCircleXmark style={{ color: "#FF0000", fontSize: "24px"}}/>
+          </CButton>
+        </CTooltip>
       </div>
-    );
-  };
-
+    )
+  }
 
   return (
     <CContainer fluid>
-        <CRow>
-          <CCard className='p-0'>
-            <CCardHeader>
+        <CRow className='mb-4'>
+          <CCard className='p-0' style={{ border: "1px solid black"}}>
+            <CCardHeader style={{backgroundColor: "#6482AD", color: "white", textAlign: "center"}}>
               <CCardTitle>RECEIVING PROCESS</CCardTitle>
             </CCardHeader>
             <CCardBody>
               <CRow className='d-flex justify-content-between'>
-                <CCol sm={5} style={{ position: "relative"}} className='flex-grow-1'>
-                  <CCard className='h-100'>
-                    <CCardHeader style={{ backgroundColor: "#297BBF"}}>
-                      <p style={{ fontWeight: "bold", color: "white"}}>INPUT DN NUMBER</p>
+                <CCol sm={2} style={{ position: "relative"}} className='flex-grow-1'>
+                  <CCard className='h-100' style={{ border: "1px solid black"}}>
+                    <CCardHeader style={{ backgroundColor: "#F5EDED", borderBottom: "1px solid black"}}>
+                      <p style={{ fontWeight: "bold", color: "black"}}>INPUT DN NUMBER</p>
                     </CCardHeader>
-                    <CCardBody className=''>
-                      <CRow className=''>
-                        <CCol sm={10}>
-                          <p style={{fontWeight: "bold", fontSize: "10px"}}>VENDOR NAME</p>
-                          <CFormLabel>{dataVendorByDN.length !== 0 ? dataVendorByDN?.supplierName : "-"}</CFormLabel>
-
-                          <p style={{fontWeight: "bold", fontSize: "10px"}}>TRUCK STATION</p>
-                          {/* <CFormLabel>{dataVendorByDN.length !== 0 ? dataVendorByDN?.truckStation : "GAS STATION"}</CFormLabel> */}
-                          <CFormLabel>GAS STATION</CFormLabel>
-                        </CCol>
-                        <CCol sm={2}>
-                          <p style={{fontWeight: "bold", fontSize: "10px"}}>RIT</p>
-                          {/* <CFormLabel>{dataVendorByDN.length !== 0 ? dataVendorByDN?.rit : "1"}</CFormLabel> */}
-                          <CFormLabel>1</CFormLabel>
-                        </CCol>
-                        
-                        {/* <CTable borderless>
-                          <CTableBody>
-                            <CTableRow>
-                              <CTableDataCell className='' style={{ fontWeight: 'bold', padding: "8px 0 5px 5px"}}>VENDOR NAME</CTableDataCell>
-                              <CTableDataCell className=''>:</CTableDataCell>
-                              <CTableDataCell className='px-0'>{dataVendorByDN?.supplierName}</CTableDataCell>
-                            </CTableRow>
-                            <CTableRow>
-                              <CTableDataCell className='' style={{ fontWeight: 'bold', padding: "8px 0 5px 5px"}}>TRUCK STATION</CTableDataCell>
-                              <CTableDataCell className='px-'>:</CTableDataCell>
-                              <CTableDataCell className='px-0'>-</CTableDataCell>
-                            </CTableRow>
-
-                          </CTableBody>
-                        </CTable> */}
+                    <CCardBody className='d-flex flex-column gap-1'>
+                      <CRow className='px-0 d-flex'>
+                        <CFormText className='px-3'>DN Number</CFormText>
+                        <div className='px-2' style={{ position: "relative"}}>
+                          <CFormInput 
+                            min={0} // Minimum value
+                            max={99} // Maximum value (5 digits)
+                            className=''
+                            type='text'
+                            inputMode='numeric'
+                            placeholder='Insert DN Number'
+                            value={formInput.dn_no}
+                            onChange={handleChangeInputDN}
+                            onKeyDown={handleOnEnterInputDN}
+                            />
+                            { formInput.dn_no.length !== 0 && <CButton onClick={handleClearInputDN} style={{ border: "0", position: "absolute", top: 0, right: "10px" }}><CIcon icon={icon.cilX}/></CButton>}
+                        </div>
                       </CRow>
-
-                      <CInputGroup>
-                        <CFormInput 
-                          type='number'
-                          inputMode='numeric'
-                          placeholder='Insert DN Number'
-                          value={formInput.dn_no}
-                          onChange={handleChangeInputDN}
-                          />
-                        <CButton onClick={() => dataVendorByDN.length === 0 ? handleClickArrival() : handleClearInputDN()} color={dataVendorByDN.length === 0 ? 'info' : 'warning'} className='d-flex align-items-center gap-2' style={{ color: "white"}}>{dataVendorByDN.length === 0 ? "Receive" : "Clear"}</CButton>
-                      </CInputGroup>
+                      <CRow className=''>
+                          <CFormText>Rit</CFormText>
+                          <Select isDisabled={optionsSelectRit.length===0} isClearable className='px-2' placeholder='Select Rit' value={optionsSelectRit.find((opt)=>opt.value === selectedRit) || 0} options={optionsSelectRit} onChange={handleChangeSelectRit}/>
+                      </CRow>
+                      <CRow className='mt-1 px-2'>
+                          <CButton disabled={selectedRit === 0} onClick={() => formInput.rit === 0 ? getArrivalNow(selectedRit) : handleClearInputDN()} className='' style={{ color: "white", backgroundColor: formInput.arrival_date_actual === "" ? "#7FA1C3" : "#758694"}}>{formInput.arrival_date_actual === "" ? "Process" : "Clear"}</CButton>
+                      </CRow>
                     </CCardBody>
                   </CCard>
                 </CCol>
-                <CCol sm={5} className='flex-grow-1 '>
-                  <CCard className='h-100'>
-                    <CCardHeader style={{ backgroundColor: "#297BBF"}}>
-                      <p style={{ fontWeight: 'bold', color: "white"}}>VENDOR STATUS</p>
+                <CCol sm={8} className='flex-grow-1 '>
+                  <CCard className='h-100' style={{ border: "1px solid black"}}>
+                    <CCardHeader style={{ backgroundColor: "#F5EDED", borderBottom: "1px solid black"}}>
+                      <p style={{ fontWeight: 'bold', color: "black"}}>DELIVERY INFORMATION</p>
                     </CCardHeader>
-                    <CCardBody className='d-flex align-items-start justify-content-between'>
+                    <CCardBody className=''>
+                      <CRow className=''>
+                        <CCol xs={12}>
+                          <p style={{fontWeight: "bold", fontSize: "10px", color: "#6482AD"}}>VENDOR NAME</p>
+                          <CFormLabel>{dataVendorByDN.length !== 0 ? dataVendorByDN[0]?.supplierName : "-"}</CFormLabel>
+                        </CCol>
+                      </CRow>
                       <CRow className='mt-1 w-100'>
+                        <CCol xs={3}>
+                          <p style={{fontWeight: "bold", fontSize: "10px", color: "#6482AD"}}>TRUCK STATION</p>
+                          <CFormLabel>{formInput.truckStation !== "" ? formInput?.truckStation : "-"}</CFormLabel>
+                          
+                          <p style={{fontWeight: "bold", fontSize: "10px", color: "#6482AD"}}>RIT</p>
+                          <CFormLabel>{formInput.rit !== 0 ? formInput?.rit : "-"}</CFormLabel>
+                        </CCol>
+
                         <CCol>
-                          <p style={{ fontWeight: 'bold'}}>RECEIVE PLAN </p>
-                          <p style={{ fontWeight: ''}}>DATE &ensp;: <span style={{ fontWeight: "normal"}}>{dataVendorByDN?.arrivalPlanDate}</span></p>
-                          <p style={{ fontWeight: ''}}>TIME &ensp; :<span style={{ fontWeight: "normal"}}>{dataVendorByDN?.arrivalPlanTime} - {dataVendorByDN?.departurePlanTime}</span></p>
+                          <p style={{ fontWeight: 'bold', fontSize: "10px", color: "#6482AD"}}>RECEIVE PLAN </p>
+                          <CFormLabel className='col-12' style={{fontWeight: "light"}}>Date : <span style={{ fontWeight: "normal"}}>{formInput.arrival_date_plan !== "" ? formInput?.arrival_date_plan : " -"}</span></CFormLabel>
+                          <p style={{ fontWeight: 'bold', fontSize: "10px", color: "transparent", userSelect: "none"}}>Divider </p>
+                          <CFormLabel className='col-12' style={{fontWeight: "light"}}>Time : <span style={{ fontWeight: "normal"}}>{formInput?.arrival_time_plan} - {formInput?.departure_time_plan}</span></CFormLabel>
                         </CCol>
                         <CCol>
-                          <p style={{ fontWeight: 'bold'}}>ARRIVAL </p>
-                          <p style={{ fontWeight: ''}}>DATE &ensp;: <span style={{ fontWeight: "normal"}}>{formInput.arrival_date_actual}</span></p>
-                          <p style={{ fontWeight: ''}}>TIME &ensp; :<span style={{ fontWeight: "normal"}}>{formInput.arrival_time_actual}</span></p>
+                          <p style={{ fontWeight: 'bold', fontSize: "10px", color: "#6482AD"}}>ARRIVAL </p>
+                          <CFormLabel className='col-12' style={{fontWeight: "light"}}>Date : <span style={{ fontWeight: "normal"}}>{formInput.arrival_date_actual ? formInput.arrival_date_actual : " -"}</span></CFormLabel>
+                          <p style={{ fontWeight: 'bold', fontSize: "10px", color: "transparent", userSelect: "none"}}>Divider </p>
+                          <CFormLabel className='col-12' style={{fontWeight: "light"}}>Time : <span style={{ fontWeight: "normal"}}>{formInput.arrival_time_actual ? formInput.arrival_time_actual : "-"}</span></CFormLabel>
                         </CCol>
                         <CCol>
-                          <p style={{ fontWeight: 'bold'}}>DEPARTURE </p>
-                          <p style={{ fontWeight: ''}}>DATE &ensp;: <span style={{ fontWeight: "normal"}}>{formInput.departure_date_actual}</span></p>
-                          <p style={{ fontWeight: ''}}>TIME &ensp; :<span style={{ fontWeight: "normal"}}>{formInput.departure_time_actual}</span></p>
+                          <p style={{ fontWeight: 'bold', fontSize: "10px", color: "#6482AD"}}>DEPARTURE </p>
+                          <CFormLabel className='col-12' style={{fontWeight: "light"}}>Date : <span style={{ fontWeight: "normal"}}>{formInput.departure_date_actual ? formInput.departure_date_actual : "-"}</span></CFormLabel>
+                          <p style={{ fontWeight: 'bold', fontSize: "10px", color: "transparent", userSelect: "none"}}>Divider </p>
+                          <CFormLabel className='col-12' style={{fontWeight: "lighter"}}>Time : <span style={{ fontWeight: "normal"}}>{formInput.departure_time_actual ? formInput.departure_time_actual : "-"}</span></CFormLabel>
                         </CCol>
                       </CRow>
                     </CCardBody>
                   </CCard>
                 </CCol>
                 <CCol sm={2} className='flex-grow-1'>
-                  <CCard className='h-100 overflow-hidden'>
-                    <CCardHeader style={{ backgroundColor: "#297BBF", color: "white"}}>
-                      <p style={{ fontWeight: 'bold'}}>SCHEDULE STATUS</p>
+                  <CCard className='h-100 overflow-hidden' style={{ border: "1px solid black"}}>
+                    <CCardHeader style={{ backgroundColor: "#F5EDED", color: "black", borderBottom: '1px solid black'}}>
+                      <p style={{ fontWeight: 'bold'}}>DELIVERY STATUS</p>
                     </CCardHeader>
                     <CCardBody style={{backgroundColor: 
                             formInput.status === "ON SCHEDULE" ? "#00DB42" : 
@@ -298,20 +394,23 @@ const Input = () => {
               <CRow className='mt-4'>
                   
                   {/* Table */}
-                  <DataTable className='p-datatable-gridlines p-datatable-sm custom-datatable text-nowrap' size='small' showGridlines value={dataMaterialsByDN} paginator rows={10} dataKey="id" emptyMessage="No materials found.">
+                  <DataTable className='p-datatable-gridlines p-datatable-sm custom-datatable text-nowrap' size='small' showGridlines value={dataMaterialsByDN} paginator rows={10} dataKey="materialNo" emptyMessage="No materials found.">
                       <Column className='' field="" header="No" body={(rowData, { rowIndex }) => rowIndex + 1}/>
                       <Column className='' field='materialNo' header="Material No"  />
                       <Column className='' field='description' header="Material Description"  />
                       <Column className='' field="address" header="Rack Address" />
                       <Column className='' field="reqQuantity" header="Req. Qty"  />
                       <Column className='' field="receivedQuantity" header="Act. Qty" body={receivedQuantityBodyTemplate} />
-                      <Column className='' field="" header="UoM" />
+                      <Column className='' field="uom" header="UoM" />
                       <Column className='' field="remain" header="Remain" dataType="Remain"   />
-                      <Column className='' field="" header="Status"/>
-                      <Column className='' field="" header="Action" body={actionBodyTemplate} />
+                      <Column className='' field="" header="Status Qty" body={statusBodyTemplate}/>
+                      {/* <Column className='' field="" header="Action" body={actionBodyTemplate} /> */}
                   </DataTable>
-
-                  
+              </CRow>
+              <CRow className='d-flex justify-content-end'>
+                <CCol xs='auto'>
+                  <CButton style={{ backgroundColor: "#5B913B"}} className='text-white' onClick={handleSubmitMaterials}>Submit</CButton>
+                </CCol>
               </CRow>
             </CCardBody>
           </CCard>
