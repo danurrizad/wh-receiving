@@ -117,13 +117,15 @@ const Dashboard = () => {
         : dataSchedules.slice(indexOfFirstItem, indexOfLastItem)
   }, [currentPage])
 
-  const {setChartData, getChartOption} = useChartData({currentItems})
+
+
+
   const options = [
     // { value: 'all', label: 'All' },
     { value: 'Shortage', label: 'Shortage' },
     { value: 'Optimal', label: 'Optimal' },
   ]
-
+  const { setChartData, getChartOption, selectedVendor } = useChartData({ currentItems: dataSchedules });
   const [ showCard, setShowCard ] = useState({
     summary: true,
     schedule: true,
@@ -246,7 +248,8 @@ const optionsSelectDN = Array.from(
       arrival_time: data.arrival_time,
       status: data.status,
 
-      materials: data.materials.map((material)=>{return({
+      materials: Array.isArray(data?.materials)
+      ? data.materials.map((material) => ({
         vendor_id: material.vendor_id,
         dn_no: material.dn_no,
         material_no: material.material_no,
@@ -256,11 +259,12 @@ const optionsSelectDN = Array.from(
         req_qty: material.req_qty,
         actual_qty: material.actual_qty,
         difference: material.difference,
-      })})
-    })
-    setShowModalInput(true)
-  }
-
+      }))
+      : [],
+  });
+  setShowModalInput(true);
+};
+  const daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
   return (
   <CContainer fluid>
     <CRow className='mb-3'>
@@ -270,13 +274,13 @@ const optionsSelectDN = Array.from(
           maxHeight: `${showCard.summary ? "1000px" : "50px"}`,
           overflow: "hidden",
           transitionDuration: "500ms",
-          border: "1px solid #9AA6B2", // Menambahkan border dengan warna #074799
+          border: "1px solid #6482AD", // Menambahkan border dengan warna #074799
         }}>
          <CCardHeader
             style={{
             position: "relative",
             cursor: "pointer",
-            backgroundColor: "#9AA6B2", // Warna latar belakang header tetap putih
+            backgroundColor: "#6482AD", // Warna latar belakang header tetap putih
             color: "white", }}
             onClick={() => setShowCard({ ...showCard, summary: !showCard.summary })} >
              <div style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -301,7 +305,7 @@ const optionsSelectDN = Array.from(
     <button
       className="btn"
       style={{
-        backgroundColor: "#D9EAFD",
+        backgroundColor: "#7FA1C3",
         color: "#000",
       }}
       onClick={toggleVisibility}
@@ -350,19 +354,38 @@ const optionsSelectDN = Array.from(
 </CCol>
 
   {/* Elemen Header dan Date Picker di pojok kanan */}
-  <CCol md={6} className="d-flex justify-content-end gap-3">
-    <div>
-          <CFormText>Search vendor</CFormText>
-         <Select options={optionsSelectVendor} isClearable placeholder='Vendor code or name' />
-     </div>
-    <div
-      className="flatpickr-wrapper"
-      style={{ position: "relative", width: "50%" }} // Atur ukuran date picker sesuai kebutuhan
-    >
-         <CFormText>Filter by Date</CFormText>
-         <DateRangePicker showOneCalendar placeholder='All time' position='start' />
-    </div>
-  </CCol>
+  <CCol 
+  md={6} 
+  className="d-flex justify-content-end gap-3" // Elemen berada di pojok kanan dengan jarak antar elemen
+>
+  <div className="d-flex flex-column align-items-end">
+    <CFormText style={{ alignSelf: "flex-start" }}>Search vendor</CFormText>
+    <Select 
+      options={optionsSelectVendor} 
+      isClearable 
+      placeholder="Vendor code or name" 
+      styles={{
+        container: (provided) => ({
+          ...provided,
+          width: "250px", // Sesuaikan lebar input Select
+        }),
+      }}
+    />
+  </div>
+
+  <div 
+    className="flatpickr-wrapper d-flex flex-column align-items-end" 
+    style={{ position: "relative", width: "250px" }} // Sesuaikan ukuran DatePicker
+  >
+    <CFormText style={{ alignSelf: "flex-start" }}>Filter by Date</CFormText>
+    <DateRangePicker 
+      showOneCalendar 
+      placeholder="All time" 
+      position="end" 
+    />
+  </div>
+</CCol>
+
 </CRow>
 
      <hr className="m-1" />
@@ -451,26 +474,31 @@ const optionsSelectDN = Array.from(
    <CCol sm={5} >
     <label className="fs-5 fw-bold text-center d-block">TABLE RECEIVING MATERIAL</label>
     <CCard  style={{ backgroundColor: "white",border: "1px solid #BCCCDC"}} className="p-1">
-      {/* Informasi Header */}
+    {selectedVendor ? (
+    currentItems
+      .filter((data) => data.vendor_name === selectedVendor)
+      .map((data, index) => (
+        <div key={index}>
       <CRow className="mb-1">
         <CCol sm={12}>
-          <div><strong>Supplier:</strong> Supplier Name</div>
+          <div><strong>Supplier:</strong> {data.vendor_id}</div>
         </CCol>
         <CRow>
         <CCol sm={6}>
-          <div><strong>Day:</strong> Monday</div>
+          <div><strong>Day:</strong> {daysOfWeek[data.day]}</div>
         </CCol>
         <CCol sm={6}>
-          <div><strong>Schedule Plan:</strong> 10:00 AM</div>
+          <div><strong>Schedule Plan:</strong> {data.schedule_from}</div>
         </CCol>
         </CRow>
         <CRow>
         <CCol sm={6}>
-          <div><strong>Arrival:</strong> 9:45 AM</div>
+          <div><strong>Arrival:</strong> {data.arrival_time}</div>
         </CCol>
         <CCol sm={6}>
           <div><strong>Status:</strong>Delay</div>
         </CCol>
+      
         </CRow>
         </CRow>
      <CTable style={{fontSize:'10px'}} bordered>
@@ -485,7 +513,7 @@ const optionsSelectDN = Array.from(
           </CTableRow>
             </CTableHead>
              <CTableBody>
-              {currentItems.map((data, index) => (
+            
               <CTableRow key={index}>
                <CTableDataCell>{data.material_desc}</CTableDataCell>
                 <CTableDataCell>{data.rack_address}</CTableDataCell>
@@ -494,7 +522,7 @@ const optionsSelectDN = Array.from(
                     <CTableDataCell>{data.difference || "-"}</CTableDataCell>
                     <CTableDataCell>{data.date}</CTableDataCell>
                     </CTableRow>
-                  ))}
+            
                   {currentItems.length === 0 && (
                     <CTableRow>
                       <CTableDataCell colSpan={6} className="text-center">
@@ -504,6 +532,13 @@ const optionsSelectDN = Array.from(
                   )}
                 </CTableBody>
               </CTable>
+              </div>
+             ))
+              ) : (    
+             <div className="text-center p-3">
+          <strong>Vendor belum dipilih</strong>
+        </div>
+        )}
             </CCard>
           </CCol>
         </CRow>

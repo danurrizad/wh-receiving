@@ -1,4 +1,6 @@
+import { useState } from 'react';
 const useChartData = ({currentItems}) => {
+    const [selectedVendor, setSelectedVendor] = useState(null);
     const color = {
         yellow: "#FFBB00",
         red: "#F64242",
@@ -12,13 +14,6 @@ const useChartData = ({currentItems}) => {
         for (let hour = 7; hour <= 18; hour++) {
             timeLabels.push(`${hour.toString().padStart(2, "0")}:00`);
         }
-
-        const dataSchedulePlan = {
-            from : currentItems.map((data)=>data.schedule_from),
-            to : currentItems.map((data)=>data.schedule_to)
-        }
-        const dataArrivalTime = currentItems.map((data)=>data.arrival_time)
-
         const data = {
             labels: labelsVendor,
             datasets: [
@@ -67,9 +62,7 @@ const useChartData = ({currentItems}) => {
         };
         return data;
     };
-    const handleVendorChange = (vendorName) => {
-        setSelectedVendor(vendorName);
-    };
+    
 
     const getChartOption = () => {
         const data = setChartData()
@@ -145,13 +138,23 @@ const useChartData = ({currentItems}) => {
                     color: 'black', // Warna putih untuk label x
                 },
             },
-            
+            onClick: (event, chartElements, chart) => {
+                const points = chart.getElementsAtEventForMode(event, 'nearest', { intersect: true }, false);
+                if (points.length) {
+                    const firstPoint = points[0];
+                    const label = chart.data.labels[firstPoint.index]; // Y-axis label
+                    console.log(`Clicked on Y-axis label: ${label}`);
+                    setSelectedVendor(label);
+                    alert(`Vendor Selected: ${label}`);
+                }
+            },
           };
         return config
     }
     return {
         setChartData,
-        getChartOption
+        getChartOption,
+        selectedVendor
     }
 }
 
