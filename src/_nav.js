@@ -32,8 +32,8 @@ const _nav = [
       },
       {
         component: CNavItem,
-        name: 'Log Receiving',
-        to: '/log',
+        name: 'Inquery Receiving',
+        to: '/inquery',
         icon: <CIcon icon={icon.cilStar} customClassName="nav-icon" />,
       },
     ],
