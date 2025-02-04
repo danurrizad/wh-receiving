@@ -4,10 +4,7 @@ import * as icon from '@coreui/icons'
 import 'primereact/resources/themes/nano/theme.css'
 import 'primeicons/primeicons.css'
 import 'primereact/resources/primereact.min.css'
-// import 'primeicons/primeicons.css'
-// import 'primereact/resources/themes/nano/theme.css'
-// import 'primereact/resources/primereact.min.css'
-import 'primeflex/primeflex.css';
+
 
 import { Button } from 'primereact/button'
 import Flatpickr from 'react-flatpickr'
