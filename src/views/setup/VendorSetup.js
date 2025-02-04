@@ -32,7 +32,9 @@ import {
   CTableBody,
   CToaster,
   CTableDataCell,
+  CFormText,
 } from '@coreui/react'
+import { FaInbox } from 'react-icons/fa6'
 import useScheduleDataService from '../../services/ScheduleDataService'
 import { useToast } from '../../App'
 import { classNames } from 'primereact/utils';
@@ -76,12 +78,13 @@ const VendorSetup = () => {
         getScheduleAll("", 1)
       }, [])
 
-
-      const [filters, setFilters] = useState({
-        day: { value: null, matchMode: FilterMatchMode.EQUALS },
-        plant: { value: null, matchMode: FilterMatchMode.EQUALS },
-      });
+      
       const [loading, setLoading] = useState(true);
+      const [filters, setFilters] = useState({
+        'Supplier.SupplierName': { value: null, matchMode: 'contains' },
+        'schedule': { value: null, matchMode: 'equals' },
+        'Plant.PlantName': { value: null, matchMode: 'equals' }
+      });
       const [days] = useState(['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']);
       const [plants] = useState(['Karawang 1', 'Karawang 2', 'Karawang 3', 'Sunter 1', 'Sunter 2']);
       
@@ -218,6 +221,16 @@ const VendorSetup = () => {
         return date.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
       };
 
+  
+    const renderCustomEmptyMsg = () => {
+        return(
+          <div className='w-100 d-flex flex-column align-items-center justify-content-center py-3' style={{ color: "black", opacity: "50%"}}>
+            <FaInbox size={40}/>
+            <p>Schedules Data Not Found!</p>
+          </div>
+        )
+      }
+
   return (
     <CContainer fluid>
         <CRow className=''>
@@ -252,40 +265,64 @@ const VendorSetup = () => {
                     </CRow>
                     <CRow>
                       <CCol xs={2}>
+                        <CFormText>Filter by Plant</CFormText>
                         <Dropdown
-                          // value={filters['Address_Rack.Storage.Plant.plantName'].value}
+                          value={filters['Plant.PlantName'].value}
                           options={plants}
-                          // onChange={handlePlantChange}
+                          onChange={
+                            (e) => {
+                              setFilters({
+                                ...filters,
+                                'Plant.PlantName': { value: e.value, matchMode: 'equals' }
+                              })
+                            }
+                          }
                           placeholder="Select plant"
                           className="p-column-filter mb-2"
                           showClear
                           style={{ width: '100%', borderRadius: '5px' }}
-                          // id={filters['Address_Rack.Storage.Plant.id']?.value}
                         />
                       </CCol>
                       <CCol xs={2}>
+                        <CFormText>Filter by Day</CFormText>
                         <Dropdown
-                          // value={filters['Address_Rack.Storage.Plant.plantName'].value}
+                          value={filters['schedule'].value}
                           options={days}
-                          // onChange={handlePlantChange}
+                          // onChange={handleChangeDate}
                           placeholder="Select day"
                           className="p-column-filter mb-2"
                           showClear
                           style={{ width: '100%', borderRadius: '5px' }}
-                          // id={filters['Address_Rack.Storage.Plant.id']?.value}
                         />
                       </CCol>
                     </CRow>
-                    <DataTable className='p-datatable-gridlines p-datatable-sm custom-datatable text-nowrap' size='small' showGridlines value={dataSchedule} paginator rows={10} dataKey="id" filters={filters} onFilter={(e) => setFilters(e.filters)}  filterDisplay="row" loading={loading} emptyMessage="No schedules found.">
-                        <Column className='' field="" header="No" body={(rowData, { rowIndex }) => rowIndex + 1}/>
-                        <Column className='' field='Supplier.supplierCode' header="Vendor Code"  />
-                        <Column className='' field='Supplier.SupplierName' header="Vendor Name"  />
-                        <Column className='' field="schedule" header="Day" body={(rowData) => getDays(rowData.schedule)} />
-                        <Column className='' field="arrival" header="Arrival Time" dataType="date" body={(rowData) => formatTime(rowData.arrival)}   />
-                        <Column className='' field="departure" header="Departure Time" dataType="date" body={(rowData) => formatTime(rowData.departure)}  />
-                        <Column className='' field="rit" header="Rit" dataType="number"   />
-                        <Column className='' field="Plant.PlantName" header="Plant" />
-                        <Column className='' field="truckStation" header="Truck Station"   />
+                    <DataTable
+                      className='p-datatable-gridlines p-datatable-sm custom-datatable text-nowrap'
+                      removableSort
+                      filters={filters}
+                      size='small'
+                      emptyMessage={renderCustomEmptyMsg}
+                      scrollable
+                      scrollHeight="500px"
+                      showGridlines
+                      paginator
+                      rows={10}
+                      rowsPerPageOptions={[10, 25, 50, 100]}
+                      value={dataSchedule}
+                      dataKey="id"
+                      onFilter={(e) => setFilters(e.filters)}
+                      filterDisplay="row"
+                      loading={loading}
+                    >
+                      <Column className='' header="No" body={(rowData, { rowIndex }) => rowIndex + 1} />
+                      <Column className='' field='Supplier.supplierCode' sortable header="Vendor Code" />
+                      <Column className='' field='Supplier.SupplierName' filterField='Supplier.SupplierName' sortable filter filterPlaceholder="Search by vendor name" header="Vendor Name" />
+                      <Column className='' field="schedule" filterField='schedule' sortable header="Day" body={(rowData) => getDays(rowData.schedule)} />
+                      <Column className='' field="arrival" sortable header="Arrival Time" dataType="date" body={(rowData) => formatTime(rowData.arrival)} />
+                      <Column className='' field="departure" sortable header="Departure Time" dataType="date" body={(rowData) => formatTime(rowData.departure)} />
+                      <Column className='' field="rit" sortable header="Rit" dataType="number" />
+                      <Column className='' field="Plant.PlantName" sortable header="Plant" />
+                      <Column className='' field="truckStation" sortable header="Truck Station" />
                     </DataTable>
                     
                        <CModal visible={modalUpload} onClose={() => setModalUpload(false)}>
