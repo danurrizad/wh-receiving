@@ -1,6 +1,8 @@
 import { useState } from 'react';
+import { CModal, CModalHeader, CModalBody, CModalFooter, CButton } from '@coreui/react';
 const useChartData = ({currentItems}) => {
     const [selectedVendor, setSelectedVendor] = useState(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
     const color = {
         yellow: "#FFBB00",
         red: "#F64242",
@@ -135,7 +137,7 @@ const useChartData = ({currentItems}) => {
                 title: {
                     display: true,
                     text: 'SCHEDULE VENDOR WAREHOUSE',
-                    color: 'black', // Warna putih untuk label x
+                    color: 'black', // Warna putih untuk label xx`x`
                 },
             },
             onClick: (event, chartElements, chart) => {
@@ -145,15 +147,27 @@ const useChartData = ({currentItems}) => {
                     const label = chart.data.labels[firstPoint.index]; // Y-axis label
                     console.log(`Clicked on Y-axis label: ${label}`);
                     setSelectedVendor(label);
-                    alert(`Vendor Selected: ${label}`);
+                    setIsModalOpen(true);
                 }
             },
           };
         return config
     }
+    const ModalComponent = () => (
+        <CModal visible={isModalOpen} onClose={() => setIsModalOpen(false)}>
+            <CModalHeader closeButton>Vendor Selected</CModalHeader>
+            <CModalBody>
+                <p>Vendor: {selectedVendor}</p>
+            </CModalBody>
+            <CModalFooter>
+                <CButton color="secondary" onClick={() => setIsModalOpen(false)}>Close</CButton>
+            </CModalFooter>
+        </CModal>
+    );
     return {
         setChartData,
         getChartOption,
+        ModalComponent,
         selectedVendor
     }
 }

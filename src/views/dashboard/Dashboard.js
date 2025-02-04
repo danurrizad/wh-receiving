@@ -401,8 +401,8 @@ const optionsSelectDN = Array.from(
         >
           <CCardHeader
           className="text-muted small text-center"
-          style={{ backgroundColor: "#F64242" }}>
-          <h6 style={{ color: "black", fontSize: "11px" }}>DELAYED</h6>
+          style={{ backgroundColor: "#C62300" }}>
+          <h6 style={{ color: "white", fontSize: "12px" }}>DELAYED</h6>
           </CCardHeader>
           <CCardBody className="text-center ">
          <CCardText className="fs-3 fw-bold" style={{ color: "black" }}>46</CCardText>
@@ -417,9 +417,9 @@ const optionsSelectDN = Array.from(
         >
         <CCardHeader
          className="text-muted small text-center"
-         style={{ backgroundColor: "#35A535" }}
+         style={{ backgroundColor: "#5CB338" }}
          >
-         <h6 style={{ color: "black", fontSize: "11px" }}>ON SCHEDULE</h6>
+         <h6 style={{ color: "white", fontSize: "12px" }}>ON SCHEDULE</h6>
          </CCardHeader>
          <CCardBody className="text-center">
         <CCardText className="fs-3 fw-bold" style={{ color: "black" }}>25</CCardText>
@@ -434,8 +434,8 @@ const optionsSelectDN = Array.from(
         >
       <CCardHeader
         className="text-muted small text-center"
-        style={{ backgroundColor: "gray" }}>
-         <h6 style={{ color: "black", fontSize: "11px" }}>REMAINING</h6>
+        style={{ backgroundColor: "#EB5B00" }}>
+         <h6 style={{ color: "white", fontSize: "12px" }}>REMAINING</h6>
         </CCardHeader>
           <CCardBody className="text-center">
            <CCardText className="fs-3 fw-bold" style={{ color: "black" }}>46</CCardText>
@@ -449,9 +449,9 @@ const optionsSelectDN = Array.from(
         >
       <CCardHeader
         className="text-muted small text-center"
-        style={{ backgroundColor: "white" }}
+        style={{ backgroundColor: "black" }}
       >
-        <h6 style={{ color: "black", fontSize: "10px" }}>TOTAL</h6>
+        <h6 style={{ color: "white", fontSize: "12px" }}>TOTAL</h6>
       </CCardHeader>
         <CCardBody className="text-center">
           <CCardText className="fs-3 fw-bold"style={{ color: "black" }}>46</CCardText>
