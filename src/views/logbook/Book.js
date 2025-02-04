@@ -12,15 +12,23 @@ import { handleExport } from '../../utils/ExportToExcel'
 import TemplateToast from '../../components/TemplateToast'
 import BarcodeScannerComponent from "react-qr-barcode-scanner";
 import Receiving from './../receiving/Receiving';
+import useReceivingDataService from '../../services/ReceivingDataServices'
 
 
 const Book = () => {
   const [toast, addToast] = useState()
   const toaster = useRef(null)
-  const [errMsg, setErrMsg] = useState("")
 
   const [ dataDummies, setDataDummies ] = useState(dataDummy)
   const [ dataSchedules, setDataSchedules ] = useState(dataSchedulesDummy)
+
+  const { getMaterialByDNData, getDNByDateData, submitMaterialByDNData } = useReceivingDataService()
+
+  const [dataVendorByDN, setDataVendorByDN] = useState([])
+  const [dataMaterialsByDN, setDataMaterialsByDN] = useState([])
+  const [stateVendorArrived, setStateVendorArrived] = useState(false)
+
+
   const [ showModalInput, setShowModalInput] = useState(false)
   const [ showModalScanner, setShowModalScanner ] = useState(false)
 
@@ -34,27 +42,10 @@ const Book = () => {
     }
   })
   const [ optionsSelectVendor, setOptionsSelectVendor] = useState(defaultOptionsSelectVendor)
-
-  const [ formInput, setFormInput ] = useState({
-    date: "",
-    day: "",
-    vendor_id: "",
-    vendor_name: "",
-    schedule_from: "",
-    schedule_to: "",
-    arrival_time: "",
-    status: "",
-    
-    materials: [{
-      vendor_id: "",
-      dn_no: "",
-      material_no: "",
-      material_desc: "",
-      rack_address: "",
-      req_qty: "",
-      actual_qty: "",
-    }],
-  })
+  // const now = new Date();
+  // // Format date as YYYY-MM-DD
+  // const date = now.toISOString().split('T')[0];
+  
 
   const [queryFilter, setQueryFilter] = useState({
     date: new Date(),
@@ -63,45 +54,24 @@ const Book = () => {
     dn_no: ""
   })
 
-  const [currentPage, setCurrentPage] = useState(1)
-  const [itemsPerPage, setItemsPerPage] = useState(10)
-  const indexOfLastItem = currentPage * itemsPerPage
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage
-  const currentItems =
-  dataDummies.length > 0
-        ? dataDummies.slice(indexOfFirstItem, indexOfLastItem)
-        : dataDummies.slice(indexOfFirstItem, indexOfLastItem)
+  const getDNbyDate = async(date) => {
+    try {
+      const dateFormat = date.toISOString().split('T')[0]
+      const response = await getDNByDateData(date) 
+      console.log("response :", response)
+    } catch (error) {
+      console.error(error)
+    }
+  }
 
   useEffect(()=>{
-     const currentItems = dataDummies.length > 0
-        ? dataDummies.slice(indexOfFirstItem, indexOfLastItem)
-        : dataDummies.slice(indexOfFirstItem, indexOfLastItem)
-  }, [currentPage])
-
+    getDNbyDate(queryFilter.date)
+  }, [queryFilter.date])
  
   const handleClickDetail = (data) => {
-    setFormInput({
-      date: data.date,
-      day: data.day,
-      vendor_id: data.vendor_id,
-      vendor_name: data.vendor_name,
-      schedule_from: data.schedule_from,
-      schedule_to: data.schedule_to,
-      arrival_time: data.arrival_time,
-      status: data.status,
+    
 
-      materials: data.materials.map((material)=>{return({
-        vendor_id: material.vendor_id,
-        dn_no: material.dn_no,
-        material_no: material.material_no,
-        material_desc: material.material_desc,
-        rack_address: material.rack_address,
-        date: material.date,
-        req_qty: material.req_qty,
-        actual_qty: material.actual_qty,
-        difference: material.difference,
-      })})
-    })
+
     setShowModalInput(true)
   }
 
@@ -148,43 +118,23 @@ const Book = () => {
   
 
   const handleChangeFilter = (e) =>{
-    // console.log(e.value)
     if(e){
       setQueryFilter({...queryFilter, day: e.value})
-      // getDataScheduleByDay()
     }else{
       setQueryFilter({...queryFilter, day: 7})
     }
   }
 
-  const handleClearInputDN = () => {
-    setQueryFilter({ ...queryFilter, dn_no: ""})
-    setErrMsg("")
-  }
-
-  const handleChangeInputDN = (e) => {
-    setErrMsg("DN is invalid. Can't find vendor with that DN number!")
-    const foundData = dataDummies.filter((data)=>data.materials[0].dn_no === e.target.value)
-    // console.log("foundData :", foundData)
-    if(foundData.length !== 0){
-      setErrMsg("")
-    }
-    if(e){
-      setQueryFilter({ ...queryFilter, dn_no: e.target.value})
-      if(e.target.value === ""){
-        setErrMsg("")
-      }
-    } 
-  }
+  
   
   useEffect(()=>{
     // getDataSchedules()
-    getDataSchedulesToday()
+    // getDataSchedulesToday()
   }, [])
 
-  useEffect(()=>{
-    getDataScheduleByDay()
-  }, [queryFilter.day])
+  // useEffect(()=>{
+  //   getDataScheduleByDay()
+  // }, [queryFilter.day])
 
   
   const optionsSelectDay = [
@@ -251,56 +201,9 @@ const Book = () => {
                       </CTableRow>
                     </CTableHead>
                     <CTableBody>
-                        { currentItems.map((data, index)=> {
-                          const daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
-                          return(
-                            <CTableRow key={index}>
-                              <CTableDataCell>{index+1}</CTableDataCell>
-                              <CTableDataCell>{data.materials[0].dn_no}</CTableDataCell>
-                              <CTableDataCell>{data.vendor_id}</CTableDataCell>
-                              <CTableDataCell>{data.vendor_name}</CTableDataCell>
-                              <CTableDataCell>{daysOfWeek[data.day]}</CTableDataCell>
-                              <CTableDataCell>{data.date}</CTableDataCell>
-                              <CTableDataCell>{data.schedule_from}</CTableDataCell>
-                              <CTableDataCell>{data.schedule_to}</CTableDataCell>
-                              <CTableDataCell>{data.arrival_time}</CTableDataCell>
-                              <CTableDataCell className='text-center'>
-                                <div className={`py-1 px-2 ${data.status.toLowerCase() === 'delayed' && "blink"}`} style={{ backgroundColor: data.status === "Delayed" ? "#F64242" : data.status === "On Schedule" ? "#35A535" : "transparent", color: 'white', borderRadius: '5px'}}>
-                                  {data.status.toUpperCase()}  
-                                  </div>
-                                </CTableDataCell>
-                              <CTableDataCell style={{ color: data.status === "Delayed" ? "#F64242" : ""}}> {data.delay_time !== 0 ? `- ${data.delay_time}` : ""}</CTableDataCell>
-                              <CTableDataCell className='text-center'>
-                                  <CButton onClick={()=>handleClickDetail(data)} color='info' style={{ color: "white", padding: "5px 5px 0 5px"}}>
-                                    <CIcon size='lg' icon={icon.cilClone}/>
-                                  </CButton> 
-                              </CTableDataCell>
-                            </CTableRow>
-                          )
-                        })}
-                        { currentItems.length === 0 && (
-                          <CTableRow>
-                            <CTableDataCell colSpan={20} style={{ opacity: "50%"}}>
-                              <div className='d-flex flex-column align-items-center justify-content-center py-4'>
-                                <CIcon icon={icon.cilTruck} size='4xl'/>
-                                <span>Data not found</span>
-                              </div>
-                            </CTableDataCell>
-                          </CTableRow>
-                        )}
+                        
                     </CTableBody>
                   </CTable>
-                  <div className="mt-3 d-flex justify-content-center">
-                  <Pagination
-                    currentPage={currentPage}
-                    totalPages={Math.ceil(
-                      dataDummies.length > 0
-                        ? dataDummies.length / itemsPerPage
-                        : dataDummies.length / itemsPerPage,
-                    )}
-                    onPageChange={(page) => setCurrentPage(page)}
-                  />
-                </div>
               </CRow>
             </CCardBody>
           </CCard>
@@ -323,11 +226,11 @@ const Book = () => {
             <CRow>
               <CCol md={4}>
                   <CFormText>Vendor Code</CFormText>
-                  <CFormInput disabled value={formInput.vendor_id} className='w-100' placeholder='Vendor code'/>
+                  {/* <CFormInput disabled value={formInput.vendor_id} className='w-100' placeholder='Vendor code'/> */}
               </CCol>
               <CCol md={4} className='pt-md-0 pt-3'>
                 <CFormText>Vendor Name</CFormText>
-                <CFormInput disabled value={formInput.vendor_name} className='w-100' placeholder='Vendor name'/>
+                {/* <CFormInput disabled value={formInput.vendor_name} className='w-100' placeholder='Vendor name'/> */}
               </CCol>
              
             </CRow>  
@@ -346,22 +249,7 @@ const Book = () => {
                 </CTableRow>
               </CTableHead>
               <CTableBody>
-                {formInput.materials && formInput.materials.map((data,index,array)=>{
-                  return(
-                    <CTableRow key={index}  onClick={()=>addToast(TemplateToast("info", 'info', `clicked row ${index+1}`))}>
-                      <CTableDataCell>{data.dn_no}</CTableDataCell>
-                      <CTableDataCell>{data.material_no}</CTableDataCell>
-                      <CTableDataCell>{data.material_desc}</CTableDataCell>
-                      <CTableDataCell>{data.rack_address}</CTableDataCell>
-                      <CTableDataCell>{data.req_qty}</CTableDataCell>
-                      <CTableDataCell>{data.actual_qty}</CTableDataCell>
-                      <CTableDataCell className='text-center' style={{ color: data.actual_qty<data.req_qty ? "red" : "black" }}>{ data.actual_qty > data.req_qty ? `+${data.actual_qty-data.req_qty}` : data.actual_qty < data.req_qty ? `-${data.req_qty-data.actual_qty}` : "" }</CTableDataCell>
-                      {/* <CTableDataCell className='text-center' style={{ borderLeft: '1px solid red', borderRight: '1px solid red', borderTop: index+1===1 && "1px solid red", borderBottom: array.length-1 === index && "1px solid red", fontWeight: formInput.difference !== 0 && 'bold'}}>{formInput.difference === 0 ? "-" : formInput.difference}</CTableDataCell> */}
-                      <CTableDataCell>{data.date}</CTableDataCell>
-                    </CTableRow>
-
-                    )
-                })} 
+               
               </CTableBody>
             </CTable>
           </CRow>
