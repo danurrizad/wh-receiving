@@ -25,5 +25,28 @@
     <div id="root"></div>
     <script type="module" src="/src/index.js"></script>
     <!-- built files will be auto injected -->
+    <script type="module">
+      // Import the functions you need from the SDKs you need
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
+      import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-analytics.js";
+      // TODO: Add SDKs for Firebase products that you want to use
+      // https://firebase.google.com/docs/web/setup#available-libraries
+    
+      // Your web app's Firebase configuration
+      // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+      const firebaseConfig = {
+        apiKey: "AIzaSyAB6ltFNYZ1EMPyCajGjAfOOo6Sg5q9JFI",
+        authDomain: "twiis-receiving-toyota.firebaseapp.com",
+        projectId: "twiis-receiving-toyota",
+        storageBucket: "twiis-receiving-toyota.firebasestorage.app",
+        messagingSenderId: "86626649191",
+        appId: "1:86626649191:web:7f7214674fe5acf43e40c2",
+        measurementId: "G-XLH0S0W064"
+      };
+    
+      // Initialize Firebase
+      const app = initializeApp(firebaseConfig);
+      const analytics = getAnalytics(app);
+    </script>
   </body>
 </html>

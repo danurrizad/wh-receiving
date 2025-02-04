@@ -80,7 +80,7 @@ const useChartData = ({currentItems}) => {
                     ticks: {
                         stepSize: 1,
                         font: {
-                            size: 10, // Ukuran font kecil
+                            size: 11, // Ukuran font kecil
                         },
                       
                         color: 'black', // Warna putih untuk label x
