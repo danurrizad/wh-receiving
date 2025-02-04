@@ -2,62 +2,34 @@ import React, { useState, useEffect, useRef} from 'react'
 import CIcon from '@coreui/icons-react'
 import * as icon from '@coreui/icons'
 import { CButton, CButtonGroup, CCard, CCardBody, CCardHeader, CCardTitle, CCol, CContainer, CFormInput, CFormLabel, CFormText, CInputGroup, CModal, CModalBody, CModalFooter, CModalHeader, CModalTitle, CRow, CTable, CTableBody, CTableDataCell, CTableHead, CTableHeaderCell, CTableRow, CToaster } from '@coreui/react'
-import { dataReceivingDummy, dataSchedulesDummy, dataDummy } from '../../utils/DummyData'
-import { DatePicker, DateRangePicker } from 'rsuite';
-import  colorStyles from '../../utils/StyleReactSelect'
-import Select from 'react-select'
-import CreatableSelect from 'react-select/creatable'
-import Pagination from '../../components/Pagination'
+import {  DateRangePicker } from 'rsuite';
 import { handleExport } from '../../utils/ExportToExcel'
-import TemplateToast from '../../components/TemplateToast'
 import BarcodeScannerComponent from "react-qr-barcode-scanner";
-import Receiving from './../receiving/Receiving';
+import Receiving from '../receiving/Receiving';
 import useReceivingDataService from '../../services/ReceivingDataServices'
+import { Dropdown } from 'primereact/dropdown'
+import { InputText } from 'primereact/inputtext'
+import { useToast } from '../../App';
 
 
 const Book = () => {
-  const [toast, addToast] = useState()
-  const toaster = useRef(null)
-
-  const [ dataDummies, setDataDummies ] = useState(dataDummy)
-  const [ dataSchedules, setDataSchedules ] = useState(dataSchedulesDummy)
-
-  const { getMaterialByDNData, getDNByDateData, submitMaterialByDNData } = useReceivingDataService()
-
-  const [dataVendorByDN, setDataVendorByDN] = useState([])
-  const [dataMaterialsByDN, setDataMaterialsByDN] = useState([])
-  const [stateVendorArrived, setStateVendorArrived] = useState(false)
-
+  const addToast = useToast()
+  const { getDNByDateData } = useReceivingDataService()
 
   const [ showModalInput, setShowModalInput] = useState(false)
   const [ showModalScanner, setShowModalScanner ] = useState(false)
 
-  const defaultOptionsSelectVendor = dataDummies?.map((data)=>{
-    return{
-      label: `${data.vendor_id} - ${data.vendor_name}`,
-      value: {
-        id: data.vendor_id,
-        name: data.vendor_name,
-      }
-    }
-  })
-  const [ optionsSelectVendor, setOptionsSelectVendor] = useState(defaultOptionsSelectVendor)
-  // const now = new Date();
-  // // Format date as YYYY-MM-DD
-  // const date = now.toISOString().split('T')[0];
-  
-
   const [queryFilter, setQueryFilter] = useState({
     date: new Date(),
-    sortType: "",
-    day: new Date().getDay(),
-    dn_no: ""
   })
 
-  const getDNbyDate = async(date) => {
+  
+  const [plants] = useState(['Karawang 1', 'Karawang 2', 'Karawang 3', 'Sunter 1', 'Sunter 2']);
+
+  const getDNbyDate = async() => {
     try {
-      const dateFormat = date.toISOString().split('T')[0]
-      const response = await getDNByDateData(date) 
+      // const dateFormat = date.toISOString().split('T')[0]
+      const response = await getDNByDateData() 
       console.log("response :", response)
     } catch (error) {
       console.error(error)
@@ -65,117 +37,44 @@ const Book = () => {
   }
 
   useEffect(()=>{
-    getDNbyDate(queryFilter.date)
-  }, [queryFilter.date])
- 
-  const handleClickDetail = (data) => {
-    
-
-
-    setShowModalInput(true)
-  }
-
-  const getDataSchedulesToday = () => {
-    const filteredDataSchedule = dataDummy.filter((item) => {
-      if(queryFilter.day !== 7){
-        // Compare only the date part (ignore time)
-        return item.day === queryFilter.day
-      } else{
-        return item
-      }
-    });
-    // console.log("filteredDataSchedule :", filteredDataSchedule)
-    setDataDummies(filteredDataSchedule)
-  }
-
-  const getDataScheduleByDay = () => {
-    // Filter data by date
-    const filteredDataSchedule = dataDummy.filter((item) => {
-      if(queryFilter.day !== 7){
-        return item.day === queryFilter.day
-      } else{
-        console.warn("here")
-        return item
-      }
-    });
-    if(queryFilter.sortType === "Newest"){
-      const filteredSortedAscending = [...filteredDataSchedule].sort((a, b) => parseDate(a.date) - parseDate(b.date));
-      setDataDummies(filteredSortedAscending)
-    } else if(queryFilter.sortType === "Oldest"){
-      const filteredSortedDescending = [...filteredDataSchedule].sort((a, b) => parseDate(b.date) - parseDate(a.date));
-      setDataDummies(filteredSortedDescending)
-    }
-    else{
-      setDataDummies(filteredDataSchedule)
-    }
-  }
-  // Function to convert "DD-MM-YYYY" to Date object
-  const parseDate = (dateString) => {
-    const [day, month, year] = dateString.split("-").map(Number);
-    return new Date(year, month - 1, day);
-  };
-
-  
-
-  const handleChangeFilter = (e) =>{
-    if(e){
-      setQueryFilter({...queryFilter, day: e.value})
-    }else{
-      setQueryFilter({...queryFilter, day: 7})
-    }
-  }
-
-  
-  
-  useEffect(()=>{
-    // getDataSchedules()
-    // getDataSchedulesToday()
+    getDNbyDate()
   }, [])
-
-  // useEffect(()=>{
-  //   getDataScheduleByDay()
-  // }, [queryFilter.day])
-
-  
-  const optionsSelectDay = [
-    { label: "Monday", value: 1 },
-    { label: "Tuesday", value: 2 },
-    { label: "Wednesday", value: 3 },
-    { label: "Thursday", value: 4 },
-    { label: "Friday", value: 5 },
-    { label: "Saturday", value: 6 },
-    { label: "Sunday", value: 0 },
-  ]
-
-
+ 
 
   
 
 
   return (
     <CContainer fluid>
-        <CToaster className="p-3" placement="top-end" push={toast} ref={toaster} />
         <CRow>
           <CCard className='p-0'>
             <CCardHeader>
               <CCardTitle>LOGS DATA</CCardTitle>
             </CCardHeader>
             <CCardBody>
-              <CRow className=''>
+              <CRow className='d-flex align-items-end ' style={{ border: "2px solid red"}}>
                 
                 <CCol sm='4' className=''>
-                    <CFormText>Search vendor</CFormText>
-                    <Select options={optionsSelectVendor} isClearable placeholder='Vendor code or name' />
+                    <CFormText>Search</CFormText>
+                    <InputText/>
                 </CCol>
 
                 <CCol className='d-flex justify-content-end gap-4'>
+                  <CCol sm='3' className=''>
+                      <CFormText>Filter by Plant</CFormText>
+                      <Dropdown
+                        // value={filters['schedule'].value}
+                        options={plants}
+                        // onChange={handleChangeDate}
+                        placeholder="Select plant"
+                        className="p-column-filter mb-2"
+                        showClear
+                        style={{ width: '100%', borderRadius: '5px' }}
+                      />
+                  </CCol>
                   <CCol sm='4' className=''>
                       <CFormText>Filter by Date</CFormText>
                       <DateRangePicker showOneCalendar placeholder='All time' position='start' />
-                  </CCol>
-                  <CCol sm='3' className=''>
-                      <CFormText>Filter by Day</CFormText>
-                      <Select isClearable options={optionsSelectDay} value={optionsSelectDay.find((option)=>option.value === queryFilter.day) || 7} onChange={handleChangeFilter} placeholder='All day' />
                   </CCol>
                 </CCol>
               </CRow>
