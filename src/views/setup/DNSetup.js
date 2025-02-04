@@ -1,4 +1,4 @@
-import React,{useState,Suspense} from 'react'
+import React,{useState,Suspense, useEffect} from 'react'
 import CIcon from '@coreui/icons-react'
 import * as icon from '@coreui/icons'
 import { Button } from 'primereact/button'
@@ -28,14 +28,53 @@ import {
   CTableRow,
   CTableHeaderCell,
   CTableBody,
+  CFormText,
 } from '@coreui/react'
+import { FaInbox } from 'react-icons/fa6'
+
+import { DataTable } from 'primereact/datatable';
+import { Column } from 'primereact/column';
+import { DatePicker } from 'rsuite';
+
+import useReceivingDataService from '../../services/ReceivingDataServices'
 
 const DNSetup = () => {
+  const [loading, setLoading] = useState(true);
+  const { getDNByDateData } = useReceivingDataService()
+  const [dataDN, setDataDN] = useState([])
+
+  const [filterQuery, setFilterQuery] = useState({
+    date: new Date('2024-01-16'),
+  })
+  
   const [dnsetup, setDnsetup] = useState([])
   const [modalUpload, setModalUpload] = useState(false)
   const [date, setDate] = useState(new Date().toLocaleDateString('en-CA'))
   const [loadingImport, setLoadingImport] = useState(false)
+  
 
+  const getDNbyDate = async(importedDate) => {
+    try {
+      setLoading(true)
+      const dateFormat = importedDate.toISOString().split('T')[0]
+      const response = await getDNByDateData(dateFormat)
+      console.log(response.data)
+      setDataDN(response.data.data)
+
+    } catch (error) {
+      console.error(error)
+      setDataDN([])
+    } finally{
+      setLoading(false)
+    }
+  }
+
+  useEffect(()=>{
+    getDNbyDate(filterQuery.date)
+  }, [filterQuery.date])
+
+
+  
   const exportExcel = () => {
     import('xlsx').then((xlsx) => {
       const mappedData = dnsetup.map((item) => ({
@@ -106,6 +145,16 @@ const DNSetup = () => {
       }
     })
   }
+
+  const renderCustomEmptyMsg = () => {
+    return(
+      <div className='w-100 d-flex flex-column align-items-center justify-content-center py-3' style={{ color: "black", opacity: "50%"}}>
+        <FaInbox size={40}/>
+        <p>DN Data Not Found!</p>
+      </div>
+    )
+  }
+
   return (
     <CContainer fluid>
       <CRow>
@@ -114,47 +163,50 @@ const DNSetup = () => {
           <CCardTitle className="text-center">Delivery Note Data</CCardTitle>
           </CCardHeader>
           <CCardBody>
-            <CRow>
-            <CCol xs={12} sm={12} md={8} lg={8} xl={8}>
-            <div className="d-flex flex-wrap justify-content-start">
-              <Button
-               type="button"
-               label="Upload Data "
-               icon="pi pi-file-import"
-               severity="primary"
-               className="rounded-4 me-2 mb-1 text-white"
-               onClick={showModalUpload}
-               data-pr-tooltip="XLS"
-                  /> 
+            <CRow className='d-flex align-items-end justify-content-between'>
+              <CCol>
+                <div className="d-flex flex-wrap justify-content-start">
                   <Button
-                type="button"
-                label="Import By Excel"
-                icon="pi pi-file-excel"
-                severity="success"
-                className="rounded-4 me-2 mb-1 text-white"
-                onClick={exportExcel}
-                data-pr-tooltip="XLS"
-                  />
-             </div>
-            </CCol>
+                  type="button"
+                  label="Upload Data "
+                  icon="pi pi-file-import"
+                  severity="primary"
+                  className="rounded-4 me-2 mb-1 text-white"
+                  onClick={showModalUpload}
+                  data-pr-tooltip="XLS"
+                      /> 
+                      <Button
+                    type="button"
+                    label="Import By Excel"
+                    icon="pi pi-file-excel"
+                    severity="success"
+                    className="rounded-4 me-2 mb-1 text-white"
+                    onClick={exportExcel}
+                    data-pr-tooltip="XLS"
+                      />
+                </div>
+              </CCol>
+              <CCol className='d-flex justify-content-end'>
+                <div>
+                  <CFormText>Filter by Import Date</CFormText>
+                  <DatePicker value={filterQuery.date} onChange={(e)=>setFilterQuery({ ...filterQuery, date: e})} />
+                </div>
+              </CCol>
             </CRow>
-            <CRow>
-              <CTable responsive bordered className='mt-3'>
-                <CTableHead>
-                  <CTableRow>
-                    <CTableHeaderCell>No</CTableHeaderCell>
-                    <CTableHeaderCell>DN No</CTableHeaderCell>
-                    <CTableHeaderCell>Material No</CTableHeaderCell>
-                    <CTableHeaderCell>Material Desc</CTableHeaderCell>
-                    <CTableHeaderCell>Rack Address</CTableHeaderCell>
-                    <CTableHeaderCell>Planning Quantity</CTableHeaderCell>
-                    <CTableHeaderCell>Date</CTableHeaderCell>
-                  </CTableRow>
-                </CTableHead>
-                <CTableBody>
-                  
-                </CTableBody>
-              </CTable>
+            <CRow className='mt-4'>
+              <DataTable className='p-datatable-gridlines p-datatable-sm custom-datatable text-nowrap' loading={loading} emptyMessage={renderCustomEmptyMsg} value={dataDN} scrollable scrollHeight="500px" showGridlines  paginator rows={10} rowsPerPageOptions={[10, 25, 50, 100]} tableStyle={{ minWidth: '50rem' }}>
+                <Column field="no" header="No" body={(rowData, { rowIndex }) => rowIndex + 1}></Column>
+                <Column field="dnNumber" header="DN No"></Column> 
+                <Column field="materialNo" header="Material No"></Column>
+                <Column field="description" header="Material Desc"></Column>
+                <Column field="addressRackName" header="Rack Address"></Column>
+                <Column field="planningQuantity" header="Req. Qty"></Column>
+                <Column field="uom" header="UoM"></Column>
+                <Column field="arrivalPlanDate" header="Arrival Date Plan"></Column>
+                <Column field="importBy" header="Import By"></Column>
+                <Column field="importDate" header="Import Date"></Column>
+            </DataTable>
+
             </CRow>
             <CModal visible={modalUpload} onClose={() => setModalUpload(false)}>
            <CModalHeader>
