@@ -29,6 +29,15 @@ const useReceivingDataService = () => {
         }
     }
 
+    const getDNInqueryData = async(plantId, startDate, endDate) => {
+        try {
+            const response = await axiosJWT.get(`/delivery-note-inquiry?plantId=${plantId}&startDate=${startDate}&endDate=${endDate}`)
+            return response
+        } catch (error) {
+            handleError(error, "Error fetching file:")
+        }
+    }
+
     const submitMaterialByDNData = async(warehouseId, bodyForm) => {
         try {
             const response = await axiosJWT.post(`/delivery-note-submit/${warehouseId}`, bodyForm)
@@ -41,6 +50,7 @@ const useReceivingDataService = () => {
     return{
         getMaterialByDNData,
         getDNByDateData,
+        getDNInqueryData,
         submitMaterialByDNData
         // getReceivingData,
         // uploadExcelReceivingData
