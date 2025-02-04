@@ -14,6 +14,9 @@ import { useToast } from '../../App'
 import { InputText } from 'primereact/inputtext'
 import { FaCircleCheck, FaCircleExclamation, FaCircleXmark } from "react-icons/fa6";
 import Swal from 'sweetalert2'
+import 'primereact/resources/themes/nano/theme.css'
+import 'primeicons/primeicons.css'
+import 'primereact/resources/primereact.min.css'
 
 const Input = () => {
   const [loading, setLoading] = useState(false)
