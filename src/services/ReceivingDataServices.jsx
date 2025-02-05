@@ -13,7 +13,11 @@ const useReceivingDataService = () => {
 
     const getMaterialByDNData = async(dnNumber) => {
         try {
-            const response = await axiosJWT.get(`/delivery-note?dn=${dnNumber}`)
+            const response = await axiosJWT.get(`/delivery-note?dn=${dnNumber}`, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            })
             return response
         } catch (error) {
             handleError(error, "Error fetching file:")
@@ -22,7 +26,11 @@ const useReceivingDataService = () => {
 
     const getDNByDateData = async(importDate) => {
         try {
-            const response = await axiosJWT.get(`/delivery-note-date?importDate=${importDate}`)
+            const response = await axiosJWT.get(`/delivery-note-date?importDate=${importDate}`, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            })
             return response
         } catch (error) {
             handleError(error, "Error fetching file:")
@@ -31,7 +39,11 @@ const useReceivingDataService = () => {
 
     const getDNInqueryData = async(plantId, startDate, endDate) => {
         try {
-            const response = await axiosJWT.get(`/delivery-note-inquiry?plantId=${plantId}&startDate=${startDate}&endDate=${endDate}`)
+            const response = await axiosJWT.get(`/delivery-note-inquiry?plantId=${plantId}&startDate=${startDate}&endDate=${endDate}`, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            })
             return response
         } catch (error) {
             handleError(error, "Error fetching file:")
@@ -40,7 +52,11 @@ const useReceivingDataService = () => {
 
     const submitMaterialByDNData = async(warehouseId, bodyForm) => {
         try {
-            const response = await axiosJWT.post(`/delivery-note-submit/${warehouseId}`, bodyForm)
+            const response = await axiosJWT.post(`/delivery-note-submit/${warehouseId}`, bodyForm, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            })
             return response
         } catch (error) {
             handleError(error, "Error submitting:")
