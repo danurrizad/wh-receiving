@@ -1,147 +1,144 @@
-import { useState } from 'react';
+import { useState,useEffect} from 'react';
 import { CModal, CModalHeader, CModalBody, CModalFooter, CButton } from '@coreui/react';
-const useChartData = ({currentItems}) => {
+import useDashboardReceivingService from '../services/DashboardService'
+
+const useChartData = ({currentItemDashboard}) => {
     const [selectedVendor, setSelectedVendor] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const color = {
-        yellow: "#FFBB00",
-        red: "#F64242",
-        green: "#35A535"
-    }
+ 
 
-    const setChartData = () => {
-        const labelsVendor = currentItems.map((data)=>data.vendor_name)
-        // Generate time range (hourly labels)
-        const timeLabels = [];
-        for (let hour = 7; hour <= 18; hour++) {
-            timeLabels.push(`${hour.toString().padStart(2, "0")}:00`);
-        }
+    const setChartData  = () => {
+        const labelsVendor = currentItemDashboard?.map((data) => data.supplierName);
+        console.log("Current Items Data:", currentItemDashboard); // Debugging awal
+
         const data = {
             labels: labelsVendor,
             datasets: [
                 {
-                    // backgroundColor: 'red',
                     xAxisId: "x-arrival",
                     label: "Arrival On Schedule",
-                    data: currentItems.map((data) => ({
-                        x: [
-                            parseInt(data.arrival_time.split(":")[0], 10) + parseInt(data.arrival_time.split(":")[1], 10) / 60,
-                            parseInt(data.arrival_time.split(":")[0], 10) + parseInt(data.arrival_time.split(":")[1], 10) / 60 + 0.5,
-                        ],
-                        y: data.vendor_name,
-                    })),
-                    backgroundColor: currentItems.map((data)=> data.status === "Delayed" ? "#F64242" : "#35A535"),
-                    borderColor: currentItems.map((data) => data.status === "Delayed" ? "rgb(240, 15, 15)" : "rgb(36, 173, 47)"), 
-                    backgroundOpacity: [
-                        '50%'
-                    ],
+                    data: currentItemDashboard.map((data) => {
+                        const arrivalHour = data.arrivalActualTime
+                            ? parseInt(data.arrivalActualTime.split(":")[0], 10)
+                            : 0;
+                        const arrivalMinute = data.arrivalActualTime
+                            ? parseInt(data.arrivalActualTime.split(":")[1], 10) / 60
+                            : 0;
+                        const departureHour = data.departureActualTime
+                            ? parseInt(data.departureActualTime.split(":")[0], 10)
+                            : 0;
+                        const departureMinute = data.departureActualTime
+                            ? parseInt(data.departureActualTime.split(":")[1], 10) / 60
+                            : 0;
+
+                        return {
+                            x: [arrivalHour + arrivalMinute, departureHour + departureMinute + 0.5],
+                            y: data.supplierName,
+                        };
+                    }),
+                    backgroundColor: currentItemDashboard.map((data) =>
+                        data.status === "delayed" ? "#F64242" : "#35A535"
+                    ),
+                    borderColor: currentItemDashboard.map((data) =>
+                        data.status === "delayed" ? "rgb(240, 15, 15)" : "rgb(36, 173, 47)"
+                    ),
                     borderWidth: 1,
                 },
                 {
                     xAxisId: "x-plan",
-                    label: 'Arrival Plan',
-                    data: currentItems.map((data) => ({
-                        x: [
-                            parseInt(data.schedule_from.split(":")[0], 10) + parseInt(data.schedule_from.split(":")[1], 10) / 60,
-                            parseInt(data.schedule_to.split(":")[0], 10) + parseInt(data.schedule_to.split(":")[1], 10) / 60,
-                        ],
-                        y: data.vendor_name,
-                    })),
-                   
-                    backgroundColor:[
-                        'rgba(255, 213, 0, 0.56)',
-                    ],
-                    borderColor: [
-                        'rgb(255, 205, 86)',
-                    ],
-                    backgroundOpacity: [
-                        '50%'
-                    ],
+                    label: "Arrival Plan",
+                    data: currentItemDashboard.map((data) => {
+                        const planHour = data.arrivalPlanTime
+                            ? parseInt(data.arrivalPlanTime.split(":")[0], 10)
+                            : 0;
+                        const planMinute = data.arrivalPlanTime
+                            ? parseInt(data.arrivalPlanTime.split(":")[1], 10) / 60
+                            : 0;
+                        const departHour = data.departurePlanTime
+                            ? parseInt(data.departurePlanTime.split(":")[0], 10)
+                            : 0;
+                        const departMinute = data.departurePlanTime
+                            ? parseInt(data.departurePlanTime.split(":")[1], 10) / 60
+                            : 0;
+
+                        return {
+                            x: [planHour + planMinute, departHour + departMinute],
+                            y: data.supplierName,
+                        };
+                    }),
+                    backgroundColor: ["rgba(255, 213, 0, 0.56)"],
+                    borderColor: ["rgb(255, 205, 86)"],
                     borderWidth: 1,
-                    
                 },
             ],
         };
+
         return data;
     };
-    
 
     const getChartOption = () => {
-        const data = setChartData()
+        const data = setChartData();
+
         const config = {
-            indexAxis: 'y',
+            indexAxis: "y",
             maintainAspectRatio: false,
             scales: {
                 x: {
                     position: "top",
-                    // type: "linear",
                     min: 7,
                     max: 18,
                     ticks: {
                         stepSize: 1,
-                        font: {
-                            size: 11, // Ukuran font kecil
-                        },
-                      
-                        color: 'black', // Warna putih untuk label x
+                        font: { size: 11 },
+                        color: "black",
                         callback: (value) => `${value}:00`,
                     },
-                    grid: {
-                    color: "#F8FAFC"},       
+                    grid: { color: "#F8FAFC" },
                 },
                 y: {
                     stacked: true,
                     beginAtZero: false,
                     ticks: {
-                        font: {
-                            size: 10, // Ukuran font kecil untuk sumbu-y
-                        },
-                        color: 'black', // Warna putih untuk label x
+                        font: { size: 10 },
+                        color: "black",
                     },
-                    grid: {
-                        color: "#D9EAFD", // Warna putih untuk garis kotak-kotak di sumbu y
-                    },
+                    grid: { color: "#D9EAFD" },
                 },
             },
             elements: {
-                bar: {
-                    borderWidth: 3,
-
-                },
+                bar: { borderWidth: 3 },
             },
             responsive: true,
             plugins: {
-                backgroundColor: {
-                    color: 'white',
-                  },
                 tooltip: {
-                    backgroundColor: "rgba(84, 70, 70, 0.7)", // Latar belakang tooltip semi-transparan
+                    backgroundColor: "rgba(84, 70, 70, 0.7)",
                     callbacks: {
                         label: (context) => {
-                            const dataIndex = context.dataIndex; // Get the index of the data point
-            
-                            // Use your `currentItems` array to get the schedule details
-                            const schedule = currentItems[dataIndex]; 
-                            if(context.dataset.label === "Arrival On Schedule"){
-                                return `Arrival Time: ${schedule.arrival_time}`;
+                            const dataIndex = context.dataIndex;
+                            const schedule = currentItemDashboard[dataIndex];
+
+                            if (context.dataset.label === "Arrival On Schedule") {
+                                return `Arrival Date: ${schedule.arrivalActualDate} 
+                                        Arrival Time: ${schedule.arrivalActualTime}`;
                             } else {
-                                return `Schedule Plan: ${schedule.schedule_from} - ${schedule.schedule_to}`;
+                                return `Plan Date: ${schedule.arrivalPlanDate} 
+                                        Schedule Time: ${schedule.arrivalPlanTime} - ${schedule.departurePlanTime}`;
                             }
                         },
                     },
                 },
                 legend: {
-                    position: 'top',
-                    display: false
+                    position: "top",
+                    display: false,
                 },
                 title: {
                     display: true,
-                    text: 'SCHEDULE VENDOR WAREHOUSE',
-                    color: 'black', // Warna putih untuk label xx`x`
+                    text: "SCHEDULE VENDOR WAREHOUSE",
+                    color: "black",
                 },
             },
             onClick: (event, chartElements, chart) => {
-                const points = chart.getElementsAtEventForMode(event, 'nearest', { intersect: true }, false);
+                const points = chart.getElementsAtEventForMode(event, "nearest", { intersect: true }, false);
                 if (points.length) {
                     const firstPoint = points[0];
                     const label = chart.data.labels[firstPoint.index]; // Y-axis label
@@ -150,10 +147,11 @@ const useChartData = ({currentItems}) => {
                     setIsModalOpen(true);
                 }
             },
-          };
-        return config
-    }
-    const ModalComponent = () => (
+        };
+
+        return config;
+    };
+const ModalComponent = () => (
         <CModal visible={isModalOpen} onClose={() => setIsModalOpen(false)}>
             <CModalHeader closeButton>Vendor Selected</CModalHeader>
             <CModalBody>
@@ -171,5 +169,4 @@ const useChartData = ({currentItems}) => {
         selectedVendor
     }
 }
-
 export default useChartData
