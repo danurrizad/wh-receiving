@@ -34,9 +34,11 @@ import { FaInbox } from 'react-icons/fa6'
 
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
-import { DatePicker } from 'rsuite';
+import { DatePicker, Input } from 'rsuite';
 
 import useReceivingDataService from '../../services/ReceivingDataServices'
+import { FilterMatchMode } from 'primereact/api'
+import { InputText } from 'primereact/inputtext'
 
 const DNSetup = () => {
   const [loading, setLoading] = useState(true);
@@ -45,9 +47,9 @@ const DNSetup = () => {
 
   const [filterQuery, setFilterQuery] = useState({
     date: new Date('2024-01-16'),
+    global: { value: null, matchMode: FilterMatchMode.CONTAINS },
   })
-  
-  const [dnsetup, setDnsetup] = useState([])
+  const [globalFilterValue, setGlobalFilterValue] = useState('');
   const [modalUpload, setModalUpload] = useState(false)
   const [date, setDate] = useState(new Date().toLocaleDateString('en-CA'))
   const [loadingImport, setLoadingImport] = useState(false)
@@ -58,7 +60,7 @@ const DNSetup = () => {
       setLoading(true)
       const dateFormat = importedDate.toISOString().split('T')[0]
       const response = await getDNByDateData(dateFormat)
-      console.log(response.data)
+      console.log(response.data.data[0])
       setDataDN(response.data.data)
 
     } catch (error) {
@@ -73,17 +75,27 @@ const DNSetup = () => {
     getDNbyDate(filterQuery.date)
   }, [filterQuery.date])
 
+  const onGlobalFilterChange = (e) => {
+    const value = e;
+    let _filters = { ...filterQuery };
 
+    _filters['global'].value = value;
+
+    setFilterQuery(_filters);
+    setGlobalFilterValue(value);
+};
   
   const exportExcel = () => {
     import('xlsx').then((xlsx) => {
-      const mappedData = dnsetup.map((item) => ({
-        dnNo: item.dnNo,
-        materialNo: item.materialNo,
-        description: item.description,
-        addressRack: item.addressRack,
-        qtyPlanning: item.qtyPlanning,
-        date: item.date,
+      const mappedData = dataDN.map((item) => ({
+        "DN No": item.dnNumber,
+        "Material No": item.materialNo,
+        "Material Desc": item.description,
+        "Rack Address": item.addressRackName,
+        "Req. Qty": item.planningQuantity,
+        "Arv. Date Plan": item.arrivalPlanDate,
+        "Imported By": item.importBy,
+        "Imported At": item.importDate,
       }))
 
       // Deklarasikan worksheet hanya sekali
@@ -158,7 +170,7 @@ const DNSetup = () => {
   return (
     <CContainer fluid>
       <CRow>
-        <CCard className='p-0'>
+        <CCard className='p-0 mb-4'>
           <CCardHeader>
           <CCardTitle className="text-center">Delivery Note Data</CCardTitle>
           </CCardHeader>
@@ -177,7 +189,7 @@ const DNSetup = () => {
                       /> 
                       <Button
                     type="button"
-                    label="Import By Excel"
+                    label="Export To Excel"
                     icon="pi pi-file-excel"
                     severity="success"
                     className="rounded-4 me-2 mb-1 text-white"
@@ -186,7 +198,11 @@ const DNSetup = () => {
                       />
                 </div>
               </CCol>
-              <CCol className='d-flex justify-content-end'>
+              <CCol className='d-flex justify-content-end gap-3'>
+                <div>
+                  <CFormText>Search</CFormText>
+                  <Input value={globalFilterValue} onChange={onGlobalFilterChange} placeholder='Keyword search'/>
+                </div>
                 <div>
                   <CFormText>Filter by Import Date</CFormText>
                   <DatePicker value={filterQuery.date} onChange={(e)=>setFilterQuery({ ...filterQuery, date: e})} />
@@ -194,7 +210,20 @@ const DNSetup = () => {
               </CCol>
             </CRow>
             <CRow className='mt-4'>
-              <DataTable className='p-datatable-gridlines p-datatable-sm custom-datatable text-nowrap' loading={loading} emptyMessage={renderCustomEmptyMsg} value={dataDN} scrollable scrollHeight="500px" showGridlines  paginator rows={10} rowsPerPageOptions={[10, 25, 50, 100]} tableStyle={{ minWidth: '50rem' }}>
+              <DataTable 
+                className='p-datatable-gridlines p-datatable-sm custom-datatable text-nowrap' 
+                loading={loading} 
+                emptyMessage={renderCustomEmptyMsg} 
+                filters={filterQuery}
+                value={dataDN} 
+                scrollable 
+                scrollHeight="500px" 
+                showGridlines  
+                paginator 
+                rows={10} 
+                rowsPerPageOptions={[10, 25, 50, 100]} 
+                tableStyle={{ minWidth: '50rem' }}
+              >
                 <Column field="no" header="No" body={(rowData, { rowIndex }) => rowIndex + 1}></Column>
                 <Column field="dnNumber" header="DN No"></Column> 
                 <Column field="materialNo" header="Material No"></Column>
@@ -222,6 +251,7 @@ const DNSetup = () => {
                 maxDate: new Date(),
                 allowInput: true,
               }}
+              disabled
               onChange={handleDateChange}
               className="form-control"
               placeholder="Select a date"
@@ -244,7 +274,7 @@ const DNSetup = () => {
               </div>
             }
           >
-            <CButton color="primary" onClick={() => handleImport()}>
+            <CButton color="success" className='text-white' onClick={() => handleImport()}>
               {loadingImport ? (
                 <>
                   <CSpinner component="span" size="sm" variant="grow" className="me-2" />
