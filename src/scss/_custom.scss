@@ -120,3 +120,17 @@ td input.p-inputtext.p-component {
   cursor: pointer !important;
   border: 0;
 }
+
+.rs-picker-error>.rs-picker-input-group{
+  border-color: gray !important;
+  outline: none !important;
+}
+
+.rs-picker-error>.rs-picker-input-group:focus, .rs-picker-error>.rs-picker-input-group:active{
+  border-color: #3498ff !important;
+  outline: 3px solid rgb(from #3498ff r g b/25%) !important;
+}
+
+.rs-picker-error>.rs-picker-input-group:hover{
+  border-color: #3498ff !important;
+}
