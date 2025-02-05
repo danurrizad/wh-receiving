@@ -482,7 +482,7 @@ const handleSubmitChangeQty = (rowIndex, rowData) => {
                     size='small'
                     // emptyMessage={renderCustomEmptyMsg}
                     scrollable
-                    scrollHeight="60vh"
+                    scrollHeight="50vh"
                     showGridlines
                     paginator
                     rows={10}
