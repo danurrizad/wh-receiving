@@ -66,66 +66,106 @@ const VendorSetup = () => {
       const getScheduleAll = async(plantId, day) => {
         try {
           const response = await getScheduleAllData(plantId, day)
+          console.log("response :", response)
+          console.log("response schedule:", response.data.data)
           setDataSchedule(response.data.data)
         } catch (error) {
-          addToast(error, 'error', 'error')
+          console.error(error)
+          setDataSchedule([])
         } finally{
           setLoading(false)
         }
       }
-
-      useEffect(()=>{
-        getScheduleAll("", 1)
-      }, [])
-
       
       const [loading, setLoading] = useState(true);
       const [filters, setFilters] = useState({
-        'Supplier.SupplierName': { value: null, matchMode: 'contains' },
-        'schedule': { value: null, matchMode: 'equals' },
-        'Plant.PlantName': { value: null, matchMode: 'equals' }
+        global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+        day: "",
+        plant: "",
       });
+      const [globalFilterValue, setGlobalFilterValue] = useState('');
       const [days] = useState(['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']);
       const [plants] = useState(['Karawang 1', 'Karawang 2', 'Karawang 3', 'Sunter 1', 'Sunter 2']);
       
       const getDays = (day) => {
-        const daysMap = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-        if (typeof day === 'number') return daysMap[day];
-        return daysMap.indexOf(day);
-      };
+        switch (day) {
+          case 'Sunday':
+            return 0
+          case 'Monday':
+            return 1
+          case 'Tuesday':
+            return 2
+          case 'Wednesday':
+            return 3
+          case 'Thursday':
+            return 4
+          case 'Friday':
+            return 5
+          case 'Saturday':
+            return 6
+          case '':
+            return ''
+          case 0:
+            return 'Sunday'
+          case 1:
+            return 'Monday'
+          case 2:
+            return 'Tuesday'
+          case 3:
+            return 'Wednesday'
+          case 4:
+            return 'Thursday'
+          case 5:
+            return 'Friday'
+          case 6:
+            return 'Saturday'
+        }
+      } 
 
-      const dayRowFilterTemplate = (options) => {
-        console.log("Options in dayRowFilterTemplate:", options); // Log options for debugging
-        return (
-          <Dropdown
-            value={options.value || null} // Ensure value is defined
-            options={days}
-            itemTemplate={dayItemTemplate}
-            onChange={(e) => {
-              console.log("Selected value:", e.value); // Log selected value
-              options.filterApplyCallback(e.value); // Apply the filter
-            }}
-            placeholder="Select day"
-            className="p-column-filter"
-            showClear
-            style={{ minWidth: '12rem' }}
-          />
-        );
-      };
-      
+      const getPlantId = (plant) => {
+        switch (plant) {
+          case 'Karawang 1':
+            return 1
+          case 'Karawang 2':
+            return 2
+          case 'Karawang 3':
+            return 3
+          case 'Sunter 1':
+            return 4
+          case 'Sunter 2':
+            return 5
+          case '':
+            return ""
+        }
+      }
 
-      const dayItemTemplate = (option) => <Tag value={option} />;
+      const onGlobalFilterChange = (e) => {
+        const value = e.target.value;
+        console.log(e.target.value)
+        let _filters = { ...filters };
+    
+        _filters['global'].value = value;
+    
+        setFilters(_filters);
+        setGlobalFilterValue(value);
+    };
+
+      useEffect(()=>{
+        getScheduleAll(getPlantId(filters.plant), getDays(filters.day))
+      }, [filters.day, filters.plant])
 
 
       const exportExcel = () => {
         import('xlsx').then((xlsx) => {
-          const mappedData = dnsetup.map((item) => ({
-            dnNo: item.dnNo,
-            materialNo: item.materialNo,
-            description: item.description,
-            addressRack: item.addressRack,
-            qtyPlanning: item.qtyPlanning,
-            date: item.date,
+          const mappedData = dataSchedule.map((item) => ({
+            "Vendor Code": item.Supplier.supplierCode,
+            "Vendor Name": item.Supplier.SupplierName,
+            "Day": getDays(item.schedule),
+            "Arrival Time": formatTime(item.arrival),
+            "Departure Time": formatTime(item.departure),
+            "Rit": item.rit,
+            "Plant": item.Plant.PlantName,
+            "Truck Station": item.truckStation,
           }))
     
           // Deklarasikan worksheet hanya sekali
@@ -210,9 +250,7 @@ const VendorSetup = () => {
           addToast("File uploaded", 'success', 'success')
 
         } catch (error) {
-          console.log("Error response upload :", error)
-          addToast("Upload error!", 'error', 'error')
-          
+          console.log("Error response upload :", error)          
         }
       }
 
@@ -233,151 +271,178 @@ const VendorSetup = () => {
 
   return (
     <CContainer fluid>
-        <CRow className=''>
-            <CCard className='p-0'>
-                <CCardHeader>
-                    <CCardTitle className="text-center">Vendor Schedule Data</CCardTitle>
-                </CCardHeader>
-                <CCardBody>
-                <CRow>
-                <CCol xs={12} sm={12} md={8} lg={8} xl={8}>
-                  <div className="d-flex flex-wrap justify-content-start">
-                <Button
-                 type="button"
-                label="Upload Data "
-                 icon="pi pi-file-import"
-                 severity="primary"
-                 className="rounded-4 me-2 mb-1 text-white"
-                onClick={showModalUpload}
-                data-pr-tooltip="XLS"
-                    /> 
-                <Button
-                type="button"
-                label="Import By Excel"
-                   icon="pi pi-file-excel"
+      <CRow className=''>
+          <CCard className='p-0 mb-3'>
+              <CCardHeader>
+                  <CCardTitle className="text-center">Vendor Schedule Data</CCardTitle>
+              </CCardHeader>
+              <CCardBody>
+              <CRow>
+                <CCol className='d-flex align-items-center'>
+                  <Button
+                    type="button"
+                    label="Upload Data "
+                    icon="pi pi-file-import"
+                    severity="primary"
+                    className="rounded-4 me-2 mb-1 text-white"
+                    onClick={showModalUpload}
+                    data-pr-tooltip="XLS"
+                  /> 
+                  <Button
+                    type="button"
+                    label="Export To Excel"
+                    icon="pi pi-file-excel"
                     severity="success"
                     className="rounded-4 me-2 mb-1 text-white"
-                     onClick={exportExcel}
-                      data-pr-tooltip="XLS"
-                       />
-                        </div>
-                   </CCol>
-                    </CRow>
-                    <CRow>
-                      <CCol xs={2}>
-                        <CFormText>Filter by Plant</CFormText>
-                        <Dropdown
-                          value={filters['Plant.PlantName'].value}
-                          options={plants}
-                          onChange={
-                            (e) => {
-                              setFilters({
-                                ...filters,
-                                'Plant.PlantName': { value: e.value, matchMode: 'equals' }
-                              })
-                            }
-                          }
-                          placeholder="Select plant"
-                          className="p-column-filter mb-2"
-                          showClear
-                          style={{ width: '100%', borderRadius: '5px' }}
-                        />
-                      </CCol>
-                      <CCol xs={2}>
-                        <CFormText>Filter by Day</CFormText>
-                        <Dropdown
-                          value={filters['schedule'].value}
-                          options={days}
-                          // onChange={handleChangeDate}
-                          placeholder="Select day"
-                          className="p-column-filter mb-2"
-                          showClear
-                          style={{ width: '100%', borderRadius: '5px' }}
-                        />
-                      </CCol>
-                    </CRow>
-                    <DataTable
-                      className='p-datatable-gridlines p-datatable-sm custom-datatable text-nowrap'
-                      removableSort
-                      filters={filters}
-                      size='small'
-                      emptyMessage={renderCustomEmptyMsg}
-                      scrollable
-                      scrollHeight="500px"
-                      showGridlines
-                      paginator
-                      rows={10}
-                      rowsPerPageOptions={[10, 25, 50, 100]}
-                      value={dataSchedule}
-                      dataKey="id"
-                      onFilter={(e) => setFilters(e.filters)}
-                      filterDisplay="row"
-                      loading={loading}
-                    >
-                      <Column className='' header="No" body={(rowData, { rowIndex }) => rowIndex + 1} />
-                      <Column className='' field='Supplier.supplierCode' sortable header="Vendor Code" />
-                      <Column className='' field='Supplier.SupplierName' filterField='Supplier.SupplierName' sortable filter filterPlaceholder="Search by vendor name" header="Vendor Name" />
-                      <Column className='' field="schedule" filterField='schedule' sortable header="Day" body={(rowData) => getDays(rowData.schedule)} />
-                      <Column className='' field="arrival" sortable header="Arrival Time" dataType="date" body={(rowData) => formatTime(rowData.arrival)} />
-                      <Column className='' field="departure" sortable header="Departure Time" dataType="date" body={(rowData) => formatTime(rowData.departure)} />
-                      <Column className='' field="rit" sortable header="Rit" dataType="number" />
-                      <Column className='' field="Plant.PlantName" sortable header="Plant" />
-                      <Column className='' field="truckStation" sortable header="Truck Station" />
-                    </DataTable>
-                    
-                       <CModal visible={modalUpload} onClose={() => setModalUpload(false)}>
-                               <CModalHeader>
-                              <CModalTitle id="LiveDemoExampleLabel">Upload Master Material</CModalTitle>
-                            </CModalHeader>
-                            <CModalBody>
-                              <div className="mb-3">
-                                <CFormLabel>Date</CFormLabel>
-                                <Flatpickr
-                                  value={date}
-                                  options={{
-                                    dateFormat: 'Y-m-d',
-                                    maxDate: new Date(),
-                                    allowInput: true,
-                                  }}
-                                  onChange={handleDateChange}
-                                  className="form-control"
-                                  placeholder="Select a date"
-                                />
-                              </div>
-                              <div className="mb-3">
-                                <CFormInput
-                                  onChange={handleFileChange} // Handle perubahan file
-                                  type="file"
-                                  label="Excel File"
-                                  accept=".xlsx" // Hanya menerima file Excel
-                                />
-                              </div>
-                            </CModalBody>
-                            <CModalFooter>
-                              <Suspense
-                                fallback={
-                                <div className="pt-3 text-center">
-                                 <CSpinner color="primary" variant="grow" />
-                                </div>
-                                }
-                              >
-                             {/* <CButton color="primary" onClick={() => handleImport()}> */}
-                             <CButton color="primary" onClick={() => handleUploadFileSchedule(uploadData.file, uploadData.importDate)}>
-                                 {loadingImport ? (
-                                 <>
-                                 <CSpinner component="span" size="sm" variant="grow" className="me-2" />
-                                 Importing...
-                                 </>
-                             ) : (
-                             'Import'
-                            )}
-                        </CButton>
-                        </Suspense>
-                    </CModalFooter>
-                  </CModal>
-                </CCardBody>
-            </CCard>
-        </CRow>
+                    onClick={exportExcel}
+                    data-pr-tooltip="XLS"
+                  />
+                </CCol>
+              </CRow>
+              <CRow className='mb-3'>
+                <CCol xs={8}>
+                  <CFormText>Search</CFormText>
+                  <InputText value={globalFilterValue} onChange={onGlobalFilterChange} placeholder='Keyword search' style={{ borderRadius: '5px', padding: "5.5px"}}/>
+                </CCol>
+                <CCol xs={2}>
+                  <CFormText>Filter by Plant</CFormText>
+                  <Dropdown
+                    value={filters.plant}
+                    options={plants}
+                    onChange={
+                      (e) => {
+                        console.log(e)
+                        if(e.value !== undefined){
+                          setFilters({
+                            ...filters,
+                            plant: e.value 
+                          })
+                        } else{
+                          setFilters({
+                            ...filters,
+                            plant: "" 
+                          })
+                        }
+                      }
+                    }
+                    placeholder="All plant"
+                    className="p-column-filter mb-2"
+                    showClear
+                    style={{ width: '100%', borderRadius: '5px' }}
+                  />
+                </CCol>
+                <CCol xs={2}>
+                  <CFormText>Filter by Day</CFormText>
+                  <Dropdown
+                    value={filters.day}
+                    options={days}
+                    onChange={
+                      (e) => {
+                        if(e.value !== undefined){
+                          setFilters({
+                            ...filters,
+                            day: e.value
+                          })
+                        } else{
+                          setFilters({
+                            ...filters,
+                            day: ""
+                          })
+                        }
+                      }
+                    }
+                    placeholder="All day"
+                    className="p-column-filter mb-2"
+                    showClear
+                    style={{ width: '100%', borderRadius: '5px' }}
+                  />
+                </CCol>
+              </CRow>
+              <DataTable
+                className='p-datatable-gridlines p-datatable-sm custom-datatable text-nowrap'
+                removableSort
+                filters={filters}
+                size='small'
+                emptyMessage={renderCustomEmptyMsg}
+                scrollable
+                scrollHeight="500px"
+                showGridlines
+                paginator
+                rows={10}
+                rowsPerPageOptions={[10, 25, 50, 100]}
+                value={dataSchedule}
+                dataKey="id"
+                onFilter={(e) => setFilters(e.filters)}
+                filterDisplay="row"
+                loading={loading}
+              >
+                <Column className='' header="No" body={(rowData, { rowIndex }) => rowIndex + 1} />
+                <Column className='' field='Supplier.supplierCode' sortable header="Vendor Code" />
+                <Column className='' field='Supplier.SupplierName' filterField='Supplier.SupplierName' sortable header="Vendor Name" />
+                <Column className='' field="schedule" filterField='schedule' sortable header="Day" body={(rowData) => getDays(rowData.schedule)} />
+                <Column className='' field="arrival" sortable header="Arrival Time" dataType="date" body={(rowData) => formatTime(rowData.arrival)} />
+                <Column className='' field="departure" sortable header="Departure Time" dataType="date" body={(rowData) => formatTime(rowData.departure)} />
+                <Column className='' field="rit" sortable header="Rit" dataType="number" />
+                <Column className='' field="Plant.PlantName" sortable header="Plant" />
+                <Column className='' field="truckStation" sortable header="Truck Station" />
+              </DataTable>
+                  
+
+
+              {/* ---------------------------------------------------------------------MODAL----------------------------------------------------------------------------- */}
+              <CModal visible={modalUpload} onClose={() => setModalUpload(false)}>
+                <CModalHeader>
+                  <CModalTitle id="LiveDemoExampleLabel">Upload Vendor Schedule</CModalTitle>
+                </CModalHeader>
+                <CModalBody>
+                  <div className="mb-3">
+                    <CFormLabel>Date</CFormLabel>
+                    <Flatpickr
+                      value={date}
+                      options={{
+                        dateFormat: 'Y-m-d',
+                        maxDate: new Date(),
+                        allowInput: true,
+                      }}
+                      onChange={handleDateChange}
+                      disabled
+                      className="form-control"
+                      placeholder="Select a date"
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <CFormInput
+                      onChange={handleFileChange} // Handle perubahan file
+                      type="file"
+                      label="Excel File"
+                      accept=".xlsx" // Hanya menerima file Excel
+                    />
+                  </div>
+                </CModalBody>
+                <CModalFooter>
+                  <Suspense
+                    fallback={
+                    <div className="pt-3 text-center">
+                      <CSpinner color="primary" variant="grow" />
+                    </div>
+                    }
+                  >
+                    <CButton color="success" className='text-white' onClick={() => handleUploadFileSchedule(uploadData.file, uploadData.importDate)}>
+                      {loadingImport ? (
+                          <>
+                            <CSpinner component="span" size="sm" variant="grow" className="me-2" />
+                            Importing...
+                          </>
+                        ) : (
+                        'Import'
+                      )}
+                    </CButton>
+                  </Suspense>
+                </CModalFooter>
+              </CModal>
+            </CCardBody>
+          </CCard>
+      </CRow>
     </CContainer>
   )
 }

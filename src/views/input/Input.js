@@ -12,7 +12,7 @@ import { Column } from 'primereact/column'
 import useReceivingDataService from './../../services/ReceivingDataServices';
 import { useToast } from '../../App'
 import { InputText } from 'primereact/inputtext'
-import { FaCircleCheck, FaCircleExclamation, FaCircleXmark } from "react-icons/fa6";
+import { FaCircleCheck, FaCircleExclamation, FaCircleXmark, FaInbox } from "react-icons/fa6";
 import Swal from 'sweetalert2'
 import 'primereact/resources/themes/nano/theme.css'
 import 'primeicons/primeicons.css'
@@ -240,8 +240,9 @@ const Input = () => {
     handleDisableInput(rowData)
 
     const remainInData = rowData.remain
+    const reqQty = rowData.reqQuantity
     const inputAct = Number(qtyEachMaterials.qty[rowIndex.rowIndex])
-    const newRemainQty = remainInData + inputAct
+    const newRemainQty = inputAct - reqQty
 
     setRemainQty((prevState) => ({
       ...prevState,
@@ -329,18 +330,6 @@ const Input = () => {
 
   const handleSubmitMaterials = async() => {
       const { date, time } = getCurrentDateTime();
-      setFormInput({
-        ...formInput,
-        departure_date_actual: date,
-        departure_time_actual: time
-      })
-
-      console.log("----------------------SUBMIT LOG---------------------", )
-      const formBody = createFormBody(formInput, qtyEachMaterials)
-      const warehouseId = dataMaterialsByDN[0].warehouseId
-
-      console.log("formBody to submit :", formBody)
-      console.log("warehouseId :", dataMaterialsByDN[0].warehouseId)
 
       Swal.fire({
         title: "Submit confirmation",
@@ -352,6 +341,18 @@ const Input = () => {
         confirmButtonText: "Submit",
         preConfirm: async () => {
           try {
+            console.log("----------------------SUBMIT LOG---------------------", )      
+            setFormInput({
+              ...formInput,
+              departure_date_actual: date,
+              departure_time_actual: time
+            })
+            const formBody = createFormBody(formInput, qtyEachMaterials)
+            const warehouseId = dataMaterialsByDN[0].warehouseId
+      
+            console.log("formBody to submit :", formBody)
+            console.log("warehouseId :", dataMaterialsByDN[0].warehouseId)
+
             const response = await submitMaterialByDNData(warehouseId, formBody)
             console.log("Response submit :", response)
             await getMaterialByDN(formBody.dnNumber)
@@ -472,6 +473,15 @@ const Input = () => {
     )
   }
 
+  const renderCustomEmptyMsg = () => {
+    return(
+      <div className='w-100 d-flex flex-column align-items-center justify-content-center py-3' style={{ color: "black", opacity: "50%"}}>
+        <FaInbox size={40}/>
+        <p>Material Data Not Found!</p>
+      </div>
+    )
+  }
+
   return (
     <CContainer fluid>
         <CRow className='mb-4'>
@@ -495,6 +505,9 @@ const Input = () => {
                             max={99} // Maximum value (5 digits)
                             disabled={formInput.rit !== 0}
                             className=''
+                            style={{
+                              borderColor: "maroon"
+                            }}
                             type='text'
                             inputMode='numeric'
                             placeholder='Insert DN Number'
@@ -586,7 +599,7 @@ const Input = () => {
               <CRow className='mt-4'>
                   
                   {/* Table */}
-                  <DataTable className='p-datatable-gridlines p-datatable-sm custom-datatable text-nowrap' size='small' showGridlines value={dataMaterialsByDN} paginator rows={10} dataKey="materialNo" emptyMessage="No materials found.">
+                  <DataTable className='p-datatable-gridlines p-datatable-sm custom-datatable text-nowrap' size='small' showGridlines value={dataMaterialsByDN} paginator rows={10} dataKey="materialNo" emptyMessage={renderCustomEmptyMsg}>
                       <Column className='' field="" header="No" body={(rowData, { rowIndex }) => rowIndex + 1}/>
                       <Column className='' field='materialNo' header="Material No"  />
                       <Column className='' field='description' header="Material Description"  />

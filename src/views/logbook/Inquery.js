@@ -13,7 +13,8 @@ import { useToast } from '../../App';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { FilterMatchMode, FilterOperator } from 'primereact/api';
-import { FaArrowUpRightFromSquare, FaCircleCheck, FaCircleExclamation, FaCircleXmark } from 'react-icons/fa6';
+import { FaArrowUpRightFromSquare, FaCircleCheck, FaCircleExclamation, FaCircleXmark, FaInbox } from 'react-icons/fa6';
+import Swal from 'sweetalert2'
 
 
 const Book = () => {
@@ -23,7 +24,12 @@ const Book = () => {
   const [ dataDNInquery, setDataDNInquery ] = useState([])
   const [ dataMaterialsByDNInquery, setDataMaterialsByDNInquery ] = useState([])
 
-  const [ showModalInput, setShowModalInput] = useState(false)
+  const [ formUpdate, setFormUpdate ] = useState({})
+
+  const [ showModalInput, setShowModalInput] = useState({
+    state: false,
+    enableSubmit: false
+  })
   const [ showModalScanner, setShowModalScanner ] = useState(false)
 
   const [queryFilter, setQueryFilter] = useState({
@@ -32,6 +38,28 @@ const Book = () => {
     rangeDate: [new Date('2025-01-01'), new Date('2025-01-30')],
     global: { value: null, matchMode: FilterMatchMode.CONTAINS },
   })
+
+  const handleChangeRangeDate = (value) => {
+    if(value !== null){
+      setQueryFilter({
+        ...queryFilter,
+        rangeDate: value
+      })
+    } else{
+      setQueryFilter({
+        ...queryFilter,
+        rangeDate: [null, null]
+      })
+    }
+  }
+
+  const handleChangeFilterPlant = (e) => {
+    if(e.value !== undefined){
+      setQueryFilter({ ...queryFilter, plantId: e.target.value})
+    } else{
+      setQueryFilter({ ...queryFilter, plantId: ""})
+    }
+  }
 
   const [globalFilterValue, setGlobalFilterValue] = useState('');
   
@@ -66,13 +94,25 @@ const Book = () => {
 
   const getDNInquery = async(plantId, startDate, endDate) => {
     try {
-      // const dateFormat = date.toISOString().split('T')[0]
+      setLoading(true)
       const idPlant = getPlantId(plantId)
-      const response = await getDNInqueryData(idPlant, startDate, endDate) 
-      console.log("response :", response.data.data)
-      setDataDNInquery(response.data.data)
+      if(startDate !== null && endDate !== null) {
+        const formattedStart = startDate.toISOString().split('T')[0]
+        const formattedTo = endDate.toISOString().split('T')[0]
+        
+        const response = await getDNInqueryData(idPlant, formattedStart, formattedTo) 
+        console.log("response :", response.data.data)
+        setDataDNInquery(response.data.data)
+      }else{
+        const response = await getDNInqueryData(idPlant, "", "") 
+        console.log("response :", response.data.data)
+        setDataDNInquery(response.data.data)
+      }
     } catch (error) {
       console.error(error)
+      setDataDNInquery([])
+    } finally{
+      setLoading(false)
     }
   }
 
@@ -82,11 +122,26 @@ const Book = () => {
  
 
   const handleClickOpenMaterials = (data) => {
-    setShowModalInput(true)
-    console.log("data :", data.deliveryNotes.Materials)
+    setShowModalInput({...showModalInput, state: true})
+    console.log("data vendor:", data.deliveryNotes)
+    console.log("data material:", data.deliveryNotes.Materials)
+
+    const dataVendor = data.deliveryNotes
+    const dataMaterials = data.deliveryNotes.Materials
     setDataMaterialsByDNInquery(data.deliveryNotes.Materials)
+
+    setFormUpdate({
+      dnNumber: dataVendor.dnNumber,
+      vendorName: dataVendor.supplierName,
+      rit: dataVendor.rit,
+      incomingIds: dataMaterials.map((data)=>data.incomingId),
+      receivedQuantities: dataMaterials.map((data)=>data.receivedQuantity),
+      statuses: dataMaterials.map((data)=>data.status),
+      remains: dataMaterials.map((data)=>data.remain)
+    })
   }
-  
+
+
   const materialsBodyTemplate = (rowBody) => {
     return(
       <div className='d-flex align-items-center justify-content-center'>
@@ -117,24 +172,139 @@ const Book = () => {
     )
   }
 
+
+  const [enabledRows, setEnabledRows] = React.useState([]); // Array of enabled row IDs
+  const inputRefs = useRef({})
+  const handleEnableInput = (rowData) => {
+    setEnabledRows((prev) => [...prev, rowData.description]); // Add row ID to the enabled rows
+
+    const refKey = rowData.description; // Use the row's unique identifier
+    setTimeout(()=>{
+      inputRefs.current[refKey]?.focus(); // Focus the specific input field
+    }, 0)
+
+  };
+
+  const handleDisableInput = (rowData) => {
+    setEnabledRows((prev) => prev.filter((id) => id !== rowData.description)); // Remove row ID from enabled rows
+  };
+
+  const handleInputChangeQty = (rowIndex, rowData, eValue) => {
+    setFormUpdate((prevState) => ({
+      ...prevState,
+      receivedQuantities: prevState.receivedQuantities.map((value, index) =>
+        index === rowIndex && Number(eValue) <= rowData.reqQuantity ? ''+Number(eValue) : value
+      ),
+    }));
+  };
+
+  const handleEnterInputQty = (rowIndex, rowData, e) => {
+    if (e.key === "Enter"){
+      handleSubmitChangeQty(rowIndex, rowData)
+    }
+}
+
+const handleSubmitChangeQty = (rowIndex, rowData) => {
+  handleDisableInput(rowData)
   
+  const remainInData = rowData.remain
+  const reqQty = rowData.reqQuantity
+  const inputAct = Number(formUpdate.receivedQuantities[rowIndex.rowIndex])
+  const newRemainQty = inputAct - reqQty
+  
+  if(remainInData !== newRemainQty){
+    setShowModalInput({...showModalInput, enableSubmit: true})
+  }
+
+  setFormUpdate((prevState) => ({
+    ...prevState,
+    remains: prevState.remains.map((value, index) =>
+      index === rowIndex.rowIndex ? Number(newRemainQty) : value
+    ),
+    statuses: prevState.statuses.map((value, index) => 
+      index === rowIndex.rowIndex && newRemainQty === 0 ? "completed" : 
+      index === rowIndex.rowIndex && newRemainQty === rowData.remain ? value : 
+      index === rowIndex.rowIndex && newRemainQty !== rowData.remain && newRemainQty < 0 ? "partial" : 
+      index === rowIndex.rowIndex && newRemainQty !== rowData.remain && newRemainQty > 0 ? "completed" : 
+      value
+    ),
+    // remains: prevState.remains.map((value, index) => 
+    //   index === rowIndex.rowIndex ? 
+    // )
+  }));
+}
+
+  const recQtyBodyTemplate = (rowData, rowIndex) => {
+    const isInputEnabled = enabledRows.includes(rowData.description); 
+    const recQty = rowData.receivedQuantity
+    const indexMaterial = rowIndex.rowIndex
+    return(
+      <div className='d-flex gap-3 align-items-center justify-content-center'>
+        {/* Input Field */}
+                <InputText
+                   ref={(el) => (inputRefs.current[rowData.description] = el)}
+                   id={`inputQty-${rowData.description}`}
+                   type='text'
+                  disabled={!isInputEnabled}
+                  placeholder='-'
+                  value={formUpdate.receivedQuantities[indexMaterial]}
+                  onChange={(e)=>handleInputChangeQty(indexMaterial, rowData, e.target.value)}
+                  onKeyDown={(e)=>handleEnterInputQty(rowIndex, rowData, e)}
+                  onBlur={()=>handleSubmitChangeQty(rowIndex, rowData)}
+                  // onBlur={(e)=>handleEnterInputQty(rowIndex, rowData, e)}
+                  style={{ width: "70px"}}
+                />
+         { isInputEnabled ? (
+              <CButton
+                color=''
+                className="p-button-sm p-button-secondary text-white"
+                // onClick={() => handleClickEditQuantity(rowData)}
+                onClick={()=>handleSubmitChangeQty(rowIndex, rowData)}
+                // onClick={() => handleDisableInput(rowData)}
+              >
+                <CIcon style={{ color: "green"}} icon={icon.cilCheck}/>
+              </CButton>
+            ) : !isInputEnabled ? (
+              <CButton
+                color=''
+                className="p-button-sm p-button-secondary text-white"
+                // onClick={() => handleClickEditQuantity(rowData)}
+                onClick={()=>handleEnableInput(rowData)}
+              >
+                <CIcon style={{ color: "gray"}} icon={icon.cilPen}/>
+              </CButton>
+    
+            ) : ""}
+      </div>
+    )
+  }
+
+  const remainBodyTemplate = (rowBody, {rowIndex}) => {
+    const colorText = formUpdate.remains[rowIndex] < 0 ? "red" : "black" 
+    return(
+      <p style={{color: colorText}}>
+        {formUpdate.remains[rowIndex]}
+      </p>
+    )
+  }
 
   const statusQtyBodyTemplate = (rowData, rowIndex) => {
+    const indexMaterial = rowIndex.rowIndex
       return(
         <div className='d-flex justify-content-center'>
           <CTooltip 
             content={ 
-              rowData.status === "not complete" ? "NOT DELIVERED" : 
-              rowData.status === "partial" ? "NOT COMPLETED" : 
-              rowData.status === "completed" ? "COMPLETED" : 
+              formUpdate.statuses[indexMaterial] === "not complete" ? "NOT DELIVERED" : 
+              formUpdate.statuses[indexMaterial] === "partial" ? "NOT COMPLETED" : 
+              formUpdate.statuses[indexMaterial] === "completed" ? "COMPLETED" : 
               "COMPLETED"
             } 
             placement="top"
             >
             <CButton style={{ border: 0}}>
-              { rowData.status === "not complete" ? <FaCircleXmark style={{ color: "#FF0000", fontSize: "24px"}}/> : 
-                rowData.status === "partial" ? <FaCircleExclamation style={{ color: "#FFD43B", fontSize: "24px"}}/> : 
-                rowData.status === "completed" ? <FaCircleCheck style={{ color: "#00DB42", fontSize: "24px"}}/> : 
+              { formUpdate.statuses[indexMaterial] === "not complete" ? <FaCircleXmark style={{ color: "#FF0000", fontSize: "24px"}}/> : 
+                formUpdate.statuses[indexMaterial] === "partial" ? <FaCircleExclamation style={{ color: "#FFD43B", fontSize: "24px"}}/> : 
+                formUpdate.statuses[indexMaterial] === "completed" ? <FaCircleCheck style={{ color: "#00DB42", fontSize: "24px"}}/> : 
                 <FaCircleCheck style={{ color: "#00DB42", fontSize: "24px"}}/>
               }
               
@@ -143,6 +313,66 @@ const Book = () => {
         </div>
       )
     }
+
+    const renderCustomEmptyMsg = () => {
+        return(
+          <div className='w-100 d-flex flex-column align-items-center justify-content-center py-3' style={{ color: "black", opacity: "50%"}}>
+            <FaInbox size={40}/>
+            <p>Data Not Found!</p>
+          </div>
+        )
+      }
+
+
+    const handleSaveChangesMaterials = async() => {
+          // const { date, time } = getCurrentDateTime();
+          // setFormUpdate({
+          //   ...formUpdate,
+          //   updatedDate: date,
+          //   updatedTime: time
+          // })
+    
+          console.log("----------------------SUBMIT LOG---------------------", )
+          // const warehouseId = dataMaterialsByDN[0].warehouseId
+          const formBody = {
+            dnNumber: formUpdate.dnNumber,
+            rit: formUpdate.rit,
+            incomingsId: formUpdate.incomingIds.map(Number),
+            receivedQuantities: formUpdate.receivedQuantities.map(Number)
+          }
+          console.log("formBody to submit :", formBody)
+          // console.log("warehouseId :", dataMaterialsByDN[0].warehouseId)
+    
+          Swal.fire({
+            title: "Save confirmation",
+            text: "Please verify the material quantities before saving!",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#3085d6",
+            cancelButtonColor: "#d33",
+            confirmButtonText: "Save",
+            // preConfirm: async () => {
+            //   try {
+            //     const response = await submitMaterialByDNData(warehouseId, formBody)
+            //     console.log("Response submit :", response)
+            //     await getMaterialByDN(formBody.dnNumber)
+            //     return response.data.message
+            //   } catch (error) {
+            //     console.error(error)
+            //   } 
+            // }
+          }).then(async(result) => {
+            if (result.isConfirmed) {
+              setShowModalInput({ state: false, enableSubmit: false})
+              Swal.fire({
+                title: "Saved!",
+                text: result.value,
+                icon: "success"
+              });
+              getDNInquery(queryFilter.plantId, queryFilter.rangeDate[0], queryFilter.rangeDate[1])
+            }
+          });   
+      }
 
   return (
     <CContainer fluid>
@@ -165,15 +395,17 @@ const Book = () => {
                       <Dropdown
                         value={queryFilter.plantId}
                         options={plants}
-                        // onChange={handleChangeDate}
-                        placeholder="Select plant"
+                        onChange={handleChangeFilterPlant}
+                        // onChange={(e)=>console.log(e.target.value)}
+                        placeholder="All plant"
                         showClear
                         style={{ width: '100%', borderRadius: '5px', padding: '1.75px' }}
                       />
                   </CCol>
                   <CCol sm='auto' className=''>
                       <CFormText>Filter by Date</CFormText>
-                      <DateRangePicker showOneCalendar placeholder='All time' position='start' value={queryFilter.rangeDate} />
+                      <DateRangePicker showOneCalendar placeholder='All time' position='start' value={queryFilter.rangeDate} onChange={handleChangeRangeDate} />
+                      {/* <DateRangePicker showOneCalendar placeholder='All time' position='start' value={queryFilter.rangeDate} onChange={(e)=>console.log(e)} /> */}
                   </CCol>
                 </CCol>
               </CRow>
@@ -184,7 +416,7 @@ const Book = () => {
                     globalFilterFields={['deliveryNotes.dnNumber', 'deliveryNotes.supplierName', 'deliveryNotes.truckStation', '']}
                     filters={queryFilter}
                     size='small'
-                    // emptyMessage={renderCustomEmptyMsg}
+                    emptyMessage={renderCustomEmptyMsg}
                     scrollable
                     scrollHeight="500px"
                     showGridlines
@@ -195,7 +427,7 @@ const Book = () => {
                     // dataKey="id"
                     // onFilter={(e) => setFilters(e.filters)}
                     filterDisplay="row"
-                    // loading={loading}
+                    loading={loading}
                   >
                     <Column className='' header="No" body={(rowBody, {rowIndex})=>rowIndex+1}/>
                     <Column className='' field='deliveryNotes.dnNumber'  header="DN No"/>
@@ -204,11 +436,12 @@ const Book = () => {
                     <Column className='' field='deliveryNotes.rit'  header="Rit" />
                     <Column className='' field='deliveryNotes.arrivalPlanDate'  header="Plan Date" />
                     <Column className='' field='deliveryNotes.arrivalPlanTime'  header="Plan Time" body={plantTimeBodyTemplate} />
-                    <Column className='' field='deliveryNotes.arrivalActualDate'  header="Arrival Date" />
-                    <Column className='' field='deliveryNotes.arrivalActualTime'  header="Arrival Time" />
+                    <Column className='' field='deliveryNotes.arrivalActualDate'  header="Arv. Date" />
+                    <Column className='' field='deliveryNotes.arrivalActualTime'  header="Arv. Time" />
                     {/* <Column className='' field='deliveryNotes.departureActualDate'  header="Departure Date" /> */}
-                    <Column className='' field='deliveryNotes.departureActualTime'  header="Departure Time" />
+                    <Column className='' field='deliveryNotes.departureActualTime'  header="Dpt. Time" />
                     <Column className='' field='deliveryNotes.status'  header="Status" body={statusVendorBodyTemplate} />
+                    <Column className='' field='deliveryNotes.delayTime'  header="Delay Time" />
                     <Column className='' field=''  header="Materials" body={materialsBodyTemplate} />
                 
                   </DataTable>
@@ -222,15 +455,25 @@ const Book = () => {
 
         {/* Modal Upload File */}
         <CModal 
-          visible={showModalInput}
-          onClose={() => setShowModalInput(false)}
+          visible={showModalInput.state}
+          onClose={() => setShowModalInput({state: false, enableSubmit: false})}
           size='xl'
           backdrop="static"
         >
           <CModalHeader>
-            <CModalTitle>Log Receiving</CModalTitle>
+            <CModalTitle>List Materials Received</CModalTitle>
           </CModalHeader>
           <CModalBody> 
+            <CRow>
+              <CCol sm='3'>
+                <CFormText>DN NO</CFormText>  
+                <CFormLabel>{formUpdate.dnNumber}</CFormLabel>
+              </CCol>
+              <CCol>
+                <CFormText>VENDOR NAME</CFormText>  
+                <CFormLabel>{formUpdate.vendorName}</CFormLabel>
+              </CCol>
+            </CRow>
           <CRow className='pt-3'>
             <DataTable
                     className='p-datatable-gridlines p-datatable-sm custom-datatable text-nowrap'
@@ -239,11 +482,11 @@ const Book = () => {
                     size='small'
                     // emptyMessage={renderCustomEmptyMsg}
                     scrollable
-                    scrollHeight="500px"
+                    scrollHeight="50vh"
                     showGridlines
                     paginator
                     rows={10}
-                    rowsPerPageOptions={[10, 25, 50, 100]}
+                    // rowsPerPageOptions={[10, 25, 50, 100]}
                     value={dataMaterialsByDNInquery}
                     // dataKey="id"
                     // onFilter={(e) => setFilters(e.filters)}
@@ -255,44 +498,19 @@ const Book = () => {
                     <Column className='' field='description'  header="Material Description" />
                     <Column className='' field='address'  header="Rack Address" />
                     <Column className='' field='reqQuantity' header="Req. Qty" />
-                    <Column className='' field='receivedQuantity'  header="Act. Qty" />
-                    <Column className='' field='remain'  header="Remain" />
+                    <Column className='' field='receivedQuantity'  header="Act. Qty" body={recQtyBodyTemplate}/>
+                    <Column className='' field='remain'  header="Remain" body={remainBodyTemplate}/>
                     <Column className='' field='status'  header="Status" body={statusQtyBodyTemplate} />
                 
                   </DataTable>
           </CRow>
           <CRow className='mt-3 px-3'>
-            <CButton disabled color='success' className='text-white w-100'>Save changes</CButton>
+            <CButton disabled={!showModalInput.enableSubmit} onClick={handleSaveChangesMaterials} color='success' className='text-white w-100'>Save changes</CButton>
           </CRow>
           </CModalBody>
           
         </CModal>
        
-       
-        {/* Modal QR Scanner */}
-        <CModal 
-          visible={showModalScanner}
-          onClose={() => setShowModalScanner(false)}
-        >
-          <CModalHeader>
-            <CModalTitle>Scan Barcode DN No</CModalTitle>
-          </CModalHeader>
-          <CModalBody className='w-100 overflow-hidden' style={{ position: "relative"}}>
-            <BarcodeScannerComponent
-              width='100%'
-              height='100%'
-              onUpdate={(err, result) => {
-                if (result) console.log("RESULT :", result);
-                else console.warn("BARCODE NOT FOUND");
-              }}
-            />
-            {/* design border camera */}
-            <div style={{position: "absolute", top: '30px', left: '30px', width: '75px', height: '75px', border: "10px solid white", borderRight: '0', borderBottom: '0'}}></div>
-            <div style={{position: "absolute", top: '30px', right: '30px', width: '75px', height: '75px', border: "10px solid white", borderLeft: '0', borderBottom: '0'}}></div>
-            <div style={{position: "absolute", bottom: '30px', left: '30px', width: '75px', height: '75px', border: "10px solid white", borderRight: '0', borderTop: '0'}}></div>
-            <div style={{position: "absolute", bottom: '30px', right: '30px', width: '75px', height: '75px', border: "10px solid white", borderLeft: '0', borderTop: '0'}}></div>
-          </CModalBody>
-        </CModal>
     </CContainer>
   )
 }

@@ -89,8 +89,8 @@ td input.p-inputtext.p-component {
   background-color: rgb(21, 132, 184) !important;
   color: white !important;
   border-radius: 10px !important;
-  width: 32px !important;
-  height: 32px !important;
+  // width: 32px !important;
+  // height: 32px !important;
 }
 
 .p-paginator-page.p-paginator-element.p-link,
@@ -119,4 +119,18 @@ td input.p-inputtext.p-component {
   opacity: 100%;
   cursor: pointer !important;
   border: 0;
+}
+
+.rs-picker-error>.rs-picker-input-group{
+  border-color: gray !important;
+  outline: none !important;
+}
+
+.rs-picker-error>.rs-picker-input-group:focus, .rs-picker-error>.rs-picker-input-group:active{
+  border-color: #3498ff !important;
+  outline: 3px solid rgb(from #3498ff r g b/25%) !important;
+}
+
+.rs-picker-error>.rs-picker-input-group:hover{
+  border-color: #3498ff !important;
 }
