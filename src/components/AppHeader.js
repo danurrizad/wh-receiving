@@ -23,12 +23,14 @@ import {
   cilMenu,
 } from '@coreui/icons'
 import LogoTWIIS2 from 'src/assets/images/logo-twiis-2.png'
+import useVerify from '../hooks/UseVerify'
 
 
 
 const AppHeader = () => {
   const headerRef = useRef()
   const { colorMode, setColorMode } = useColorModes('coreui-free-react-admin-template-theme')
+  const { name, roleName, imgProfile } = useVerify()
 
   const dispatch = useDispatch()
   const sidebarShow = useSelector((state) => state.sidebarShow)
@@ -96,12 +98,12 @@ const AppHeader = () => {
                   borderRadius: '100%',
                 }}
               >
-                <CIcon icon={icon.cilUser} />
+                { imgProfile ? <CImage src={imgProfile}/> : <CIcon icon={icon.cilUser} />}
               </div>
             </CNavLink>
             <CNavLink className="d-flex flex-column justify-content-center h-100" style={{ textDecoration: 'non' }}>
-              <span style={{ fontSize: '', marginTop: '0px'}}>Username</span>
-              <span style={{ fontSize: '10px', marginTop: '0px' }}>ROLE USER</span>
+              <span style={{ fontSize: '', marginTop: '0px'}}>{name}</span>
+              <span style={{ fontSize: '10px', marginTop: '0px' }}>{roleName}</span>
             </CNavLink>
           </CNavItem>
         </CHeaderNav>

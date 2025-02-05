@@ -35,7 +35,8 @@ const useVerify = () => {
       console.error('Error refreshing token:', error)
       addToast("Token expired", 'danger', 'error')
       
-      navigate('/')
+      // navigate('/')
+      window.location.href = 'https://twiis-toyota.web.app/#/login' 
     }
   }
 
@@ -58,12 +59,8 @@ const useVerify = () => {
           setImgProfile(decoded.img)
         } catch (error) {
           console.error('Error refreshing token in interceptor:', error)
-        //   MySwal.fire({
-        //     icon: 'error',
-        //     title: 'Oops...',
-        //     text: 'Token Expired',
-        //   })
-          navigate('/login')
+          // navigate('/login')
+          window.location.href = 'https://twiis-toyota.web.app/#/login' 
         }
       } else {
         config.headers.Authorization = `Bearer ${token}`
