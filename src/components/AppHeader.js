@@ -103,7 +103,7 @@ const AppHeader = () => {
             </CNavLink>
             <CNavLink className="d-flex flex-column justify-content-center h-100" style={{ textDecoration: 'non' }}>
               <span style={{ fontSize: '', marginTop: '0px'}}>{name}</span>
-              <span style={{ fontSize: '10px', marginTop: '0px' }}>{roleName}</span>
+              <span style={{ fontSize: '10px', marginTop: '0px' }}>{roleName.toUpperCase()}</span>
             </CNavLink>
           </CNavItem>
         </CHeaderNav>
