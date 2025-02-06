@@ -52,6 +52,7 @@
     "rsuite": "^5.76.3",
     "simplebar-react": "^3.2.6",
     "sweetalert2": "^11.15.10",
+    "sweetalert2-react-content": "^5.1.0",
     "xlsx": "^0.18.5"
   },
   "devDependencies": {

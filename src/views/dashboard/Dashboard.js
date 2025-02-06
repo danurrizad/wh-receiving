@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect,useRef } from 'react'
 import { dataSchedulesDummy, dataReceivingDummy,dataDummy } from '../../utils/DummyData'
 import  colorStyles from '../../utils/StyleReactSelect'
 import Select from 'react-select'
@@ -11,6 +11,7 @@ import { Column } from 'primereact/column';
 import { IconField } from 'primereact/iconfield'
 import { InputIcon } from 'primereact/inputicon'
 import { InputText } from 'primereact/inputtext'
+import { Dropdown } from 'primereact/dropdown'
 import 'primereact/resources/themes/nano/theme.css'
 import 'primereact/resources/primereact.min.css'
 import { DataTable } from 'primereact/datatable';
@@ -51,6 +52,7 @@ import {
 } from '@coreui/icons'
 import useDashboardReceivingService from '../../services/DashboardService'
 import useChartData from '../../services/ChartDataServices'
+import useMasterDataService from '../../services/MasterDataService'
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -75,14 +77,11 @@ ChartJS.register(
 
 
 const Dashboard = () => {
-
+  const { getMasterData, getMasterDataById } = useMasterDataService()
   const { getDNInqueryData } = useReceivingDataService()
   const { getCardStatusArrival,getChartReceiving } = useDashboardReceivingService()
-  const [ showModalInput, setShowModalInput] = useState(false)
   const [globalFilterValue, setGlobalFilterValue] = useState('');
-  const [ dataDummies, setDataDummies ] = useState(dataDummy)
   const [currentPage, setCurrentPage] = useState(1)
-  const [dates, setDates] = useState([null, null]) // State for date range
   const [itemsPerPage, setItemsPerPage] = useState(10)
   const indexOfLastItem = currentPage * itemsPerPage
   const indexOfFirstItem = indexOfLastItem - itemsPerPage
@@ -93,6 +92,11 @@ const Dashboard = () => {
   const [dataSchedules, setDataSchedules] = useState([]); // Menyimpan data dari API
   const [isVisible, setIsVisible] = useState(true); // State to control visibility
   const [ dataDNInquery, setDataDNInquery ] = useState([])
+   const [ showModalInput, setShowModalInput] = useState({
+      state: false,
+      enableSubmit: false
+    })
+  const [ formUpdate, setFormUpdate ] = useState({})
   const [cardData, setCardData] = useState({
     delayed: 0,
     onSchedule: 0,
@@ -101,35 +105,13 @@ const Dashboard = () => {
   });
   const [ dataMaterialsByDNInquery, setDataMaterialsByDNInquery ] = useState([])
   const toggleVisibility = () => setIsVisible(!isVisible); // Toggle function
+ 
   const [queryFilter, setQueryFilter] = useState({
     plantId: "",
     rangeDate: [new Date('2025-01-01'), new Date('2025-01-30')],
     global: { value: null, matchMode: FilterMatchMode.CONTAINS },
   })
- 
-
- 
- const [ formInput, setFormInput ] = useState({
-    date: "",
-    day: "",
-    vendor_id: "",
-    vendor_name: "",
-    schedule_from: "",
-    schedule_to: "",
-    arrival_time: "",
-    status: "",
-    
-    materials: [{
-      vendor_id: "",
-      dn_no: "",
-      material_no: "",
-      material_desc: "",
-      rack_address: "",
-      req_qty: "",
-      actual_qty: "",
-    }],
-  })
-
+  const [plants] = useState(['Karawang 1', 'Karawang 2', 'Karawang 3', 'Sunter 1', 'Sunter 2']);
   const getPlantId = (plantName) => {
     switch (plantName) {
       case 'Karawang 1':
@@ -231,7 +213,7 @@ const Dashboard = () => {
 
         // Ubah data menjadi format yang sesuai dengan react-select
         const vendorOptions = response.data.map((vendor) => ({
-          label: `${vendor.supplierId} - ${vendor.supplierName}`,
+          label: `${vendor.supplierName}`,
           value: vendor.supplierId,
         }));
 
@@ -251,22 +233,13 @@ const Dashboard = () => {
   // Panggil hook `useChartData` dengan `currentItems`
   const { setChartData, getChartOption, selectedVendor } = useChartData({ currentItemDashboard });
 
+  
 
-  const options = [
-    // { value: 'all', label: 'All' },
-    { value: 'Shortage', label: 'Shortage' },
-    { value: 'Optimal', label: 'Optimal' },
-  ]
   const [ showCard, setShowCard ] = useState({
     summary: true,
     schedule: true,
     receiving: true
   })
-  const onGlobalFilterChange = (e) => {
-    setGlobalFilterValue(e.target.value);
-    setQueryFilter(_filters);
-  };
-
 
   const handleFilterSchedule = (selectedOption) => {
     if (!selectedOption) {
@@ -281,50 +254,7 @@ const Dashboard = () => {
     }
   }
 
- 
 
-  const handleChangeSearch = (e) => {
-    if(e){
-      console.log("e :", e)
-      if(e.value === ""){
-        setDataReceiving(dataReceivingDummy)
-      }
-      else{
-        const matchesSearch = dataReceiving.filter((data)=>data.material_no.includes(e.value)) || dataReceiving.filter((data)=>data.material_desc.includes(e.value))
-        setDataReceiving(matchesSearch);
-      }
-    } else{
-      setDataReceiving(dataReceivingDummy)
-    }
-  }
-
-
-  
-
-const optionsSelectDN = Array.from(
-    new Set(dataReceivingDummy.map((data) => data.dn_no))
-  ).map((uniqueValue) => {
-    return {
-      value: uniqueValue,
-      label: uniqueValue,
-    };
-  });
-  
-  const renderHeader = () => {
-    return (
-      <div>
-        <IconField iconPosition="left">
-          <InputIcon className="pi pi-search" />
-          <InputText
-            value={globalFilterValue}
-            onChange={onGlobalFilterChange}
-            placeholder="Keyword Search"
-            style={{ width: '100%', borderRadius: '5px' }}
-          />
-        </IconField>
-      </div>
-    )
-  }
   const plantOptions = [
     { value: 'all', label: 'All' }, // Menambahkan opsi "All" di awal
     ...plant.map((plant) => ({
@@ -354,16 +284,43 @@ const optionsSelectDN = Array.from(
     )
   }
 
+  const remainBodyTemplate = (rowBody, {rowIndex}) => {
+    const colorText = formUpdate.remains[rowIndex] < 0 ? "red" : "black" 
+    return(
+      <p style={{color: colorText}}>
+        {formUpdate.remains[rowIndex]}
+      </p>
+    )
+  }
+
+  const handleClickOpenMaterials = (data) => {
+    setShowModalInput({...showModalInput, state: true})
+    console.log("data vendor:", data.deliveryNotes)
+    console.log("data material:", data.deliveryNotes.Materials)
+
+    const dataVendor = data.deliveryNotes
+    const dataMaterials = data.deliveryNotes.Materials
+    setDataMaterialsByDNInquery(data.deliveryNotes.Materials)
+
+    setFormUpdate({
+      dnNumber: dataVendor.dnNumber,
+      vendorName: dataVendor.supplierName,
+      rit: dataVendor.rit,
+      incomingIds: dataMaterials.map((data)=>data.incomingId),
+      receivedQuantities: dataMaterials.map((data)=>data.receivedQuantity),
+      statuses: dataMaterials.map((data)=>data.status),
+      remains: dataMaterials.map((data)=>data.remain)
+    })
+  }
   const statusVendorBodyTemplate = (rowData) => {
     const status = rowData.deliveryNotes.status
     const bgColor = status === 'delayed' ? "#F64242" : status === "on schedule" ? "#35A535" : "transparent"
     return(
-      <div className='text-center' style={{ backgroundColor: bgColor, padding: "5px 10px", borderRadius: "5px", color: "white" }}>
+      <div className='text-center' style={{ backgroundColor: bgColor, padding: "5px 10px", color: "white" }}>
         {status}
       </div>
     )
   }
-
    const materialsBodyTemplate = (rowBody) => {
       return(
         <div className='d-flex align-items-center justify-content-center'>
@@ -398,7 +355,15 @@ const optionsSelectDN = Array.from(
             </div>
           )
         }
+        const handleChangeFilterPlant = (e) => {
+          if(e.value !== undefined){
+            setQueryFilter({ ...queryFilter, plantId: e.target.value})
+          } else{
+            setQueryFilter({ ...queryFilter, plantId: ""})
+          }
+        }
 
+      
   return (
   <CContainer fluid>
     <CRow className='mt-4'>
@@ -453,22 +418,15 @@ const optionsSelectDN = Array.from(
             {/* Filter Plant */}
             <div className="d-flex flex-column align-items-center" style={{ width: "60%" }}>
             <CFormText style={{ alignSelf: "flex-start" }}>Filter Plant</CFormText>
-              <Select
-                className="basic-single"
-                classNamePrefix="select"
-                isClearable
-                options={plantOptions} // plantOptions termasuk "All"
-                value={selectedPlant} // Menetapkan state sebagai value yang dipilih
-                id="plant"
-                onChange={handlePlantChange}
-                styles={{
-                  container: (provided) => ({
-                    ...provided,
-                    width: "100%", // Memanfaatkan penuh lebar kolom
-                    zIndex: 1000, // Z-index untuk elemen container
-                  }),
-                }}
-              />
+             <Dropdown
+                                     value={queryFilter.plantId}
+                                     options={plants}
+                                     onChange={handleChangeFilterPlant}
+                                     // onChange={(e)=>console.log(e.target.value)}
+                                     placeholder="All plant"
+                                     showClear
+                                     style={{ width: '100%', borderRadius: '5px', padding: '1.75px' }}
+                                   />
             </div>
           </CCol>
           {/* Kolom kedua */}
@@ -503,6 +461,7 @@ const optionsSelectDN = Array.from(
               <CRow >
               <DataTable
                  removableSort
+                  className="p-datatable-sm  text-nowrap"
                  globalFilterFields={['deliveryNotes.dnNumber', 'deliveryNotes.supplierName', 'deliveryNotes.truckStation', '']}
                  filters={queryFilter}
                  size='small'
@@ -534,6 +493,56 @@ const optionsSelectDN = Array.from(
                   </DataTable>
                  
               </CRow>
+               <CModal 
+                        visible={showModalInput.state}
+                        onClose={() => setShowModalInput({state: false, enableSubmit: false})}
+                        size='xl'
+                        backdrop="static"
+                      >
+                        <CModalHeader>
+                          <CModalTitle>List Materials Received</CModalTitle>
+                        </CModalHeader>
+                        <CModalBody> 
+                          <CRow>
+                            <CCol sm='3'>
+                              <CFormText>DN NO</CFormText>  
+                              <CFormLabel>{formUpdate.dnNumber}</CFormLabel>
+                            </CCol>
+                            <CCol>
+                              <CFormText>VENDOR NAME</CFormText>  
+                              <CFormLabel>{formUpdate.vendorName}</CFormLabel>
+                            </CCol>
+                          </CRow>
+                        <CRow className='pt-1'>
+                        <DataTable
+                             className="p-datatable-sm custom-datatable text-nowrap"
+                             tableStyle={{ minWidth: '50rem' }}
+                             removableSort
+                             size="small"
+                             scrollable
+                             scrollHeight="50vh"
+                             showGridlines
+                             paginator
+                             rows={10}
+                             value={dataMaterialsByDNInquery}
+                             filterDisplay="row"
+                           >
+                                  <Column header="No" body={(rowBody, {rowIndex})=>rowIndex+1} />
+                                  <Column field='materialNo'  header="Material No" />
+                                  <Column field='description'  header="Material Description" />
+                                  <Column field='address'  header="Rack Address" />
+                                  <Column field="reqQuantity" header="Req. Qty" body={(data) => <div className="text-center">{data.reqQuantity}</div>} />
+                                  <Column field="receivedQuantity" header="Act. Qty" body={(data) => <div className="text-center">{data.receivedQuantity}</div>} />
+                                  <Column field="remain" header="Remain" body={remainBodyTemplate} align="center" />
+                                  <Column field='status'  header="Status" body={statusQtyBodyTemplate} />
+                              
+                                </DataTable>
+                        </CRow>
+                        <CRow className='mt-1 px-2'>
+                        </CRow>
+                        </CModalBody>
+                        
+                      </CModal>
             </CCardBody>   
        </CCard>
         </CRow>
@@ -666,6 +675,7 @@ const optionsSelectDN = Array.from(
                  data={setChartData()} 
                  height={200} // Tinggi chart
                 />
+
                </CRow>
                </CCard>
               </CCol>
@@ -741,52 +751,7 @@ const optionsSelectDN = Array.from(
         </CRow>
         
        )}
-        <CModal 
-                 visible={showModalInput}
-                 onClose={() => setShowModalInput(false)}
-                 size='xl'
-                 backdrop="static"
-               >
-                 <CModalHeader>
-                   <CModalTitle>Log Receiving</CModalTitle>
-                 </CModalHeader>
-                 <CModalBody> 
-                 <CRow className='pt-3'>
-                   <DataTable
-                           className='p-datatable-gridlines p-datatable-sm custom-datatable text-nowrap'
-                           removableSort
-                           // filters={filters}
-                           size='small'
-                           // emptyMessage={renderCustomEmptyMsg}
-                           scrollable
-                           scrollHeight="500px"
-                           showGridlines
-                           paginator
-                           rows={10}
-                           rowsPerPageOptions={[10, 25, 50, 100]}
-                           value={dataMaterialsByDNInquery}
-                           // dataKey="id"
-                           // onFilter={(e) => setFilters(e.filters)}
-                           filterDisplay="row"
-                           // loading={loading}
-                         >
-                           <Column className='' header="No" body={(rowBody, {rowIndex})=>rowIndex+1} />
-                           <Column className='' field='materialNo'  header="Material No" />
-                           <Column className='' field='description'  header="Material Description" />
-                           <Column className='' field='address'  header="Rack Address" />
-                           <Column className='' field='reqQuantity' header="Req. Qty" />
-                           <Column className='' field='receivedQuantity'  header="Act. Qty" />
-                           <Column className='' field='remain'  header="Remain" />
-                           <Column className='' field='status'  header="Status" body={statusQtyBodyTemplate} />
-                       
-                         </DataTable>
-                 </CRow>
-                 <CRow className='mt-3 px-3'>
-                   <CButton disabled color='success' className='text-white w-100'>Save changes</CButton>
-                 </CRow>
-                 </CModalBody>
-                 
-               </CModal>
+       
       </CContainer>
   )
 }
