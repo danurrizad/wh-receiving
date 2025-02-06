@@ -22,11 +22,12 @@ import { ColumnGroup } from 'primereact/columngroup';
 const Book = () => {
   const addToast = useToast()
   const [ loading, setLoading ] = useState(false)
-  const { getDNInqueryData } = useReceivingDataService()
+  const { getDNInqueryData, submitUpdateMaterialByDNData } = useReceivingDataService()
   const [ dataDNInquery, setDataDNInquery ] = useState([])
   const [ dataMaterialsByDNInquery, setDataMaterialsByDNInquery ] = useState([])
 
   const [ formUpdate, setFormUpdate ] = useState({})
+  const [ isViewOnly, setIsViewOnly ] = useState({})
 
   const [ showModalInput, setShowModalInput] = useState({
     state: false,
@@ -125,12 +126,14 @@ const Book = () => {
 
   const handleClickOpenMaterials = (data) => {
     setShowModalInput({...showModalInput, state: true})
-    console.log("data vendor:", data.deliveryNotes)
-    console.log("data material:", data.deliveryNotes.Materials)
-
+    // console.log("data vendor:", data.deliveryNotes)
+    // console.log("data material:", data.deliveryNotes.Materials)
+    // console.log("data material viewOnly:", data.deliveryNotes.Materials.map((data)=>Boolean(data.viewOnly)))
+    
     const dataVendor = data.deliveryNotes
     const dataMaterials = data.deliveryNotes.Materials
     setDataMaterialsByDNInquery(data.deliveryNotes.Materials)
+    setIsViewOnly(dataMaterials.map((data)=>Boolean(data.viewOnly)))
 
     setFormUpdate({
       dnNumber: dataVendor.dnNumber,
@@ -139,7 +142,8 @@ const Book = () => {
       incomingIds: dataMaterials.map((data)=>data.incomingId),
       receivedQuantities: dataMaterials.map((data)=>data.receivedQuantity),
       statuses: dataMaterials.map((data)=>data.status),
-      remains: dataMaterials.map((data)=>data.remain)
+      remains: dataMaterials.map((data)=>data.remain),
+      warehouseId: dataVendor.warehouseId
     })
   }
 
@@ -279,7 +283,7 @@ const handleSubmitChangeQty = (rowIndex, rowData) => {
                   // onBlur={(e)=>handleEnterInputQty(rowIndex, rowData, e)}
                   style={{ width: "70px"}}
                 />
-         { isInputEnabled ? (
+         { isInputEnabled && !isViewOnly[indexMaterial] ? (
               <CButton
                 color=''
                 className="p-button-sm p-button-secondary text-white"
@@ -289,7 +293,7 @@ const handleSubmitChangeQty = (rowIndex, rowData) => {
               >
                 <CIcon style={{ color: "green"}} icon={icon.cilCheck}/>
               </CButton>
-            ) : !isInputEnabled ? (
+            ) : !isInputEnabled && !isViewOnly[indexMaterial] ? (
               <CButton
                 color=''
                 className="p-button-sm p-button-secondary text-white"
@@ -348,7 +352,6 @@ const handleSubmitChangeQty = (rowIndex, rowData) => {
         )
       }
 
-
     const handleSaveChangesMaterials = async() => {
           // const { date, time } = getCurrentDateTime();
           // setFormUpdate({
@@ -358,15 +361,17 @@ const handleSubmitChangeQty = (rowIndex, rowData) => {
           // })
     
           console.log("----------------------SUBMIT LOG---------------------", )
-          // const warehouseId = dataMaterialsByDN[0].warehouseId
+          const dnNumber = formUpdate.dnNumber
+          const warehouseId = formUpdate.warehouseId
+          const filteredQty = formUpdate.receivedQuantities.filter((data,index)=>Number(data) !== Number(dataMaterialsByDNInquery[index].receivedQuantity))
+
           const formBody = {
-            dnNumber: formUpdate.dnNumber,
-            rit: formUpdate.rit,
-            incomingsId: formUpdate.incomingIds.map(Number),
-            receivedQuantities: formUpdate.receivedQuantities.map(Number)
+            incomingIds: formUpdate.incomingIds.filter((data,index)=>Number(formUpdate.receivedQuantities[index]) !== Number(dataMaterialsByDNInquery[index].receivedQuantity) && Number(data)),
+            quantities: filteredQty.map(Number),
           }
           console.log("formBody to submit :", formBody)
-          // console.log("warehouseId :", dataMaterialsByDN[0].warehouseId)
+          console.log("dnNumber :", dnNumber)
+          console.log("warehouseId :", warehouseId)
     
           Swal.fire({
             title: "Save confirmation",
@@ -376,25 +381,34 @@ const handleSubmitChangeQty = (rowIndex, rowData) => {
             confirmButtonColor: "#3085d6",
             cancelButtonColor: "#d33",
             confirmButtonText: "Save",
-            // preConfirm: async () => {
-            //   try {
-            //     const response = await submitMaterialByDNData(warehouseId, formBody)
-            //     console.log("Response submit :", response)
-            //     await getMaterialByDN(formBody.dnNumber)
-            //     return response.data.message
-            //   } catch (error) {
-            //     console.error(error)
-            //   } 
-            // }
+            preConfirm: async () => {
+              try {
+                const response = await submitUpdateMaterialByDNData(warehouseId, formBody)
+                await getMaterialByDN(formUpdate.dnNumber)
+                return "Material quantities updated!"
+              } catch (error) {
+                console.warn("ERROR :", error)
+                return error
+              } 
+            }
           }).then(async(result) => {
             if (result.isConfirmed) {
-              setShowModalInput({ state: false, enableSubmit: false})
-              Swal.fire({
-                title: "Saved!",
-                text: result.value,
-                icon: "success"
-              });
-              getDNInquery(queryFilter.plantId, queryFilter.rangeDate[0], queryFilter.rangeDate[1])
+              if(result.value === "Material quantities updated!"){
+                setShowModalInput({ state: false, enableSubmit: false})
+                Swal.fire({
+                  title: "Saved!",
+                  text: result.value,
+                  icon: "success"
+                });
+                getDNInquery(queryFilter.plantId, queryFilter.rangeDate[0], queryFilter.rangeDate[1])
+              } else{
+                Swal.fire({
+                  title: "Failed!",
+                  text: result.value,
+                  icon: "error",
+                  confirmButtonColor: "#3085d6",
+                });
+              }
             }
           });   
       }

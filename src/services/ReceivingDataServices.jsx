@@ -63,11 +63,26 @@ const useReceivingDataService = () => {
         }
     }
 
+    const submitUpdateMaterialByDNData = async(warehouseId, bodyForm) => {
+        try {
+            const response = await axiosJWT.post(`/delivery-note-inquiry/${warehouseId}`, bodyForm, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            })
+            return response
+        } catch (error) {
+            // handleError(error, 'Error updating:')
+            throw error.response.data.message
+        }
+    }
+
     return{
         getMaterialByDNData,
         getDNByDateData,
         getDNInqueryData,
-        submitMaterialByDNData
+        submitMaterialByDNData,
+        submitUpdateMaterialByDNData
         // getReceivingData,
         // uploadExcelReceivingData
     }
