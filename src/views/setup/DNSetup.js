@@ -37,14 +37,19 @@ import { Column } from 'primereact/column';
 import { DatePicker, Input } from 'rsuite';
 
 import useReceivingDataService from '../../services/ReceivingDataServices'
+import useMasterDataService from '../../services/MasterDataService'
 import { FilterMatchMode } from 'primereact/api'
 import { InputText } from 'primereact/inputtext'
+import Select  from 'react-select';
+import { useToast } from '../../App'
 
 const DNSetup = () => {
   const [loading, setLoading] = useState(true);
-  const { getDNByDateData } = useReceivingDataService()
+  const addToast = useToast()
+  const { getDNByDateData, getAllWarehouseData } = useReceivingDataService()
+  const { getMasterData, uploadMasterData } = useMasterDataService()
   const [dataDN, setDataDN] = useState([])
-
+  const [optionsWarehouse, setOptionsWarehouse] = useState({})
   const [filterQuery, setFilterQuery] = useState({
     date: new Date('2024-01-16'),
     global: { value: null, matchMode: FilterMatchMode.CONTAINS },
@@ -53,14 +58,40 @@ const DNSetup = () => {
   const [modalUpload, setModalUpload] = useState(false)
   const [date, setDate] = useState(new Date().toLocaleDateString('en-CA'))
   const [loadingImport, setLoadingImport] = useState(false)
+  const [uploadData, setUploadData] = useState({
+    importDate: new Date().toLocaleDateString('en-CA'),
+    file: ""
+  })
   
+  const getOptionsWarehouse = async() => {
+    try {
+      const response = await getMasterData('warehouse-public') 
+      setOptionsWarehouse({
+        ...optionsWarehouse,
+        list: response.data.map((data)=>{
+          return{
+            value: data.id,
+            label: data.warehouseName
+          }
+        })
+    })
+    } catch (error) {
+      console.error(error)
+    }
+  }
+
+  useEffect(()=>{
+    getOptionsWarehouse()
+  }, [])
 
   const getDNbyDate = async(importedDate) => {
     try {
       setLoading(true)
-      const dateFormat = importedDate.toISOString().split('T')[0]
+      // console.log("Imported Date :", importedDate)
+      const dateFormat = importedDate !== null && importedDate !== "" ? importedDate.toLocaleDateString('en-CA') : importedDate
+      console.log("dateFormat :", dateFormat)
       const response = await getDNByDateData(dateFormat)
-      console.log(response.data.data[0])
+      // console.log(response.data)
       setDataDN(response.data.data)
 
     } catch (error) {
@@ -85,6 +116,53 @@ const DNSetup = () => {
     setGlobalFilterValue(value);
 };
   
+
+  const uploadDN = async(warehouseId, bodyForm) => {
+    try {
+      const response = await uploadMasterData(`upload-delivery-note/${warehouseId}`, bodyForm)
+      addToast(response.data.mess)
+      setModalUpload(false)
+      setFilterQuery({
+        ...filterQuery,
+        date: uploadData.importDate
+      })
+      setUploadData({
+        file: "",
+        importDate: "",
+      })
+    } catch (error) {
+      console.error(error)
+    }
+  }
+
+  const handleUploadFileDN = async(file, importDate) => {
+    try {
+      setLoadingImport(true)
+      // console.log("file :", file)
+      // console.log("date :", importDate)
+      
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('importDate', importDate)
+      // console.log("formData :", formData)
+
+      // Log FormData contents
+        for (let [key, value] of formData.entries()) {
+          console.log(`${key}:`, value);
+      }
+
+      const response = await uploadDN(optionsWarehouse.selected, formData)
+      console.log("Response upload :", response)  
+      // addToast(TemplateToast("success", "success", response.message))
+      // addToast("File uploaded", 'success', 'success')
+
+    } catch (error) {
+      console.log("Error response upload :", error)          
+    } finally{
+      setLoadingImport(false)
+    }
+  }
+
   const exportExcel = () => {
     import('xlsx').then((xlsx) => {
       const mappedData = dataDN.map((item) => ({
@@ -205,7 +283,13 @@ const DNSetup = () => {
                 </div>
                 <div>
                   <CFormText>Filter by Import Date</CFormText>
-                  <DatePicker value={filterQuery.date} onChange={(e)=>setFilterQuery({ ...filterQuery, date: e})} />
+                  <DatePicker 
+                    value={filterQuery.date ? filterQuery.date : null} 
+                    placeholder="All time"
+                    onChange={(e)=>{
+                      console.log(e)
+                      setFilterQuery({ ...filterQuery, date: e !== null ? e : ""})
+                    }} />
                 </div>
               </CCol>
             </CRow>
@@ -236,6 +320,7 @@ const DNSetup = () => {
                 <Column field="importDate" header="Import Date"></Column>
             </DataTable>
 
+
             </CRow>
             <CModal visible={modalUpload} onClose={() => setModalUpload(false)}>
            <CModalHeader>
@@ -257,12 +342,25 @@ const DNSetup = () => {
               placeholder="Select a date"
             />
           </div>
+          <div className='mb-3'>
+            <CFormLabel>Warehouse</CFormLabel>
+            <Select 
+              options={optionsWarehouse.list} 
+              isClearable 
+              value={optionsWarehouse?.list?.find((opt)=>opt.value===optionsWarehouse.selected) || null} 
+              onChange={(e)=>{
+                setOptionsWarehouse({
+                  ...optionsWarehouse,
+                  selected: e !== null ? e.value : null
+                })
+            }}/>
+          </div>
           <div className="mb-3">
             <CFormInput
               onChange={handleFileChange} // Handle perubahan file
               type="file"
               label="Excel File"
-              accept=".xlsx" // Hanya menerima file Excel
+              accept={[".xlsx", '.xls']} // Hanya menerima file Excel
             />
           </div>
         </CModalBody>
@@ -274,7 +372,7 @@ const DNSetup = () => {
               </div>
             }
           >
-            <CButton color="success" className='text-white' onClick={() => handleImport()}>
+            <CButton color="success" disabled={loadingImport || !optionsWarehouse.selected || !uploadData.file} className='text-white' onClick={() => handleUploadFileDN(uploadData.file, uploadData.importDate)}>
               {loadingImport ? (
                 <>
                   <CSpinner component="span" size="sm" variant="grow" className="me-2" />

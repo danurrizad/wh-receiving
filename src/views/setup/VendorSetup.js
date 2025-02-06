@@ -36,6 +36,7 @@ import {
 } from '@coreui/react'
 import { FaInbox } from 'react-icons/fa6'
 import useScheduleDataService from '../../services/ScheduleDataService'
+import useMasterDataService from '../../services/MasterDataService'
 import { useToast } from '../../App'
 import { classNames } from 'primereact/utils';
 import { FilterMatchMode, FilterOperator } from 'primereact/api';
@@ -48,11 +49,11 @@ import { Dropdown } from 'primereact/dropdown';
 import { MultiSelect } from 'primereact/multiselect';
 import { Tag } from 'primereact/tag';
 import { TriStateCheckbox } from 'primereact/tristatecheckbox';
+import Select from 'react-select';
 
 
 const VendorSetup = () => {
       const addToast = useToast()
-      const [dnsetup, setDnsetup] = useState([])
       const [modalUpload, setModalUpload] = useState(false)
       const [date, setDate] = useState(new Date().toLocaleDateString('en-CA'))
       const [loadingImport, setLoadingImport] = useState(false)
@@ -60,14 +61,13 @@ const VendorSetup = () => {
         file: null,
         importDate: new Date()
       })
-      const { getScheduleAllData, uploadFileScheduleData } = useScheduleDataService()
+      const { getScheduleAllData } = useScheduleDataService()
+      const { getMasterData, uploadMasterData } = useMasterDataService()
       const [dataSchedule, setDataSchedule] = useState([])
 
       const getScheduleAll = async(plantId, day) => {
         try {
           const response = await getScheduleAllData(plantId, day)
-          console.log("response :", response)
-          console.log("response schedule:", response.data.data)
           setDataSchedule(response.data.data)
         } catch (error) {
           console.error(error)
@@ -84,27 +84,27 @@ const VendorSetup = () => {
         plant: "",
       });
       const [globalFilterValue, setGlobalFilterValue] = useState('');
-      const [days] = useState(['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']);
-      const [plants] = useState(['Karawang 1', 'Karawang 2', 'Karawang 3', 'Sunter 1', 'Sunter 2']);
+      const [ optionsWarehouse, setOptionsWarehouse ] = useState({
+        list: [],
+        selected: ""
+      })
+      const [ optionsPlant, setOptionsPlant ] = useState({
+        list: [],
+        selected: ""
+      })
+      const optionsDay = [
+        { value: 0, label: 'Sunday' },
+        { value: 1, label: 'Monday' },
+        { value: 2, label: 'Tuesday' },
+        { value: 3, label: 'Wednesday' },
+        { value: 4, label: 'Thursday' },
+        { value: 5, label: 'Friday' },
+        { value: 6, label: 'Saturday'},
+      ]
+      const [selectedOptionsDay, setSelectedOptionsDay] = useState("") 
       
       const getDays = (day) => {
         switch (day) {
-          case 'Sunday':
-            return 0
-          case 'Monday':
-            return 1
-          case 'Tuesday':
-            return 2
-          case 'Wednesday':
-            return 3
-          case 'Thursday':
-            return 4
-          case 'Friday':
-            return 5
-          case 'Saturday':
-            return 6
-          case '':
-            return ''
           case 0:
             return 'Sunday'
           case 1:
@@ -122,26 +122,47 @@ const VendorSetup = () => {
         }
       } 
 
-      const getPlantId = (plant) => {
-        switch (plant) {
-          case 'Karawang 1':
-            return 1
-          case 'Karawang 2':
-            return 2
-          case 'Karawang 3':
-            return 3
-          case 'Sunter 1':
-            return 4
-          case 'Sunter 2':
-            return 5
-          case '':
-            return ""
+      const getOptionsWarehouse = async() => {
+        try {
+          const response = await getMasterData(`warehouse-public`)
+          setOptionsWarehouse({
+            ...optionsWarehouse,
+            list: response.data.map((data)=>{
+              return{
+                value: data.id,
+                label: data.warehouseName
+              }
+            })
+          })
+        } catch (error) {
+         console.error(error) 
         }
       }
 
+      const getOptionsPlant = async() => {
+        try {
+          const response = await getMasterData(`plant-public`)
+          setOptionsPlant({
+            ...optionsPlant,
+            list: response.data.map((data)=>{
+              return{
+                value: data.id,
+                label: data.plantName
+              }
+            })
+          })
+        } catch (error) {
+          console.error(error)
+        }
+      }
+
+      useEffect(()=>{
+        getOptionsPlant()
+        getOptionsWarehouse()
+      }, [])
+
       const onGlobalFilterChange = (e) => {
         const value = e.target.value;
-        console.log(e.target.value)
         let _filters = { ...filters };
     
         _filters['global'].value = value;
@@ -151,8 +172,8 @@ const VendorSetup = () => {
     };
 
       useEffect(()=>{
-        getScheduleAll(getPlantId(filters.plant), getDays(filters.day))
-      }, [filters.day, filters.plant])
+        getScheduleAll(optionsPlant.selected, selectedOptionsDay)
+      }, [selectedOptionsDay, optionsPlant.selected])
 
 
       const exportExcel = () => {
@@ -231,9 +252,9 @@ const VendorSetup = () => {
 
       const handleUploadFileSchedule = async(file, importDate) => {
         try {
-          // console.log("file :", file)
-          // console.log("date :", importDate)
-          
+          setLoading(true)
+          const warehouseId = optionsWarehouse.selected
+
           const formData = new FormData()
           formData.append('file', file)
           formData.append('importDate', importDate)
@@ -244,13 +265,16 @@ const VendorSetup = () => {
               console.log(`${key} blabla:`, value);
           }
 
-          const response = await uploadFileScheduleData(formData)
+          // const response = await uploadFileScheduleData(formData)
+          const response = await uploadMasterData(`upload-delivery-schedule/${warehouseId}`, formData)
           console.log("Response upload :", response)
           // addToast(TemplateToast("success", "success", response.message))
           addToast("File uploaded", 'success', 'success')
 
         } catch (error) {
           console.log("Error response upload :", error)          
+        } finally{
+          setLoading(false)
         }
       }
 
@@ -306,55 +330,29 @@ const VendorSetup = () => {
                 </CCol>
                 <CCol xs={2}>
                   <CFormText>Filter by Plant</CFormText>
-                  <Dropdown
-                    value={filters.plant}
-                    options={plants}
-                    onChange={
-                      (e) => {
-                        console.log(e)
-                        if(e.value !== undefined){
-                          setFilters({
-                            ...filters,
-                            plant: e.value 
-                          })
-                        } else{
-                          setFilters({
-                            ...filters,
-                            plant: "" 
-                          })
-                        }
-                      }
-                    }
+                  <Select 
+                    isClearable
                     placeholder="All plant"
-                    className="p-column-filter mb-2"
-                    showClear
-                    style={{ width: '100%', borderRadius: '5px' }}
+                    options={optionsPlant.list} 
+                    value={optionsPlant?.list?.find((data)=>data.value === optionsPlant.selected) || ""}
+                    onChange={(e)=>{
+                      console.log(e)
+                      setOptionsPlant({
+                        ...optionsPlant,
+                        selected: e !== null ? e.value : ""
+                      })
+                    }}  
                   />
                 </CCol>
                 <CCol xs={2}>
                   <CFormText>Filter by Day</CFormText>
-                  <Dropdown
-                    value={filters.day}
-                    options={days}
-                    onChange={
-                      (e) => {
-                        if(e.value !== undefined){
-                          setFilters({
-                            ...filters,
-                            day: e.value
-                          })
-                        } else{
-                          setFilters({
-                            ...filters,
-                            day: ""
-                          })
-                        }
-                      }
-                    }
-                    placeholder="All day"
-                    className="p-column-filter mb-2"
-                    showClear
-                    style={{ width: '100%', borderRadius: '5px' }}
+                  <Select 
+                    options={optionsDay}
+                    isClearable
+                    value={optionsDay.find((opt)=>opt.value === selectedOptionsDay) || ""}
+                    onChange={(e)=>{
+                      setSelectedOptionsDay(e !== null ? Number(e.value) : "")
+                    }}
                   />
                 </CCol>
               </CRow>
@@ -410,6 +408,20 @@ const VendorSetup = () => {
                       placeholder="Select a date"
                     />
                   </div>
+                  <div className='mb-3'>
+                    <CFormLabel>Warehouse</CFormLabel>
+                    <Select
+                      options={optionsWarehouse.list}
+                      isClearable
+                      value={optionsWarehouse.list.find((data)=>data.value === optionsWarehouse.selected) || ""}
+                      onChange={(e)=>{
+                        setOptionsWarehouse({
+                          ...optionsWarehouse,
+                          selected: e !== null ? e.value : ""
+                        })
+                      }}
+                    />
+                  </div>
                   <div className="mb-3">
                     <CFormInput
                       onChange={handleFileChange} // Handle perubahan file
@@ -427,8 +439,9 @@ const VendorSetup = () => {
                     </div>
                     }
                   >
-                    <CButton color="success" className='text-white' onClick={() => handleUploadFileSchedule(uploadData.file, uploadData.importDate)}>
+                    <CButton color="success" disabled={loadingImport || !optionsWarehouse.selected || !uploadData.file} className='text-white' onClick={() => handleUploadFileSchedule(uploadData.file, uploadData.importDate)}>
                       {loadingImport ? (
+
                           <>
                             <CSpinner component="span" size="sm" variant="grow" className="me-2" />
                             Importing...
