@@ -32,8 +32,8 @@ const _nav = [
       },
       {
         component: CNavItem,
-        name: 'Inquery Receiving',
-        to: '/inquery',
+        name: 'Inquiry Receiving',
+        to: '/inquiry',
         icon: <CIcon icon={icon.cilStar} customClassName="nav-icon" />,
       },
     ],
@@ -65,6 +65,30 @@ const _nav = [
     component: CNavItem,
     name: 'DN Setup',
     to: '/setup/dn',
+    icon: <CIcon icon={icon.cilStar} size="xl" customClassName="nav-icon" />,
+   }
+   ]
+  },
+  {
+    component: CNavTitle,
+    name: 'VENDOR',
+  },
+  {
+    component: CNavGroup,
+    name: 'Vendor Support',
+    to: '/vendor',
+    icon: <CIcon icon={icon.cilTablet} customClassName="nav-icon" />,
+    items: [
+   {    
+    component: CNavItem,
+    name: 'Vendor Requirement',
+    to: '/vendor/requirement',
+    icon: <CIcon icon={icon.cilStar} size="xl" customClassName="nav-icon" />,
+    },  
+   {   
+    component: CNavItem,
+    name: 'Track Record',
+    to: '/vendor/track-record',
     icon: <CIcon icon={icon.cilStar} size="xl" customClassName="nav-icon" />,
    }
    ]

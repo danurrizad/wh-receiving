@@ -404,7 +404,7 @@ const handleSubmitChangeQty = (rowIndex, rowData) => {
         <CRow>
           <CCard className='p-0'>
             <CCardHeader>
-              <CCardTitle>INQUERY DATA</CCardTitle>
+              <CCardTitle>INQUIRY DATA</CCardTitle>
             </CCardHeader>
             <CCardBody>
               <CRow className='d-flex align-items-end'>
