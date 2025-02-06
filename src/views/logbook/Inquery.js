@@ -15,6 +15,8 @@ import { Column } from 'primereact/column';
 import { FilterMatchMode, FilterOperator } from 'primereact/api';
 import { FaArrowUpRightFromSquare, FaCircleCheck, FaCircleExclamation, FaCircleXmark, FaInbox } from 'react-icons/fa6';
 import Swal from 'sweetalert2'
+import { Row } from 'primereact/row';
+import { ColumnGroup } from 'primereact/columngroup';
 
 
 const Book = () => {
@@ -141,6 +143,29 @@ const Book = () => {
     })
   }
 
+  const headerGroup = (
+    <ColumnGroup>
+        <Row>
+            <Column header="No" rowSpan={2} />
+            <Column header="DN No" sortable field='deliveryNotes.dnNumber' rowSpan={2} />
+            <Column header="Vendor Name" sortable field='deliveryNotes.supplierName' rowSpan={2} />
+            <Column header="Truck Station" sortable field='deliveryNotes.truckStation' rowSpan={2} />
+            <Column header="Rit" sortable field='deliveryNotes.rit' rowSpan={2} />
+            <Column header="Plan" colSpan={2} />
+            <Column header="Arrival" colSpan={2} />
+            <Column header="Departure" sortable field='deliveryNotes.departureActualTime' rowSpan={2} />
+            <Column header="Status" sortable field='deliveryNotes.status' rowSpan={2} />
+            <Column header="Delay Time" sortable field='deliveryNotes.delayTime' rowSpan={2} />
+            <Column header="Materials" rowSpan={2} />
+        </Row>
+        <Row>
+            <Column header="Date" sortable field="deliveryNotes.arrivalPlanDate" />
+            <Column header="Time" sortable field="deliveryNotes.arrivalPlanTime" />
+            <Column header="Date" sortable field="deliveryNotes.arrivalActualDate" />
+            <Column header="Time" sortable field="deliveryNotes.arrivalActualTime" />
+        </Row>
+    </ColumnGroup>
+  );
 
   const materialsBodyTemplate = (rowBody) => {
     return(
@@ -411,6 +436,7 @@ const handleSubmitChangeQty = (rowIndex, rowData) => {
               </CRow>
               <CRow className='mt-3'>
                   <DataTable
+                    headerColumnGroup={headerGroup}
                     className='p-datatable-gridlines p-datatable-sm custom-datatable text-nowrap'
                     removableSort
                     globalFilterFields={['deliveryNotes.dnNumber', 'deliveryNotes.supplierName', 'deliveryNotes.truckStation', '']}
@@ -476,33 +502,32 @@ const handleSubmitChangeQty = (rowIndex, rowData) => {
             </CRow>
           <CRow className='pt-3'>
             <DataTable
-                    className='p-datatable-gridlines p-datatable-sm custom-datatable text-nowrap'
-                    removableSort
-                    // filters={filters}
-                    size='small'
-                    // emptyMessage={renderCustomEmptyMsg}
-                    scrollable
-                    scrollHeight="50vh"
-                    showGridlines
-                    paginator
-                    rows={10}
-                    // rowsPerPageOptions={[10, 25, 50, 100]}
-                    value={dataMaterialsByDNInquery}
-                    // dataKey="id"
-                    // onFilter={(e) => setFilters(e.filters)}
-                    filterDisplay="row"
-                    // loading={loading}
-                  >
-                    <Column className='' header="No" body={(rowBody, {rowIndex})=>rowIndex+1} />
-                    <Column className='' field='materialNo'  header="Material No" />
-                    <Column className='' field='description'  header="Material Description" />
-                    <Column className='' field='address'  header="Rack Address" />
-                    <Column className='' field='reqQuantity' header="Req. Qty" />
-                    <Column className='' field='receivedQuantity'  header="Act. Qty" body={recQtyBodyTemplate}/>
-                    <Column className='' field='remain'  header="Remain" body={remainBodyTemplate}/>
-                    <Column className='' field='status'  header="Status" body={statusQtyBodyTemplate} />
-                
-                  </DataTable>
+              className='p-datatable-gridlines p-datatable-sm custom-datatable text-nowrap'
+              removableSort
+              // filters={filters}
+              size='small'
+              // emptyMessage={renderCustomEmptyMsg}
+              scrollable
+              scrollHeight="50vh"
+              showGridlines
+              paginator
+              rows={10}
+              // rowsPerPageOptions={[10, 25, 50, 100]}
+              value={dataMaterialsByDNInquery}
+              // dataKey="id"
+              // onFilter={(e) => setFilters(e.filters)}
+              filterDisplay="row"
+              // loading={loading}
+            >
+              <Column className='' header="No" body={(rowBody, {rowIndex})=>rowIndex+1}/>
+              <Column className='' field='materialNo'  header="Material No"/>
+              <Column className='' field='description'  header="Material Description"/>
+              <Column className='' field='address'  header="Rack Address"/>
+              <Column className='' field='reqQuantity' header="Req. Qty"/>
+              <Column className='' field='receivedQuantity'  header="Act. Qty" body={recQtyBodyTemplate}/>
+              <Column className='' field='remain'  header="Remain" body={remainBodyTemplate}/>
+              <Column className='' field='status'  header="Status" body={statusQtyBodyTemplate}/>
+            </DataTable>
           </CRow>
           <CRow className='mt-3 px-3'>
             <CButton disabled={!showModalInput.enableSubmit} onClick={handleSaveChangesMaterials} color='success' className='text-white w-100'>Save changes</CButton>
