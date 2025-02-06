@@ -15,16 +15,19 @@ import { Column } from 'primereact/column';
 import { FilterMatchMode, FilterOperator } from 'primereact/api';
 import { FaArrowUpRightFromSquare, FaCircleCheck, FaCircleExclamation, FaCircleXmark, FaInbox } from 'react-icons/fa6';
 import Swal from 'sweetalert2'
+import { Row } from 'primereact/row';
+import { ColumnGroup } from 'primereact/columngroup';
 
 
 const Book = () => {
   const addToast = useToast()
   const [ loading, setLoading ] = useState(false)
-  const { getDNInqueryData } = useReceivingDataService()
+  const { getDNInqueryData, submitUpdateMaterialByDNData } = useReceivingDataService()
   const [ dataDNInquery, setDataDNInquery ] = useState([])
   const [ dataMaterialsByDNInquery, setDataMaterialsByDNInquery ] = useState([])
 
   const [ formUpdate, setFormUpdate ] = useState({})
+  const [ isViewOnly, setIsViewOnly ] = useState({})
 
   const [ showModalInput, setShowModalInput] = useState({
     state: false,
@@ -123,12 +126,14 @@ const Book = () => {
 
   const handleClickOpenMaterials = (data) => {
     setShowModalInput({...showModalInput, state: true})
-    console.log("data vendor:", data.deliveryNotes)
-    console.log("data material:", data.deliveryNotes.Materials)
-
+    // console.log("data vendor:", data.deliveryNotes)
+    // console.log("data material:", data.deliveryNotes.Materials)
+    // console.log("data material viewOnly:", data.deliveryNotes.Materials.map((data)=>Boolean(data.viewOnly)))
+    
     const dataVendor = data.deliveryNotes
     const dataMaterials = data.deliveryNotes.Materials
     setDataMaterialsByDNInquery(data.deliveryNotes.Materials)
+    setIsViewOnly(dataMaterials.map((data)=>Boolean(data.viewOnly)))
 
     setFormUpdate({
       dnNumber: dataVendor.dnNumber,
@@ -137,10 +142,34 @@ const Book = () => {
       incomingIds: dataMaterials.map((data)=>data.incomingId),
       receivedQuantities: dataMaterials.map((data)=>data.receivedQuantity),
       statuses: dataMaterials.map((data)=>data.status),
-      remains: dataMaterials.map((data)=>data.remain)
+      remains: dataMaterials.map((data)=>data.remain),
+      warehouseId: dataVendor.warehouseId
     })
   }
 
+  const headerGroup = (
+    <ColumnGroup>
+        <Row>
+            <Column header="No" rowSpan={2} />
+            <Column header="DN No" sortable field='deliveryNotes.dnNumber' rowSpan={2} />
+            <Column header="Vendor Name" sortable field='deliveryNotes.supplierName' rowSpan={2} />
+            <Column header="Truck Station" sortable field='deliveryNotes.truckStation' rowSpan={2} />
+            <Column header="Rit" sortable field='deliveryNotes.rit' rowSpan={2} />
+            <Column header="Plan" colSpan={2} />
+            <Column header="Arrival" colSpan={2} />
+            <Column header="Departure" sortable field='deliveryNotes.departureActualTime' rowSpan={2} />
+            <Column header="Status" sortable field='deliveryNotes.status' rowSpan={2} />
+            <Column header="Delay Time" sortable field='deliveryNotes.delayTime' rowSpan={2} />
+            <Column header="Materials" rowSpan={2} />
+        </Row>
+        <Row>
+            <Column header="Date" sortable field="deliveryNotes.arrivalPlanDate" />
+            <Column header="Time" sortable field="deliveryNotes.arrivalPlanTime" />
+            <Column header="Date" sortable field="deliveryNotes.arrivalActualDate" />
+            <Column header="Time" sortable field="deliveryNotes.arrivalActualTime" />
+        </Row>
+    </ColumnGroup>
+  );
 
   const materialsBodyTemplate = (rowBody) => {
     return(
@@ -254,7 +283,7 @@ const handleSubmitChangeQty = (rowIndex, rowData) => {
                   // onBlur={(e)=>handleEnterInputQty(rowIndex, rowData, e)}
                   style={{ width: "70px"}}
                 />
-         { isInputEnabled ? (
+         { isInputEnabled && !isViewOnly[indexMaterial] ? (
               <CButton
                 color=''
                 className="p-button-sm p-button-secondary text-white"
@@ -264,7 +293,7 @@ const handleSubmitChangeQty = (rowIndex, rowData) => {
               >
                 <CIcon style={{ color: "green"}} icon={icon.cilCheck}/>
               </CButton>
-            ) : !isInputEnabled ? (
+            ) : !isInputEnabled && !isViewOnly[indexMaterial] ? (
               <CButton
                 color=''
                 className="p-button-sm p-button-secondary text-white"
@@ -323,7 +352,6 @@ const handleSubmitChangeQty = (rowIndex, rowData) => {
         )
       }
 
-
     const handleSaveChangesMaterials = async() => {
           // const { date, time } = getCurrentDateTime();
           // setFormUpdate({
@@ -333,15 +361,17 @@ const handleSubmitChangeQty = (rowIndex, rowData) => {
           // })
     
           console.log("----------------------SUBMIT LOG---------------------", )
-          // const warehouseId = dataMaterialsByDN[0].warehouseId
+          const dnNumber = formUpdate.dnNumber
+          const warehouseId = formUpdate.warehouseId
+          const filteredQty = formUpdate.receivedQuantities.filter((data,index)=>Number(data) !== Number(dataMaterialsByDNInquery[index].receivedQuantity))
+
           const formBody = {
-            dnNumber: formUpdate.dnNumber,
-            rit: formUpdate.rit,
-            incomingsId: formUpdate.incomingIds.map(Number),
-            receivedQuantities: formUpdate.receivedQuantities.map(Number)
+            incomingIds: formUpdate.incomingIds.filter((data,index)=>Number(formUpdate.receivedQuantities[index]) !== Number(dataMaterialsByDNInquery[index].receivedQuantity) && Number(data)),
+            quantities: filteredQty.map(Number),
           }
           console.log("formBody to submit :", formBody)
-          // console.log("warehouseId :", dataMaterialsByDN[0].warehouseId)
+          console.log("dnNumber :", dnNumber)
+          console.log("warehouseId :", warehouseId)
     
           Swal.fire({
             title: "Save confirmation",
@@ -351,25 +381,34 @@ const handleSubmitChangeQty = (rowIndex, rowData) => {
             confirmButtonColor: "#3085d6",
             cancelButtonColor: "#d33",
             confirmButtonText: "Save",
-            // preConfirm: async () => {
-            //   try {
-            //     const response = await submitMaterialByDNData(warehouseId, formBody)
-            //     console.log("Response submit :", response)
-            //     await getMaterialByDN(formBody.dnNumber)
-            //     return response.data.message
-            //   } catch (error) {
-            //     console.error(error)
-            //   } 
-            // }
+            preConfirm: async () => {
+              try {
+                const response = await submitUpdateMaterialByDNData(warehouseId, formBody)
+                await getMaterialByDN(formUpdate.dnNumber)
+                return "Material quantities updated!"
+              } catch (error) {
+                console.warn("ERROR :", error)
+                return error
+              } 
+            }
           }).then(async(result) => {
             if (result.isConfirmed) {
-              setShowModalInput({ state: false, enableSubmit: false})
-              Swal.fire({
-                title: "Saved!",
-                text: result.value,
-                icon: "success"
-              });
-              getDNInquery(queryFilter.plantId, queryFilter.rangeDate[0], queryFilter.rangeDate[1])
+              if(result.value === "Material quantities updated!"){
+                setShowModalInput({ state: false, enableSubmit: false})
+                Swal.fire({
+                  title: "Saved!",
+                  text: result.value,
+                  icon: "success"
+                });
+                getDNInquery(queryFilter.plantId, queryFilter.rangeDate[0], queryFilter.rangeDate[1])
+              } else{
+                Swal.fire({
+                  title: "Failed!",
+                  text: result.value,
+                  icon: "error",
+                  confirmButtonColor: "#3085d6",
+                });
+              }
             }
           });   
       }
@@ -379,7 +418,7 @@ const handleSubmitChangeQty = (rowIndex, rowData) => {
         <CRow>
           <CCard className='p-0'>
             <CCardHeader>
-              <CCardTitle>INQUERY DATA</CCardTitle>
+              <CCardTitle>INQUIRY DATA</CCardTitle>
             </CCardHeader>
             <CCardBody>
               <CRow className='d-flex align-items-end'>
@@ -411,6 +450,7 @@ const handleSubmitChangeQty = (rowIndex, rowData) => {
               </CRow>
               <CRow className='mt-3'>
                   <DataTable
+                    headerColumnGroup={headerGroup}
                     className='p-datatable-gridlines p-datatable-sm custom-datatable text-nowrap'
                     removableSort
                     globalFilterFields={['deliveryNotes.dnNumber', 'deliveryNotes.supplierName', 'deliveryNotes.truckStation', '']}
@@ -476,33 +516,32 @@ const handleSubmitChangeQty = (rowIndex, rowData) => {
             </CRow>
           <CRow className='pt-3'>
             <DataTable
-                    className='p-datatable-gridlines p-datatable-sm custom-datatable text-nowrap'
-                    removableSort
-                    // filters={filters}
-                    size='small'
-                    // emptyMessage={renderCustomEmptyMsg}
-                    scrollable
-                    scrollHeight="50vh"
-                    showGridlines
-                    paginator
-                    rows={10}
-                    // rowsPerPageOptions={[10, 25, 50, 100]}
-                    value={dataMaterialsByDNInquery}
-                    // dataKey="id"
-                    // onFilter={(e) => setFilters(e.filters)}
-                    filterDisplay="row"
-                    // loading={loading}
-                  >
-                    <Column className='' header="No" body={(rowBody, {rowIndex})=>rowIndex+1} />
-                    <Column className='' field='materialNo'  header="Material No" />
-                    <Column className='' field='description'  header="Material Description" />
-                    <Column className='' field='address'  header="Rack Address" />
-                    <Column className='' field='reqQuantity' header="Req. Qty" />
-                    <Column className='' field='receivedQuantity'  header="Act. Qty" body={recQtyBodyTemplate}/>
-                    <Column className='' field='remain'  header="Remain" body={remainBodyTemplate}/>
-                    <Column className='' field='status'  header="Status" body={statusQtyBodyTemplate} />
-                
-                  </DataTable>
+              className='p-datatable-gridlines p-datatable-sm custom-datatable text-nowrap'
+              removableSort
+              // filters={filters}
+              size='small'
+              // emptyMessage={renderCustomEmptyMsg}
+              scrollable
+              scrollHeight="50vh"
+              showGridlines
+              paginator
+              rows={10}
+              // rowsPerPageOptions={[10, 25, 50, 100]}
+              value={dataMaterialsByDNInquery}
+              // dataKey="id"
+              // onFilter={(e) => setFilters(e.filters)}
+              filterDisplay="row"
+              // loading={loading}
+            >
+              <Column className='' header="No" body={(rowBody, {rowIndex})=>rowIndex+1}/>
+              <Column className='' field='materialNo'  header="Material No"/>
+              <Column className='' field='description'  header="Material Description"/>
+              <Column className='' field='address'  header="Rack Address"/>
+              <Column className='' field='reqQuantity' header="Req. Qty"/>
+              <Column className='' field='receivedQuantity'  header="Act. Qty" body={recQtyBodyTemplate}/>
+              <Column className='' field='remain'  header="Remain" body={remainBodyTemplate}/>
+              <Column className='' field='status'  header="Status" body={statusQtyBodyTemplate}/>
+            </DataTable>
           </CRow>
           <CRow className='mt-3 px-3'>
             <CButton disabled={!showModalInput.enableSubmit} onClick={handleSaveChangesMaterials} color='success' className='text-white w-100'>Save changes</CButton>
