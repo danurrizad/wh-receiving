@@ -1,11 +1,13 @@
 import useVerify from '../hooks/UseVerify'
 import Swal from 'sweetalert2'
 import withReactContent from 'sweetalert2-react-content'
+import { useToast } from '../App'
 
 const MySwal = withReactContent(Swal)
 
 const useMasterDataService = () => {
   const { token, axiosJWT } = useVerify()
+  const addToast = useToast()
 
   const handleError = (error, message) => {
     console.error(message, error)
@@ -16,14 +18,16 @@ const useMasterDataService = () => {
         .map((dup) => `Row: ${dup.rowNumber}, Data: ${dup.data.join(', ')}`)
         .join('<br>')
 
-      MySwal.fire({
-        icon: 'error',
-        title: 'Duplicate Data',
-        html: `<p>${error.response.data.message}</p><p>${duplicates}</p>`,
-      })
+      addToast(error.response?.data?.message + duplicates, 'danger', 'error')
+      // MySwal.fire({
+      //   icon: 'error',
+      //   title: 'Duplicate Data',
+      //   html: `<p>${error.response.data.message}</p><p>${duplicates}</p>`,
+      // })
     } else {
       // Tampilkan pesan error biasa
-      MySwal.fire('Error', `${error.response?.data?.message || 'Terjadi kesalahan'}`, 'error')
+      // MySwal.fire('Error', `${error.response?.data?.message || 'Terjadi kesalahan'}`, 'error')
+      addToast(error.response?.data?.message, 'danger', 'error')
     }
 
     // Lempar error agar bisa ditangani di level berikutnya
