@@ -1,23 +1,26 @@
 import React, { useState, useEffect,useRef } from 'react'
 import { dataSchedulesDummy, dataReceivingDummy,dataDummy } from '../../utils/DummyData'
 import  colorStyles from '../../utils/StyleReactSelect'
+import '../../scss/_tabels.scss'
 import Select from 'react-select'
 import Flatpickr from 'react-flatpickr'
 import 'flatpickr/dist/flatpickr.css'
 import Pagination from '../../components/Pagination'
 import { DatePicker, DateRangePicker } from 'rsuite';
 import 'primeicons/primeicons.css'
-import { Column } from 'primereact/column';
 import { IconField } from 'primereact/iconfield'
 import { InputIcon } from 'primereact/inputicon'
 import { InputText } from 'primereact/inputtext'
 import { Dropdown } from 'primereact/dropdown'
 import 'primereact/resources/themes/nano/theme.css'
 import 'primereact/resources/primereact.min.css'
+import 'primeicons/primeicons.css'; // Icon bawaan PrimeReact
 import { DataTable } from 'primereact/datatable';
+import { Column } from 'primereact/column';
 import 'primeicons/primeicons.css';
 import { FilterMatchMode, FilterOperator } from 'primereact/api';
 import useReceivingDataService from '../../services/ReceivingDataServices'
+import { cilChart,cilCog} from '@coreui/icons';
 import { FaArrowUpRightFromSquare, FaCircleCheck, FaCircleExclamation, FaCircleXmark } from 'react-icons/fa6';
 import {
   CAvatar,
@@ -66,7 +69,7 @@ import {
 } from 'chart.js';
 import { Bar } from 'react-chartjs-2';
 import CIcon from '@coreui/icons-react'
-import * as icon from "@coreui/icons"
+
 
 ChartJS.register(
   CategoryScale,
@@ -83,7 +86,6 @@ const Dashboard = () => {
   const { getDNInqueryData } = useReceivingDataService()
   const apiPlant = 'plant-public'
   const { getCardStatusArrival,getChartReceiving } = useDashboardReceivingService()
-  const [globalFilterValue, setGlobalFilterValue] = useState('');
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage, setItemsPerPage] = useState(10)
   const indexOfLastItem = currentPage * itemsPerPage
@@ -99,6 +101,8 @@ const Dashboard = () => {
   const [isVisible, setIsVisible] = useState(true); // State to control visibility
   const [ dataDNInquery, setDataDNInquery ] = useState([])
    const [totalPages, setTotalPages] = useState(1);
+   const [isFilterVisible, setIsFilterVisible] = useState(false);
+   const vendorScheduleRef = useRef(null);
    const [ showModalInput, setShowModalInput] = useState({
       state: false,
       enableSubmit: false
@@ -294,7 +298,7 @@ const Dashboard = () => {
   
 
   const [ showCard, setShowCard ] = useState({
-    summary: true,
+
     schedule: true,
     receiving: true
   })
@@ -404,7 +408,12 @@ const Dashboard = () => {
     const status = rowData.deliveryNotes.status
     const bgColor = status === 'delayed' ? "#F64242" : status === "on schedule" ? "#35A535" : "transparent"
     return(
-      <div className='text-center' style={{ backgroundColor: bgColor, padding: "5px 10px", color: "white" }}>
+      <div className='text-center' 
+      style={{ backgroundColor: bgColor, 
+        padding: "5px 10px",
+         color: "white",
+         borderRadius: "8px", 
+        textTransform: "uppercase"}}>
         {status}
       </div>
     )
@@ -413,7 +422,7 @@ const Dashboard = () => {
       return(
         <div className='d-flex align-items-center justify-content-center'>
          <CButton onClick={() => handleClickOpenMaterials(rowBody)} color='info' className='d-flex justify-content-center align-items-center p-2 '>
-           <FaArrowUpRightFromSquare style={{ color: "white" }} size={9} />
+           <FaArrowUpRightFromSquare style={{ color: "white" }} size={13} />
          </CButton>
         </div>
       )
@@ -460,61 +469,81 @@ const Dashboard = () => {
             fontWeight: "bold",
           }),
         };
+        const handleScrollToVendorSchedule = () => {
+          if (vendorScheduleRef.current) {
+            vendorScheduleRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
+          }
+        };
+
+        const toggleFilterVisibility = () => {
+          setIsFilterVisible(!isFilterVisible);
+        };
         
 
       
   return (
   <CContainer fluid>
-    <CRow className='mt-4'>
-         <CCard
+    <CRow className='mt-1'>
+    <CCard
+         className="px-0 bg-white text-black mb-1"
           style={{
-            position: "fixed",
-            top: 66, // Tetap di bagian atas layar
-            zIndex: 1050,
-            cursor: "pointer",
-            backgroundColor: "#6482AD",
-            color: "white",
-            padding: "10px",
-            width: "calc(100% - 47px)", // Sesuaikan lebar agar sama dengan konten di bawah
-            margin: "0 auto", // Posisikan di tengah
-          }}
-          onClick={() => setShowCard({ ...showCard, summary: !showCard.summary })}
-           >
-             <div style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
-               <CCardTitle className="text-center fs-4">MONITORING RECEIVING WAREHOUSE</CCardTitle>
-             </div>
-          </CCard>
-       <CCard
-         className="px-0 bg-white text-black mb-3"
-          style={{
-          maxHeight: `${showCard.summary ? "1000px" : "50px"}`,
           overflow: "hidden",
           transitionDuration: "500ms",
           border: "1px solid #6482AD", // Menambahkan border dengan warna #074799
         }}>
-             <CCardBody style={{overflow: 'auto'}}>
+         <CCardHeader
+          style={{
+            zIndex: 4,
+            backgroundColor: "#6482AD",
+            color: "white",
+            padding: "10px",
+           
+          }}
+           >
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%" }}>
+          <CTooltip content="Scroll to Vendor Schedule">
+        <button
+          className="btn d-flex align-items-center justify-content-center me-2"
+          style={{
+            backgroundColor: "#B0B0B0",
+            borderRadius: "50%",
+            width: "40px",
+            height: "40px",
+          }}
+          onClick={handleScrollToVendorSchedule}
+        >
+          <CIcon icon={cilChart} size="lg" style={{ color: "#27445D" }} />
+        </button>
+      </CTooltip>
+
+      <CTooltip content="Toggle Filter Visibility">
+        <button
+          className="btn d-flex align-items-center justify-content-center"
+          style={{
+            backgroundColor: "#B0B0B0",
+            borderRadius: "50%",
+            width: "40px",
+            height: "40px",
+          }}
+          onClick={toggleFilterVisibility}
+        >
+          <CIcon icon={cilCog} size="sm" style={{ color: "#27445D" }} />
+        </button>
+      </CTooltip>
+            
+              <CCardTitle className="text-center fs-4" style={{ flexGrow: 1 }}>
+                MONITORING RECEIVING WAREHOUSE
+              </CCardTitle>
+            </div>
+          </CCardHeader>
+            <CCardBody style={{overflow: 'auto'}}>
               <CRow className="d-flex justify-content-between align-items-center mb-2">
             {/* Tombol Hide/Show di pojok kiri */}
 
-            {/* Kolom pertama */}
-            <CCol sm={12} md={12} lg={5} xl={4}
-             className="d-flex justify-content-center-start gap-3">
-              {/* Filter Detail */}
-            <div className="d-flex flex-column align-items-center">
-              <CFormText style={{ alignSelf: "flex-start" }}>Filter Summary</CFormText>
-              <button
-                className="btn"
-                style={{
-                  backgroundColor: "#27445D",
-                  color: "#FFF",
-                }}
-                onClick={toggleVisibility}
-                        >
-                {isVisible ? "Hide Recap" : "Show Recap"}
-              </button>
-            </div>
-          
-            {/* Filter Plant */}
+            {isFilterVisible && (
+          <div className="d-flex flex-wrap gap-2 mt-1">
+            <CCol sm={12} md={12} lg={5} xl={5}
+             className="d-flex justify-content-center-start gap-1">
             <div className="d-flex flex-column align-items-center">
             <CFormText style={{ alignSelf: "flex-start" }}>Filter Plant</CFormText>
             <Select
@@ -541,11 +570,26 @@ const Dashboard = () => {
               })
             }}
              />
+             </div>
+                 <div className="d-flex flex-column align-items-center">
+              <CFormText style={{ alignSelf: "flex-start" }}>Filter by Status</CFormText>
+                      <Select
+                        onChange={handleFilterSchedule}
+                        placeholder="Delayed" // Default placeholder
+                        isClearable
+                        styles={ selectStyles}
+                        value={selectedStatus} // Default ke "Delayed"
+                        options={[
+                          { label: "On Schedule", value: "on schedule" },
+                          { label: "Delayed", value: "delayed" },
+                         
+                        ]}
+                         />
             </div>
           </CCol>
           {/* Kolom kedua */}
-           <CCol sm={12} md={12} lg={6} xl={6}
-           className="d-flex justify-content-end gap-3" // Elemen berada di pojok kanan dengan jarak antar elemen
+           <CCol sm={12} md={12} lg={7} xl={6}
+           className="d-flex justify-content-end gap-2" // Elemen berada di pojok kanan dengan jarak antar elemen
          >
            <div className="d-flex flex-column align-items-end">
              <CFormText style={{ alignSelf: "flex-start" }}>Search vendor</CFormText>
@@ -565,47 +609,48 @@ const Dashboard = () => {
          
            <div 
              className="flatpickr-wrapper d-flex flex-column align-items-end" 
-             style={{ position: "relative", width: "250px" }} // Sesuaikan ukuran DatePicker
+             style={{ position: "relative", width: "240px" }} // Sesuaikan ukuran DatePicker
            >
              <CFormText style={{ alignSelf: "flex-start" }}>Filter by Date</CFormText>
              <DateRangePicker showOneCalendar placeholder='All time' position='start' value={queryFilter.rangeDate} />
            </div>
          </CCol>
+         </div>
+             
+            )}
          </CRow>
               <CRow >
+              <div className="card">
               <DataTable
-                 removableSort
-                  className="p-datatable-sm  text-nowrap"
-                 globalFilterFields={['deliveryNotes.dnNumber', 'deliveryNotes.supplierName', 'deliveryNotes.truckStation', '']}
-                 filters={queryFilter}
-                 size='small'
-                 scrollable
-                 scrollHeight="500px"
-                 showGridlines
-                 paginator
-                 rows={10}
-                 rowsPerPageOptions={[10, 25, 50, 100]}
-                 value={dataDNInquery}
-                 stripedRows
-                 tableStyle={{ minWidth: '50rem', borderCollapse: 'separate', borderSpacing: '0 6px' }} // Menambahkan jarak antar baris
-                 filterDisplay="row"
-               >
-                    <Column className='' header="No" body={(rowBody, {rowIndex})=>rowIndex+1}/>
-                    <Column className='' field='deliveryNotes.dnNumber'  header="DN No"/>
-                    <Column className='' field='deliveryNotes.supplierName'  header="Vendor Name" />
-                    <Column className='' field='deliveryNotes.truckStation'  header="Truck Station" />
-                    <Column className='' field='deliveryNotes.rit'  header="Rit" />
-                    <Column className='' field='deliveryNotes.arrivalPlanDate'  header="Plan Date" />
-                    <Column className='' field='deliveryNotes.arrivalPlanTime'  header="Plan Time" body={plantTimeBodyTemplate} />
-                    <Column className='' field='deliveryNotes.arrivalActualDate'  header="Arriv. Date" />
-                    <Column className='' field='deliveryNotes.arrivalActualTime'  header="Arriv. Time" />
+  removableSort
+  globalFilterFields={['deliveryNotes.dnNumber', 'deliveryNotes.supplierName', 'deliveryNotes.truckStation']}
+  filters={queryFilter}
+  showGridlines 
+  size="small"
+  paginator
+  rows={15}
+  rowsPerPageOptions={[15, 25, 50, 100]}
+  tableStyle={{ minWidth: '50rem' }}
+  value={dataDNInquery}
+  filterDisplay="row"
+   className="custom-table"
+>
+                    <Column className='' header="No" body={(rowBody, {rowIndex})=>rowIndex+1}></Column>
+                    <Column className='' field='deliveryNotes.dnNumber'  header="DN No"></Column>
+                    <Column className='' field='deliveryNotes.supplierName'  header="Vendor Name" ></Column>
+                    <Column className='' field='deliveryNotes.truckStation'  header="Truck Station" ></Column>
+                    <Column className='' field='deliveryNotes.rit'  header="Rit" ></Column>
+                    <Column className='' field='deliveryNotes.arrivalPlanDate'  header="Plan Date" ></Column>
+                    <Column className='' field='deliveryNotes.arrivalPlanTime'  header="Plan Time" body={plantTimeBodyTemplate} ></Column>
+                    <Column className='' field='deliveryNotes.arrivalActualDate'  header="Arriv. Date" ></Column>
+                    <Column className='' field='deliveryNotes.arrivalActualTime'  header="Arriv. Time" ></Column>
                     {/* <Column className='' field='deliveryNotes.departureActualDate'  header="Departure Date" /> */}
-                    <Column className='' field='deliveryNotes.departureActualTime'  header="Dept. Time" />
-                    <Column className='' field='deliveryNotes.status'  header="Status" body={statusVendorBodyTemplate} />
-                    <Column className='' field=''  header="Materials" body={materialsBodyTemplate} />
+                    <Column className='' field='deliveryNotes.departureActualTime'  header="Dept. Time" ></Column>
+                    <Column className='' field='deliveryNotes.status'  header="Status" body={statusVendorBodyTemplate} ></Column>
+                    <Column className='' field=''  header="Materials" body={materialsBodyTemplate} ></Column>
                 
                   </DataTable>
-                 
+                 </div>
               </CRow>
                <CModal 
                         visible={showModalInput.state}
@@ -661,48 +706,12 @@ const Dashboard = () => {
        </CCard>
         </CRow>
         {isVisible && (
-        <CRow className='mb-3'>
-          <CCard className='px-0' style={{ maxHeight: `${showCard.schedule ? "2000px" : "50px"}`, overflow: "hidden", transitionDuration: '500ms'}}>
+        <CRow className='mb-3 mt-5'>
+          <CCard ref={vendorScheduleRef} className='px-0 ' style={{ maxHeight: `${showCard.schedule ? "2000px" : "50px"}`, overflow: "hidden", transitionDuration: '500ms'}}>
             <CCardHeader style={{ position: "relative", cursor: "pointer"}} onClick={()=>setShowCard({ ...showCard, schedule: !showCard.schedule})}>
                 <CCardTitle className='text-center'> DETAIL VENDOR ARRIVAL SCHEDULE </CCardTitle>
                 </CCardHeader>
-                <CCardBody className="mt-1" style={{ overflow: "auto"  }}>
-                 <CRow className="d-flex justify-content-between align-items-center">
-                     <CCol 
-                       md={6} 
-                       className="d-flex justify-content-start gap-2" >
-                       <div className="d-flex flex-column align-items-start">
-                         <CFormText style={{ alignSelf: "flex-start" }}>Search vendor</CFormText>
-                         <Select 
-                           options={optionsSelectVendor} 
-                           isClearable 
-                           placeholder="Vendor code or name" 
-                           styles={{
-                             container: (provided) => ({
-                               ...provided,
-                               width: "250px", }),
-                            }}
-                         />
-                       </div>
-                      </CCol>
-                    <CCol sm={3}>
-                      <CFormText>Filter by Status</CFormText>
-                      <Select
-                        onChange={handleFilterSchedule}
-                        placeholder="Delayed" // Default placeholder
-                        isClearable
-                        styles={ selectStyles}
-                        value={selectedStatus} // Default ke "Delayed"
-                        options={[
-                          { label: "On Schedule", value: "on schedule" },
-                          { label: "Delayed", value: "delayed" },
-                         
-                        ]}
-                         />
-                       </CCol>                 
-                  
-                      </CRow>
-                      <hr className="m-1" />
+                <CCardBody style={{ overflow: "auto"  }}>
                        <CRow>
                          <CCol xs={12} sm={7} md={7} xl={7} >
                          <label className="fs-6 fw-bold text-center d-block mt-1">ARRIVAL MONITORING</label>
