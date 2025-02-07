@@ -127,7 +127,7 @@ const Book = () => {
   const handleClickOpenMaterials = (data) => {
     setShowModalInput({...showModalInput, state: true})
     // console.log("data vendor:", data.deliveryNotes)
-    // console.log("data material:", data.deliveryNotes.Materials)
+    console.log("data material:", data.deliveryNotes.Materials)
     // console.log("data material viewOnly:", data.deliveryNotes.Materials.map((data)=>Boolean(data.viewOnly)))
     
     const dataVendor = data.deliveryNotes
@@ -155,8 +155,8 @@ const Book = () => {
             <Column header="Vendor Name" sortable field='deliveryNotes.supplierName' rowSpan={2} />
             <Column header="Truck Station" sortable field='deliveryNotes.truckStation' rowSpan={2} />
             <Column header="Rit" sortable field='deliveryNotes.rit' rowSpan={2} />
-            <Column header="Plan" colSpan={2} />
-            <Column header="Arrival" colSpan={2} />
+            <Column header="Plan" colSpan={2} align='center' />
+            <Column header="Arrival" colSpan={2} align='center' />
             <Column header="Departure" sortable field='deliveryNotes.departureActualTime' rowSpan={2} />
             <Column header="Status" sortable field='deliveryNotes.status' rowSpan={2} />
             <Column header="Delay Time" sortable field='deliveryNotes.delayTime' rowSpan={2} />
@@ -196,7 +196,7 @@ const Book = () => {
     const bgColor = status === 'delayed' ? "#F64242" : status === "on schedule" ? "#35A535" : "transparent"
     return(
       <div className='text-center' style={{ backgroundColor: bgColor, padding: "5px 10px", borderRadius: "5px", color: "white" }}>
-        {status}
+        {status.toUpperCase()}
       </div>
     )
   }
@@ -460,6 +460,7 @@ const handleSubmitChangeQty = (rowIndex, rowData) => {
                     scrollable
                     scrollHeight="500px"
                     showGridlines
+                    stripedRows
                     paginator
                     rows={10}
                     rowsPerPageOptions={[10, 25, 50, 100]}
@@ -524,6 +525,7 @@ const handleSubmitChangeQty = (rowIndex, rowData) => {
               scrollable
               scrollHeight="50vh"
               showGridlines
+              stripedRows
               paginator
               rows={10}
               // rowsPerPageOptions={[10, 25, 50, 100]}

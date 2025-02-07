@@ -56,7 +56,7 @@ input::-webkit-inner-spin-button {
 
 .custom-datatable .p-datatable-thead > tr > th,
 .custom-datatable .p-datatable-tbody > tr > td {
-  border: 1px solid gray;
+  border: 1px solid rgb(199, 199, 199);
   padding: 0 5px 0 5px;
 }
 .custom-datatable .p-datatable-tbody > tr > td {
@@ -64,11 +64,16 @@ input::-webkit-inner-spin-button {
 }
 
 .custom-datatable .p-datatable-thead > tr > th {
-  background-color: #f8f9fa;
+  background-color: #d5dfe9;
+}
+
+.p-row-odd{
+  background-color: #F4F6F8;
+  
 }
 
 .custom-datatable .p-datatable-tbody > tr > td {
-  background-color: #ffffff;
+  // background-color: #ffffff;
   font-size: 10pt;
   text-transform: uppercase;
   white-space: nowrap;
@@ -139,4 +144,13 @@ td input.p-inputtext.p-component {
 .css-1nmdiq5-menu{
   position: relative;
   z-index: 50 !important;
+}
+
+.form-control:focus{
+  box-shadow: none;
+  border: 2px solid #2684FF;
+}
+
+.rs-picker-popup{
+  z-index: 10000 !important;
 }

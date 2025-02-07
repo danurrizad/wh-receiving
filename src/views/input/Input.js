@@ -14,12 +14,10 @@ import { useToast } from '../../App'
 import { InputText } from 'primereact/inputtext'
 import { FaCircleCheck, FaCircleExclamation, FaCircleXmark, FaInbox } from "react-icons/fa6";
 import Swal from 'sweetalert2'
-import 'primereact/resources/themes/nano/theme.css'
-import 'primeicons/primeicons.css'
-import 'primereact/resources/primereact.min.css'
 
 const Input = () => {
   const [loading, setLoading] = useState(false)
+  const [loadingSubmit, setLoadingSubmit] = useState(false)
   const addToast = useToast()
   const [errMsg, setErrMsg] = useState("")
   const inputRefs = useRef({})
@@ -126,9 +124,9 @@ const Input = () => {
 
   const handleOnEnterInputDN = async(e) => {
     if(e.key === "-"){
-      setFormInput({ ...formInput, dn_no: 21001985})
+      setFormInput({ ...formInput, dn_no: 21002007})
     } else if(e.key === "-") {
-      setFormInput({ ...formInput, dn_no: 21001985})
+      setFormInput({ ...formInput, dn_no: 21002007})
     }
 
     if(e.key === 'Enter'){
@@ -160,15 +158,16 @@ const Input = () => {
         const responseStateArrived = response.data.viewOnly
         
         console.log("Response:", response.data)
-        console.log("Response DN:", responseDN)
-        console.log("Response Vendor:", responseVendor)
+        // console.log("Response DN:", responseDN)
+        // console.log("Response Vendor:", responseVendor)
         console.log("Response State Arrived:", responseStateArrived)
   
         setDataMaterialsByDN(responseDN)
         setDataVendorByDN(responseVendor)
         setQtyEachMaterials({
           incomingId: responseDN.map((data) => Number(data.incomingId)),
-          qty: responseDN.map((data) => data.receivedQuantity === null ? "" : data.receivedQuantity),
+          // qty: responseDN.map((data) => data.receivedQuantity === null ? "" : data.receivedQuantity),
+          qty: responseDN.map((data) => data.receivedQuantity),
         });
         setRemainQty({
           qty: responseDN.map((data)=> Number(data.remain)),
@@ -268,6 +267,8 @@ const Input = () => {
     }));
   };
 
+
+
   // Received Quantity body template
   const receivedQuantityBodyTemplate = (rowData, rowIndex) => {
     const isInputEnabled = enabledRows.includes(rowData.description); 
@@ -315,14 +316,21 @@ const Input = () => {
   
   const createFormBody = (formInput, qtyEachMaterials) => {
     const { date, time } = getCurrentDateTime();
+    const filteredQty = qtyEachMaterials.qty.filter((data,index)=>Number(data) !== Number(dataMaterialsByDN[index].receivedQuantity))
+    
+    
     return {
       // dnNumber: "2100198514",
-      dnNumber: formInput.dn_no,
+      dnNumber: Number(formInput.dn_no),
       arrivalActualDate: formInput.arrival_date_actual,
       arrivalActualTime: formInput.arrival_time_actual,
       departureActualDate: date,
       departureActualTime: time,
       rit: formInput.rit,
+
+      // incomingIds: qtyEachMaterials.incomingId.filter((data,index)=>Number(qtyEachMaterials.qty[index]) !== Number(dataMaterialsByDN[index].receivedQuantity) && Number(data)),
+      // receivedQuantities: filteredQty.map(Number),
+
       incomingIds: qtyEachMaterials.incomingId,
       receivedQuantities: qtyEachMaterials.qty.map(Number)
     }
@@ -341,6 +349,8 @@ const Input = () => {
         confirmButtonText: "Submit",
         preConfirm: async () => {
           try {
+            setLoadingSubmit(true)
+            Swal.showLoading();
             console.log("----------------------SUBMIT LOG---------------------", )      
             setFormInput({
               ...formInput,
@@ -356,18 +366,32 @@ const Input = () => {
             const response = await submitMaterialByDNData(warehouseId, formBody)
             console.log("Response submit :", response)
             await getMaterialByDN(formBody.dnNumber)
-            return response.data.message
+            // return response.data.message
+            return "Material quantities received!"
           } catch (error) {
             console.error(error)
-          } 
+            return error
+          } finally {
+            setLoadingSubmit(false)
+          }
         }
       }).then(async(result) => {
         if (result.isConfirmed) {
-          Swal.fire({
-            title: "Submitted!",
-            text: result.value,
-            icon: "success"
-          });
+          if(result.value === "Material quantities received!"){
+            Swal.fire({
+              title: "Submitted!",
+              text: result.value,
+              icon: "success",
+              confirmButtonColor: "#3085d6",
+            });
+          } else {
+            Swal.fire({
+              title: "Failed!",
+              text: result.value,
+              icon: "error",
+              confirmButtonColor: "#3085d6",
+            });
+          }
         }
       });
       
@@ -599,7 +623,7 @@ const Input = () => {
               <CRow className='mt-4'>
                   
                   {/* Table */}
-                  <DataTable className='p-datatable-gridlines p-datatable-sm custom-datatable text-nowrap' size='small' showGridlines value={dataMaterialsByDN} paginator rows={10} dataKey="materialNo" emptyMessage={renderCustomEmptyMsg}>
+                  <DataTable className='p-datatable-gridlines p-datatable-sm custom-datatable text-nowrap' size='small' showGridlines stripedRows value={dataMaterialsByDN} paginator rows={10} dataKey="materialNo" emptyMessage={renderCustomEmptyMsg}>
                       <Column className='' field="" header="No" body={(rowData, { rowIndex }) => rowIndex + 1}/>
                       <Column className='' field='materialNo' header="Material No"  />
                       <Column className='' field='description' header="Material Description"  />
@@ -616,7 +640,7 @@ const Input = () => {
                 <CCol xs='auto'>
                   { stateVendorArrived ? <CButton style={{ backgroundColor: "#758694"}} className='text-white' onClick={handleClearInputDN}>Clear</CButton> 
                       : 
-                  <CButton disabled={formInput.rit === 0} style={{ backgroundColor: "#5B913B"}} className='text-white' onClick={handleSubmitMaterials}>Submit</CButton>
+                  <CButton disabled={formInput.rit === 0 || qtyEachMaterials?.qty?.filter((data)=>data===null).length > 0} style={{ backgroundColor: "#5B913B"}} className='text-white' onClick={handleSubmitMaterials}>Submit</CButton>
                         }
                 </CCol>
               </CRow>

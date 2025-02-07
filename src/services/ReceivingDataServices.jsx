@@ -59,7 +59,14 @@ const useReceivingDataService = () => {
             })
             return response
         } catch (error) {
-            handleError(error, "Error submitting:")
+            if(error.response.data.error){
+                throw error.response.data.error
+            } else if(error.response.data.message){
+                throw error.response.data.message
+            } else {
+                throw error
+            }
+            // handleError(error, "Error submitting:")
         }
     }
 

@@ -5,6 +5,7 @@ import './scss/style.scss'
 import 'rsuite/dist/rsuite.min.css'
 import './scss/examples.scss'
 import 'primereact/resources/themes/nano/theme.css'
+// import "primereact/resources/themes/lara-light-indigo/theme.css";
 import 'primeicons/primeicons.css'
 import 'primereact/resources/primereact.min.css'
 

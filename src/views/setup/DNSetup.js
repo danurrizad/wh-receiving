@@ -2,9 +2,6 @@ import React,{useState,Suspense, useEffect} from 'react'
 import CIcon from '@coreui/icons-react'
 import * as icon from '@coreui/icons'
 import { Button } from 'primereact/button'
-import 'primereact/resources/themes/nano/theme.css'
-import 'primeicons/primeicons.css'
-import 'primereact/resources/primereact.min.css'
 import Flatpickr from 'react-flatpickr'
 import {
   CCard,
@@ -257,23 +254,23 @@ const DNSetup = () => {
               <CCol>
                 <div className="d-flex flex-wrap justify-content-start">
                   <Button
-                  type="button"
-                  label="Upload Data "
-                  icon="pi pi-file-import"
-                  severity="primary"
-                  className="rounded-4 me-2 mb-1 text-white"
-                  onClick={showModalUpload}
-                  data-pr-tooltip="XLS"
-                      /> 
-                      <Button
+                    type="button"
+                    label="Upload Data "
+                    icon="pi pi-file-import"
+                    severity="warning"
+                    className="rounded-2 me-2 py-2 mb-1 text-white"
+                    onClick={showModalUpload}
+                    data-pr-tooltip="XLS"
+                  /> 
+                  <Button
                     type="button"
                     label="Export To Excel"
                     icon="pi pi-file-excel"
                     severity="success"
-                    className="rounded-4 me-2 mb-1 text-white"
+                    className="rounded-2 me-2 py-2 mb-1 text-white"
                     onClick={exportExcel}
                     data-pr-tooltip="XLS"
-                      />
+                  />
                 </div>
               </CCol>
               <CCol className='d-flex justify-content-end gap-3'>
@@ -303,6 +300,7 @@ const DNSetup = () => {
                 scrollable 
                 scrollHeight="500px" 
                 showGridlines  
+                stripedRows
                 paginator 
                 rows={10} 
                 rowsPerPageOptions={[10, 25, 50, 100]} 
