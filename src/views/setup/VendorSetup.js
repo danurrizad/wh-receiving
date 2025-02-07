@@ -1,10 +1,6 @@
 import React,{useState,Suspense, useRef, useEffect} from 'react'
 import CIcon from '@coreui/icons-react'
 import * as icon from '@coreui/icons'
-import 'primereact/resources/themes/nano/theme.css'
-import 'primeicons/primeicons.css'
-import 'primereact/resources/primereact.min.css'
-
 
 import { Button } from 'primereact/button'
 import Flatpickr from 'react-flatpickr'
@@ -34,7 +30,7 @@ import {
   CTableDataCell,
   CFormText,
 } from '@coreui/react'
-import { FaInbox } from 'react-icons/fa6'
+import { FaInbox, FaPenToSquare, FaTrashCan } from 'react-icons/fa6'
 import useScheduleDataService from '../../services/ScheduleDataService'
 import useMasterDataService from '../../services/MasterDataService'
 import { useToast } from '../../App'
@@ -50,11 +46,18 @@ import { MultiSelect } from 'primereact/multiselect';
 import { Tag } from 'primereact/tag';
 import { TriStateCheckbox } from 'primereact/tristatecheckbox';
 import Select from 'react-select';
+import { ColumnGroup } from 'primereact/columngroup'
+import Swal from 'sweetalert2'
+import { TimePicker } from 'rsuite'
 
 
 const VendorSetup = () => {
       const addToast = useToast()
       const [modalUpload, setModalUpload] = useState(false)
+      const [modalAdd, setModalAdd] = useState(false)
+      const [modalUpdate, setModalUpdate] = useState(false)
+      const [formModal, setFormModal] = useState({})
+
       const [date, setDate] = useState(new Date().toLocaleDateString('en-CA'))
       const [loadingImport, setLoadingImport] = useState(false)
       const [uploadData, setUploadData] = useState({
@@ -293,6 +296,91 @@ const VendorSetup = () => {
         )
       }
 
+    const showModalUpdate = (data) => {
+      console.log(data)
+      setFormModal({
+        ...formModal,
+        supplierCode: data?.Supplier?.supplierCode,
+        supplierName: data?.Supplier?.SupplierName,
+        day: data?.schedule,
+        arrivalPlanTime: formatTime(data?.arrival),
+        departurePlanTime: formatTime(data?.departure),
+        rit: data?.rit,
+        plant: data?.plantId,
+        truckStation: data?.truckStation
+      })
+      setModalUpdate(true)
+    }
+
+    const showSwalDelete = (data) => {
+      Swal.fire({
+              title: "Delete Confirmation",
+              html: `
+                <div>
+                  <p>Are you sure want to delete schedule </p>
+                  <p>${data?.Supplier?.SupplierName} </p>
+                  <p>Rit : ${data?.rit} </p>
+                </div>`,
+              icon: "warning",
+              showCancelButton: true,
+              confirmButtonColor: "#3085d6",
+              cancelButtonColor: "#d33",
+              confirmButtonText: "Delete",
+              preConfirm: async () => {
+                try {
+                 
+                  Swal.showLoading();
+                 
+                  return "Schedule deleted!"
+                } catch (error) {
+                  console.error(error)
+                  return error
+                }
+              }
+            }).then(async(result) => {
+              if (result.isConfirmed) {
+                if(result.value === "Schedule deleted!"){
+                  Swal.fire({
+                    title: "Deleted!",
+                    text: result.value,
+                    icon: "success",
+                    confirmButtonColor: "#3085d6",
+                  });
+                } else {
+                  Swal.fire({
+                    title: "Failed!",
+                    text: result.value,
+                    icon: "error",
+                    confirmButtonColor: "#3085d6",
+                  });
+                }
+              }
+            });
+    }
+
+    const actionBodyTemplate = (rowData, rowIndex) => {
+      return(
+        <div className='d-flex align-items-center justify-content-center gap-3'>
+          <CButton color='info' className='d-flex align-items-center justify-content-center'><FaPenToSquare onClick={()=>showModalUpdate(rowData)} style={{ color: "white"}}/></CButton>
+          <CButton color='danger' className='d-flex align-items-center justify-content-center'><FaTrashCan onClick={()=>showSwalDelete(rowData)} style={{ color: "white"}}/></CButton>
+        </div>
+      )
+    }
+
+    const handleClickAdd = () => {
+      console.log("form modal add :", formModal)
+    }
+
+    const handleClickUpdate = () => {
+      console.log("form modal :", formModal)
+    }
+
+    const convertToDateTime = (timeString) => {
+      const [hours, minutes] = timeString.split(":").map(Number); // Extract hours & minutes
+      const date = new Date(2025, 1, 7, hours, minutes, 0); // Month is zero-based (1 = February)
+      return date;
+    };
+
   return (
     <CContainer fluid>
       <CRow className=''>
@@ -305,10 +393,19 @@ const VendorSetup = () => {
                 <CCol className='d-flex align-items-center'>
                   <Button
                     type="button"
+                    label="Add Data "
+                    icon="pi pi-plus"
+                    severity=""
+                    className="rounded-2 me-2 mb-1 py-2 text-white"
+                    onClick={()=>setModalAdd(true)}
+                    data-pr-tooltip="XLS"
+                  /> 
+                  <Button
+                    type="button"
                     label="Upload Data "
                     icon="pi pi-file-import"
-                    severity="primary"
-                    className="rounded-4 me-2 mb-1 text-white"
+                    severity="warning"
+                    className="rounded-2 me-2 mb-1 py-2 text-white"
                     onClick={showModalUpload}
                     data-pr-tooltip="XLS"
                   /> 
@@ -317,7 +414,7 @@ const VendorSetup = () => {
                     label="Export To Excel"
                     icon="pi pi-file-excel"
                     severity="success"
-                    className="rounded-4 me-2 mb-1 text-white"
+                    className="rounded-2 me-2 mb-1 py-2 text-white"
                     onClick={exportExcel}
                     data-pr-tooltip="XLS"
                   />
@@ -365,6 +462,7 @@ const VendorSetup = () => {
                 scrollable
                 scrollHeight="500px"
                 showGridlines
+                stripedRows
                 paginator
                 rows={10}
                 rowsPerPageOptions={[10, 25, 50, 100]}
@@ -383,11 +481,205 @@ const VendorSetup = () => {
                 <Column className='' field="rit" sortable header="Rit" dataType="number" />
                 <Column className='' field="Plant.PlantName" sortable header="Plant" />
                 <Column className='' field="truckStation" sortable header="Truck Station" />
+                <Column className='' header="Action" body={actionBodyTemplate} />
               </DataTable>
                   
 
 
               {/* ---------------------------------------------------------------------MODAL----------------------------------------------------------------------------- */}
+              {/* MODAL ADD */}
+              <CModal visible={modalAdd} onClose={() => setModalAdd(false)}>
+                <CModalHeader>
+                  <CModalTitle id="LiveDemoExampleLabel">Add Vendor Schedule</CModalTitle>
+                </CModalHeader>
+                <CModalBody>
+                  <CRow className='mb-3'>
+                    <CCol>
+                      <CFormText>Vendor Code</CFormText>
+                      <CFormInput value={formModal.supplierCode} onChange={(e)=>setFormModal({ ...formModal, supplierCode: e.target.value})}/>
+                    </CCol>
+                  </CRow>
+                  <CRow className='mb-3'>
+                    <CCol>
+                      <CFormText>Vendor Name</CFormText>
+                      <CFormInput value={formModal.supplierName} onChange={(e)=>setFormModal({ ...formModal, supplierName: e.target.value})}/>
+                    </CCol>
+                  </CRow>
+                  <CRow className='mb-3'>
+                    <CCol>
+                      <CFormText>Day</CFormText>
+                      <Select 
+                        options={optionsDay} 
+                        isClearable
+                        value={optionsDay?.find((data)=>data.value === formModal.day) || ""}
+                        onChange={(e)=>setFormModal({...formModal, day: e !== null ? Number(e.value) : ""})}
+                      />
+                    </CCol>
+                    <CCol>
+                      <CFormText>Rit</CFormText>
+                      <CFormInput type='number' value={formModal.rit} onChange={(e)=>setFormModal({ ...formModal, rit: Number(e.target.value)})}/>
+                    </CCol>
+                  </CRow>
+                  <CRow className='mb-3'>
+                    <CCol>
+                      <CFormText>Arrival Time</CFormText>
+                      <TimePicker 
+                        format="HH:mm" 
+                        placeholder="Select time"
+                        value={formModal?.arrivalPlanTime ? convertToDateTime(formModal?.arrivalPlanTime) : null}
+                        onChange={(e)=>{
+                          console.log(e)
+                          setFormModal({ ...formModal, arrivalPlanTime: formatTime(e)})
+                        }}/>
+                    </CCol>
+                    <CCol>
+                      <CFormText>Departure Time</CFormText>
+                      <TimePicker 
+                        format="HH:mm" 
+                        placeholder="Select time"
+                        value={formModal?.departurePlanTime ? convertToDateTime(formModal?.departurePlanTime) : null}
+                        onChange={(e)=>{
+                          console.log(e)
+                          setFormModal({ ...formModal, departurePlanTime: formatTime(e)})
+                        }}/>
+                    </CCol>
+                  </CRow>
+                  <CRow className='mb-3'>
+                    <CCol>
+                      <CFormText>Plant</CFormText>
+                      <Select
+                        options={optionsPlant.list}
+                        isClearable
+                        value={optionsPlant?.list?.find((data)=>data.value === formModal.plant) || ""}
+                        onChange={(e)=>setFormModal({ ...formModal, plant: e !== null ? Number(e.value) : ""})}
+                      />
+                    </CCol>
+                    <CCol>
+                      <CFormText>Truck Station</CFormText>
+                      <CFormInput value={formModal.truckStation} onChange={(e)=>setFormModal({ ...formModal, truckStation: e.target.value})}/>
+                    </CCol>
+                  </CRow>
+                </CModalBody>
+                <CModalFooter>
+                  <Suspense
+                    fallback={
+                    <div className="pt-3 text-center">
+                      <CSpinner color="primary" variant="grow" />
+                    </div>
+                    }
+                  >
+                    <CButton color="success" disabled={loadingImport} className='text-white' onClick={handleClickAdd}>
+                      {loadingImport ? (
+
+                          <>
+                            <CSpinner component="span" size="sm" variant="grow" className="me-2" />
+                            Add...
+                          </>
+                        ) : (
+                        'Add'
+                      )}
+                    </CButton>
+                  </Suspense>
+                </CModalFooter>
+              </CModal>
+              
+              {/* MODAL UPDATE */}
+              <CModal visible={modalUpdate} onClose={() => setModalUpdate(false)}>
+                <CModalHeader>
+                  <CModalTitle id="LiveDemoExampleLabel">Update Vendor Schedule</CModalTitle>
+                </CModalHeader>
+                <CModalBody>
+                  <CRow className='mb-3'>
+                    <CCol>
+                      <CFormText>Vendor Code</CFormText>
+                      <CFormInput value={formModal.supplierCode} onChange={(e)=>setFormModal({ ...formModal, supplierCode: e.target.value})}/>
+                    </CCol>
+                  </CRow>
+                  <CRow className='mb-3'>
+                    <CCol>
+                      <CFormText>Vendor Name</CFormText>
+                      <CFormInput value={formModal.supplierName} onChange={(e)=>setFormModal({ ...formModal, supplierName: e.target.value})}/>
+                    </CCol>
+                  </CRow>
+                  <CRow className='mb-3'>
+                    <CCol>
+                      <CFormText>Day</CFormText>
+                      <Select 
+                        options={optionsDay} 
+                        isClearable
+                        value={optionsDay?.find((data)=>data.value === formModal.day) || ""}
+                        onChange={(e)=>setFormModal({...formModal, day: e !== null ? Number(e.value) : ""})}
+                      />
+                    </CCol>
+                    <CCol>
+                      <CFormText>Rit</CFormText>
+                      <CFormInput value={formModal.rit} onChange={(e)=>setFormModal({ ...formModal, rit: Number(e.target.value)})}/>
+                    </CCol>
+                  </CRow>
+                  <CRow className='mb-3'>
+                    <CCol>
+                      <CFormText>Arrival Time</CFormText>
+                      <TimePicker 
+                        format="HH:mm" 
+                        placeholder="Select time"
+                        value={formModal?.arrivalPlanTime ? convertToDateTime(formModal?.arrivalPlanTime) : null}
+                        onChange={(e)=>{
+                          console.log(e)
+                          setFormModal({ ...formModal, arrivalPlanTime: e !== null ? formatTime(e) : ""})
+                        }}/>
+                    </CCol>
+                    <CCol>
+                      <CFormText>Departure Time</CFormText>
+                      <TimePicker 
+                        format="HH:mm" 
+                        placeholder="Select time"
+                        value={formModal?.departurePlanTime ? convertToDateTime(formModal?.departurePlanTime) : null}
+                        onChange={(e)=>{
+                          console.log(e)
+                          setFormModal({ ...formModal, departurePlanTime: e !== null ? formatTime(e) : ""})
+                        }}/>
+                    </CCol>
+                  </CRow>
+                  <CRow className='mb-3'>
+                    <CCol>
+                      <CFormText>Plant</CFormText>
+                      <Select
+                        options={optionsPlant.list}
+                        isClearable
+                        value={optionsPlant?.list?.find((data)=>data.value === formModal.plant) || ""}
+                        onChange={(e)=>setFormModal({ ...formModal, plant: e !== null ? Number(e.value) : ""})}
+                      />
+                    </CCol>
+                    <CCol>
+                      <CFormText>Truck Station</CFormText>
+                      <CFormInput value={formModal.truckStation} onChange={(e)=>setFormModal({ ...formModal, truckStation: e.target.value})}/>
+                    </CCol>
+                  </CRow>
+                </CModalBody>
+                <CModalFooter>
+                  <Suspense
+                    fallback={
+                    <div className="pt-3 text-center">
+                      <CSpinner color="primary" variant="grow" />
+                    </div>
+                    }
+                  >
+                    <CButton color="success" disabled={loadingImport} className='text-white' onClick={handleClickUpdate}>
+                      {loadingImport ? (
+
+                          <>
+                            <CSpinner component="span" size="sm" variant="grow" className="me-2" />
+                            Updating...
+                          </>
+                        ) : (
+                        'Update'
+                      )}
+                    </CButton>
+                  </Suspense>
+                </CModalFooter>
+              </CModal>
+
+              {/* MODAL UPLOAD */}
               <CModal visible={modalUpload} onClose={() => setModalUpload(false)}>
                 <CModalHeader>
                   <CModalTitle id="LiveDemoExampleLabel">Upload Vendor Schedule</CModalTitle>
