@@ -482,7 +482,6 @@ const Dashboard = () => {
            >
              <div style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
                <CCardTitle className="text-center fs-4">MONITORING RECEIVING WAREHOUSE</CCardTitle>
-               
              </div>
           </CCard>
        <CCard
@@ -501,7 +500,19 @@ const Dashboard = () => {
             <CCol sm={12} md={12} lg={5} xl={4}
              className="d-flex justify-content-center-start gap-3">
               {/* Filter Detail */}
-          
+            <div className="d-flex flex-column align-items-center">
+              <CFormText style={{ alignSelf: "flex-start" }}>Filter Summary</CFormText>
+              <button
+                className="btn"
+                style={{
+                  backgroundColor: "#27445D",
+                  color: "#FFF",
+                }}
+                onClick={toggleVisibility}
+                        >
+                {isVisible ? "Hide Recap" : "Show Recap"}
+              </button>
+            </div>
           
             {/* Filter Plant */}
             <div className="d-flex flex-column align-items-center">
