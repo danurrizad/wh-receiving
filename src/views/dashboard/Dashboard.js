@@ -27,6 +27,8 @@ import {
   CModalBody,
   CButton,
   CButtonGroup,
+  CPagination,
+  CPaginationItem,
   CCard,
   CCardBody,
   CBadge,
@@ -79,19 +81,24 @@ ChartJS.register(
 const Dashboard = () => {
   const { getMasterData, getMasterDataById } = useMasterDataService()
   const { getDNInqueryData } = useReceivingDataService()
+  const apiPlant = 'plant-public'
   const { getCardStatusArrival,getChartReceiving } = useDashboardReceivingService()
   const [globalFilterValue, setGlobalFilterValue] = useState('');
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage, setItemsPerPage] = useState(10)
   const indexOfLastItem = currentPage * itemsPerPage
   const indexOfFirstItem = indexOfLastItem - itemsPerPage
-  const [selectedPlant, setSelectedPlant] = useState({ value: 'all', label: 'All' })
   const [currentItems, setCurrentItems] = useState([]); // State untuk opsi vendor
   const [optionsSelectVendor, setOptionsSelectVendor] = useState([]); // State untuk opsi vendor
   const [plant, setPlant] = useState([])
+  const [visiblePages, setVisiblePages] = useState([])
+  const [plants, setPlants] = useState([]); // Plants fetched from API
+  const [selectedPlant, setSelectedPlant] = useState({ value: 'all', label: 'All' });
+  const [selectedStatus, setSelectedStatus] = useState({ label: "Delayed", value: "delayed" });
   const [dataSchedules, setDataSchedules] = useState([]); // Menyimpan data dari API
   const [isVisible, setIsVisible] = useState(true); // State to control visibility
   const [ dataDNInquery, setDataDNInquery ] = useState([])
+   const [totalPages, setTotalPages] = useState(1);
    const [ showModalInput, setShowModalInput] = useState({
       state: false,
       enableSubmit: false
@@ -111,62 +118,108 @@ const Dashboard = () => {
     rangeDate: [new Date('2025-01-01'), new Date('2025-01-30')],
     global: { value: null, matchMode: FilterMatchMode.CONTAINS },
   })
-  const [plants] = useState(['Karawang 1', 'Karawang 2', 'Karawang 3', 'Sunter 1', 'Sunter 2']);
-  const getPlantId = (plantName) => {
-    switch (plantName) {
-      case 'Karawang 1':
-        return 1
-      case 'Karawang 2':
-        return 2
-      case 'Karawang 3':
-        return 3
-      case 'Sunter 1':
-        return 4
-      case 'Sunter 2':
-        return 5
-      case '': 
-        return ""
-      
-    }
-  }
 
-  const getDNInquery = async(plantId, startDate, endDate) => {
+
+ 
+  const fetchPlants = async () => {
     try {
-      // const dateFormat = date.toISOString().split('T')[0]
-      const idPlant = getPlantId(plantId)
-      const response = await getDNInqueryData(idPlant, startDate, endDate) 
-      console.log("response :", response.data.data)
-      setDataDNInquery(response.data.data)
+      const response = await getMasterData(apiPlant);
+      console.log("API Response:", response); // Log seluruh response
+      if (response && response.data) {
+        
+        const plantOptions = response.data.map((plant) => ({
+          value: plant.id,
+          label: plant.plantName,
+        }));
+        setPlants(plantOptions);
+      }
     } catch (error) {
-      console.error(error)
+      console.error("Error fetching plants:", error);
     }
-  }
-  useEffect(()=>{
-    getDNInquery(queryFilter.plantId, queryFilter.rangeDate[0], queryFilter.rangeDate[1])
-  }, [queryFilter.plantId, queryFilter.rangeDate])
+  };
+
+  // Call fetchPlants on component mount
+  useEffect(() => {
+    fetchPlants();
+  }, []);
+  console.log("dataDNInquery",dataDNInquery);
+
+
+
+
+  const getDNInquery = async (plantId, startDate, endDate) => {
+    try {
+      console.log("Fetching DN Inquiry for Plant ID:", plantId || "All Plants");
+      
+      const response = await getDNInqueryData(plantId, startDate, endDate);
+      
+      console.log("Response DN:", response.data.data);
+      setDataDNInquery(response.data.data);
+    } catch (error) {
+      console.error("Error fetching DN Inquiry:", error);
+    }
+  };
+  
+  
+  useEffect(() => {
+    getDNInquery(queryFilter.plantId, queryFilter.rangeDate[0], queryFilter.rangeDate[1]);
+  }, [queryFilter.plantId, queryFilter.rangeDate]);
  
 
 
-    const GetDataArrivalDashboard = async () => {
-      try {
-        const response = await getCardStatusArrival("", "", "", "2025-01-01", "2025-01-16");
-        if (response && response.data) {
-          console.log("cek Arrival",response.data.data);
-          setCardData(response.data.data);
-        }
-      } catch (error) {
-        console.error("Error fetching arrival monitoring data:", error);
+  const GetDataArrivalDashboard = async (plantId) => {
+    try {
+      console.log("Fetching Arrival Data for Plant ID:", plantId || "All Plants");
+  
+      const response = await getCardStatusArrival(
+        plantId || "", // Jika "All" dipilih, kirim string kosong
+        "",
+        "",
+        queryFilter.rangeDate[0].toISOString().split('T')[0], // Format YYYY-MM-DD
+        queryFilter.rangeDate[1].toISOString().split('T')[0]  // Format YYYY-MM-DD
+      );
+  
+      if (response && response.data) {
+        console.log("Cek Arrival Data:", response.data.data);
+        setCardData(response.data.data);
       }
-    };
+    } catch (error) {
+      console.error("Error fetching arrival monitoring data:", error);
+    }
+  };
+  
     useEffect(() => {
     GetDataArrivalDashboard();
   }, []);
 
-  const fetchChartReceivingData = async () => {
+  useEffect(() => {
+    const maxVisiblePages = 6 // Max number of pages to show
+    const halfVisible = Math.floor(maxVisiblePages / 2)
+
+    let startPage = Math.max(1, currentPage - halfVisible)
+    let endPage = Math.min(totalPages, currentPage + halfVisible)
+
+    // Adjust if there are not enough pages before or after
+    if (currentPage - startPage < halfVisible) {
+      startPage = Math.max(1, endPage - maxVisiblePages + 1)
+    }
+    if (endPage - currentPage < halfVisible) {
+      endPage = Math.min(totalPages, startPage + maxVisiblePages - 1)
+    }
+
+    const pages = []
+    for (let i = startPage; i <= endPage; i++) {
+      pages.push(i)
+    }
+
+    setVisiblePages(pages)
+  }, [currentPage, totalPages])
+
+  const fetchChartReceivingData = async (status = "delayed") => {
     try {
       const response = await getChartReceiving(
         queryFilter.plantId, 
-        "", // status kosong
+        status, // status kosong
         "", // vendor kosong
         queryFilter.rangeDate[0]?.toISOString().split("T")[0], 
         queryFilter.rangeDate[1]?.toISOString().split("T")[0]
@@ -175,6 +228,9 @@ const Dashboard = () => {
       if (response && response.data) {
         console.log("Data Chart Receiving:", response.data);
         setDataSchedules(response.data); // Simpan data dari API ke state
+        setTotalPages(response.totalPages);
+        setCurrentPage(response.currentPage);
+
   
         // Store the data in currentItems based on the API model
         const items = response.data.map((item) => ({
@@ -192,6 +248,8 @@ const Dashboard = () => {
       console.error("Error fetching chart data:", error);
     }
   };
+
+
   
   useEffect(() => {
     fetchChartReceivingData();
@@ -241,19 +299,42 @@ const Dashboard = () => {
     receiving: true
   })
 
-  const handleFilterSchedule = (selectedOption) => {
-    if (!selectedOption) {
-      // If no option selected, reset to all data
-      setDataSchedules(dataSchedulesDummy);
-    } else {
-      // Filter based on the selected status
-      const filtered = dataSchedulesDummy.filter(
-        (item) => item.status === selectedOption.value
+  const handleFilterSchedule = async (selectedOption) => {
+    const status = selectedOption ? selectedOption.value : "delayed"; // Jika tidak ada status, kirim ""
+    setSelectedStatus(selectedOption || { label: "Delayed", value: "delayed" }); // Update state
+    console.log("Fetching chart data with status:", status);
+  
+    try {
+      const response = await getChartReceiving(
+        queryFilter.plantId, 
+        status,  // Kirim status dari filter
+        "",      // vendor kosong
+        queryFilter.rangeDate[0]?.toISOString().split("T")[0], 
+        queryFilter.rangeDate[1]?.toISOString().split("T")[0]
       );
-      setDataSchedules(filtered);
+  
+      if (response && response.data) {
+        console.log("Filtered Chart Receiving Data:", response.data);
+        setDataSchedules(response.data); // Simpan data hasil filter ke state
+  
+        // Ubah data agar sesuai dengan format yang digunakan di UI
+        const items = response.data.map((item) => ({
+          vendor_id: item.supplierCode,
+          vendor_name: item.supplierName,
+          day: item.rit,
+          schedule_from: item.arrivalPlanTime,
+          arrival_time: item.arrivalActualTime,
+          status: item.status,
+          materials: item.Materials,
+        }));
+        
+        setCurrentItems(items); // Simpan data yang diformat ke state
+      }
+    } catch (error) {
+      console.error("Error fetching filtered chart data:", error);
     }
-  }
-
+  };
+  
 
   const plantOptions = [
     { value: 'all', label: 'All' }, // Menambahkan opsi "All" di awal
@@ -264,13 +345,20 @@ const Dashboard = () => {
   ]
 
   const handlePlantChange = (selectedPlant) => {
-    if (selectedPlant && selectedPlant.value !== 'all' && selectedPlant.value !== '') {
-    
-    } else {
-      setSelectedPlant({ value: 'all', label: 'All' })
-    
-    }
-  }
+    setSelectedPlant(selectedPlant);
+  
+    const plantId = selectedPlant.value !== 'all' ? selectedPlant.value : "";
+  
+    setQueryFilter((prevFilter) => ({
+      ...prevFilter,
+      plantId: plantId, // Simpan plantId yang dipilih
+    }));
+  
+    // Panggil API untuk update data
+    GetDataArrivalDashboard(plantId);
+  };
+  
+  
  
   const daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
 
@@ -355,13 +443,24 @@ const Dashboard = () => {
             </div>
           )
         }
-        const handleChangeFilterPlant = (e) => {
-          if(e.value !== undefined){
-            setQueryFilter({ ...queryFilter, plantId: e.target.value})
-          } else{
-            setQueryFilter({ ...queryFilter, plantId: ""})
-          }
+
+        const handlePageChange = (pageNumber) => {
+          setCurrentPage(pageNumber)
         }
+
+        const selectStyles = {
+          placeholder: (base) => ({
+            ...base,
+            color: "red", // Warna merah untuk placeholder
+            fontWeight: "bold",
+          }),
+          singleValue: (base, state) => ({
+            ...base,
+            color: state.data.value === "delayed" ? "red" : "green", // Warna sesuai status
+            fontWeight: "bold",
+          }),
+        };
+        
 
       
   return (
@@ -383,6 +482,7 @@ const Dashboard = () => {
            >
              <div style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
                <CCardTitle className="text-center fs-4">MONITORING RECEIVING WAREHOUSE</CCardTitle>
+               
              </div>
           </CCard>
        <CCard
@@ -401,32 +501,35 @@ const Dashboard = () => {
             <CCol sm={12} md={12} lg={5} xl={4}
              className="d-flex justify-content-center-start gap-3">
               {/* Filter Detail */}
-            <div className="d-flex flex-column align-items-center">
-              <CFormText style={{ alignSelf: "flex-start" }}>Filter Summary</CFormText>
-              <button
-                className="btn"
-                style={{
-                  backgroundColor: "#27445D",
-                  color: "#FFF",
-                }}
-                onClick={toggleVisibility}
-                        >
-                {isVisible ? "Hide Recap" : "Show Recap"}
-              </button>
-            </div>
+          
           
             {/* Filter Plant */}
-            <div className="d-flex flex-column align-items-center" style={{ width: "60%" }}>
+            <div className="d-flex flex-column align-items-center">
             <CFormText style={{ alignSelf: "flex-start" }}>Filter Plant</CFormText>
-             <Dropdown
-                                     value={queryFilter.plantId}
-                                     options={plants}
-                                     onChange={handleChangeFilterPlant}
-                                     // onChange={(e)=>console.log(e.target.value)}
-                                     placeholder="All plant"
-                                     showClear
-                                     style={{ width: '100%', borderRadius: '5px', padding: '1.75px' }}
-                                   />
+            <Select
+            className="basic-single"
+            classNamePrefix="select"
+            id="plant"
+            options={[{ value: 'all', label: 'All' }, ...plants]} // Tambahkan opsi "All"
+            value={selectedPlant}
+            onChange={handlePlantChange}
+            styles={{
+              control: (base) => ({
+                ...base,
+                width: '250px', // Atur lebar lebih kecil agar lebih proporsional
+                minWidth: '200px',
+                maxWidth: '100%',
+                borderRadius: '5px',
+                padding: '2px',
+                zIndex: 3, // Memberikan prioritas tinggi agar dropdown muncul di atas elemen lain
+                position: 'relative'
+              }),
+              menu: (base) => ({
+                ...base,
+                zIndex: 3, // Pastikan menu dropdown tidak tertutup elemen lain
+              })
+            }}
+             />
             </div>
           </CCol>
           {/* Kolom kedua */}
@@ -575,12 +678,14 @@ const Dashboard = () => {
                       <CFormText>Filter by Status</CFormText>
                       <Select
                         onChange={handleFilterSchedule}
-                        placeholder="All"
+                        placeholder="Delayed" // Default placeholder
                         isClearable
-                        styles={colorStyles}
+                        styles={ selectStyles}
+                        value={selectedStatus} // Default ke "Delayed"
                         options={[
-                          { label: "On Schedule", value: "On Schedule" },
-                          { label: "Delayed", value: "Delayed" },
+                          { label: "On Schedule", value: "on schedule" },
+                          { label: "Delayed", value: "delayed" },
+                         
                         ]}
                          />
                        </CCol>                 
@@ -675,8 +780,34 @@ const Dashboard = () => {
                  data={setChartData()} 
                  height={200} // Tinggi chart
                 />
-
                </CRow>
+               <CCol className="d-flex justify-content-center sticky-pagination">
+                  <CPagination aria-label="Page navigation example">
+                    <CPaginationItem
+                      disabled={currentPage === 1}
+                      onClick={() => handlePageChange(currentPage - 1)}
+                    >
+                      Previous
+                    </CPaginationItem>
+
+                    {visiblePages.map((page) => (
+                      <CPaginationItem
+                        key={page}
+                        active={currentPage === page}
+                        onClick={() => handlePageChange(page)}
+                      >
+                        {page}
+                      </CPaginationItem>
+                    ))}
+
+                    <CPaginationItem
+                      disabled={currentPage === totalPages}
+                      onClick={() => handlePageChange(currentPage + 1)}
+                    >
+                      Next
+                    </CPaginationItem>
+                  </CPagination>
+                </CCol>
                </CCard>
               </CCol>
               {/* //untuk tabel */}
