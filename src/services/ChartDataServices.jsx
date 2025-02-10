@@ -2,14 +2,14 @@ import { useState,useEffect} from 'react';
 import { CModal, CModalHeader, CModalBody, CModalFooter, CButton } from '@coreui/react';
 import useDashboardReceivingService from '../services/DashboardService'
 
-const useChartData = ({currentItemDashboard}) => {
+const useChartData = ({dataSchedules}) => {
     const [selectedVendor, setSelectedVendor] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
  
 
     const setChartData  = () => {
-        const labelsVendor = currentItemDashboard?.map((data) => data.supplierName);
-        console.log("Current Items Data:", currentItemDashboard); // Debugging awal
+        // console.log("Current Items Data:", dataSchedules); // Debugging awal
+        const labelsVendor = dataSchedules?.map((data) => data.supplierName);
 
         const data = {
             labels: labelsVendor,
@@ -17,7 +17,7 @@ const useChartData = ({currentItemDashboard}) => {
                 {
                     xAxisId: "x-arrival",
                     label: "Arrival On Schedule",
-                    data: currentItemDashboard.map((data) => {
+                    data: dataSchedules.map((data) => {
                         const arrivalHour = data.arrivalActualTime
                             ? parseInt(data.arrivalActualTime.split(":")[0], 10)
                             : 0;
@@ -36,10 +36,10 @@ const useChartData = ({currentItemDashboard}) => {
                             y: data.supplierName,
                         };
                     }),
-                    backgroundColor: currentItemDashboard.map((data) =>
+                    backgroundColor: dataSchedules.map((data) =>
                         data.status === "delayed" ? "#F64242" : "#35A535"
                     ),
-                    borderColor: currentItemDashboard.map((data) =>
+                    borderColor: dataSchedules.map((data) =>
                         data.status === "delayed" ? "rgb(240, 15, 15)" : "rgb(36, 173, 47)"
                     ),
                     borderWidth: 1,
@@ -47,7 +47,7 @@ const useChartData = ({currentItemDashboard}) => {
                 {
                     xAxisId: "x-plan",
                     label: "Arrival Plan",
-                    data: currentItemDashboard.map((data) => {
+                    data: dataSchedules.map((data) => {
                         const planHour = data.arrivalPlanTime
                             ? parseInt(data.arrivalPlanTime.split(":")[0], 10)
                             : 0;
@@ -115,7 +115,7 @@ const useChartData = ({currentItemDashboard}) => {
                     callbacks: {
                         label: (context) => {
                             const dataIndex = context.dataIndex;
-                            const schedule = currentItemDashboard[dataIndex];
+                            const schedule = dataSchedules[dataIndex];
 
                             if (context.dataset.label === "Arrival On Schedule") {
                                 return `Arrival Date: ${schedule.arrivalActualDate} 

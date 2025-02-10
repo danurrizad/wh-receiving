@@ -129,7 +129,7 @@ const Dashboard = () => {
   const fetchPlants = async () => {
     try {
       const response = await getMasterData(apiPlant);
-      console.log("API Response:", response); // Log seluruh response
+      // console.log("API Response:", response); // Log seluruh response
       if (response && response.data) {
         
         const plantOptions = response.data.map((plant) => ({
@@ -147,18 +147,18 @@ const Dashboard = () => {
   useEffect(() => {
     fetchPlants();
   }, []);
-  console.log("dataDNInquery",dataDNInquery);
+  // console.log("dataDNInquery",dataDNInquery);
 
 
 
 
   const getDNInquery = async (plantId, startDate, endDate) => {
     try {
-      console.log("Fetching DN Inquiry for Plant ID:", plantId || "All Plants");
+      // console.log("Fetching DN Inquiry for Plant ID:", plantId || "All Plants");
       
       const response = await getDNInqueryData(plantId, startDate, endDate);
       
-      console.log("Response DN:", response.data.data);
+      // console.log("Response DN:", response.data.data);
       setDataDNInquery(response.data.data);
     } catch (error) {
       console.error("Error fetching DN Inquiry:", error);
@@ -174,7 +174,7 @@ const Dashboard = () => {
 
   const GetDataArrivalDashboard = async (plantId) => {
     try {
-      console.log("Fetching Arrival Data for Plant ID:", plantId || "All Plants");
+      // console.log("Fetching Arrival Data for Plant ID:", plantId || "All Plants");
   
       const response = await getCardStatusArrival(
         plantId || "", // Jika "All" dipilih, kirim string kosong
@@ -185,7 +185,7 @@ const Dashboard = () => {
       );
   
       if (response && response.data) {
-        console.log("Cek Arrival Data:", response.data.data);
+        // console.log("Cek Arrival Data:", response.data.data);
         setCardData(response.data.data);
       }
     } catch (error) {
@@ -220,56 +220,23 @@ const Dashboard = () => {
     setVisiblePages(pages)
   }, [currentPage, totalPages])
 
-  const fetchChartReceivingData = async (status, page) => {
+  const fetchChartReceivingData = async (status, currentPage) => {
     try {
+      console.log("CURRENT PAGE --------------------", currentPage)
       const response = await getChartReceiving(
         queryFilter.plantId, 
-        status, 
-        "", 
+        status.value, // status kosong
+        "", // vendor kosong
         queryFilter.rangeDate[0]?.toISOString().split("T")[0], 
         queryFilter.rangeDate[1]?.toISOString().split("T")[0],
-        page, // Make sure page is passed correctly
-        // itemsPerPage // Also pass itemsPerPage to ensure the correct number of items per page
+        currentPage
       );
-  
+      console.log("response fetchChartReceiving :", response)
       if (response && response.data) {
-        console.log("Data Chart Receiving:", response.data);
-        setDataSchedules(response.data); // Store the data in the state
-        // setTotalPages(response.totalPages); // Update total pages for pagination
-        // setCurrentPage(response.currentPage); // Update the current page
-        // setCurrentItems(response.data.map(item => ({
-        //   vendor_id: item.supplierCode,
-        //   vendor_name: item.supplierName,
-        //   day: item.rit,
-        //   schedule_from: item.arrivalPlanTime,
-        //   arrival_time: item.arrivalActualTime,
-        //   status: item.status,
-        //   materials: item.Materials,
-        // })));
-      }
-    } catch (error) {
-      console.error("Error fetching chart data:", error);
-    }
-  };
-  
-  useEffect(() => {
-    console.log("Fetching chart data for page:", currentPage, "and status:", selectedStatus.value);
-    fetchChartReceivingData(selectedStatus.value, currentPage); // Fetch chart data when page or filter changes
-  }, [queryFilter.plantId, queryFilter.rangeDate, selectedStatus.value, currentPage]);
-  
-
-  const fetchVendors = async () => {
-    try {
-      const response = await getChartReceiving(
-        queryFilter.plantId,
-        "",
-        "",
-        queryFilter.rangeDate[0]?.toISOString().split("T")[0],
-        queryFilter.rangeDate[1]?.toISOString().split("T")[0]
-      );
-
-      if (response && response.data) {
-        console.log("Vendor Data:", response.data);
+        // console.log("Data Chart Receiving:", response.data);
+        setDataSchedules(response.data); // Simpan data dari API ke state
+        setTotalPages(response.totalPages);
+        setCurrentPage(response.currentPage);
 
         // Ubah data menjadi format yang sesuai dengan react-select
         const vendorOptions = response.data.map((vendor) => ({
@@ -278,23 +245,72 @@ const Dashboard = () => {
         }));
 
         setOptionsSelectVendor(vendorOptions);
+  
+        // // Store the data in currentItems based on the API model
+        // const items = response.data.map((item) => ({
+        //   vendor_id: item.supplierCode,
+        //   vendor_name: item.supplierName,
+        //   day: item.rit,  // Assuming "rit" corresponds to day (You can adjust this based on actual data)
+        //   schedule_from: item.arrivalPlanTime,  // Adjusting this to show the schedule
+        //   arrival_time: item.arrivalActualTime, // Arrival time from the API
+        //   status: item.status, // Status of the delivery
+        //   materials: item.Materials,  // Materials data
+        // }));
+        // setCurrentItems(items);  // Store it in the currentItems state
       }
     } catch (error) {
-      console.error("Error fetching vendors:", error);
+      console.error("Error fetching chart data:", error);
     }
   };
-
+  
   useEffect(() => {
-    fetchVendors();
-  }, [queryFilter.plantId, queryFilter.rangeDate]);
-  console.log("Chart Data fetch:", dataSchedules);
-  console.log("Current Page:", currentPage, "Items Per Page:", itemsPerPage, "First Index:", indexOfFirstItem, "Last Index:", indexOfLastItem);
+    console.log("data chart:", dataSchedules)
+    console.log("currentPage:", currentPage)
+    console.log("totalPage:", totalPages)
+    fetchChartReceivingData(selectedStatus, currentPage);
+  }, [queryFilter.plantId, queryFilter.rangeDate, selectedStatus, currentPage]);
+
+
+  // const fetchVendors = async () => {
+  //   try {
+  //     const response = await getChartReceiving(
+  //       queryFilter.plantId,
+  //       "",
+  //       "",
+  //       queryFilter.rangeDate[0]?.toISOString().split("T")[0],
+  //       queryFilter.rangeDate[1]?.toISOString().split("T")[0]
+  //     );
+
+  //     if (response && response.data) {
+  //       // console.log("Vendor Data:", response.data);
+
+  //       // Ubah data menjadi format yang sesuai dengan react-select
+  //       const vendorOptions = response.data.map((vendor) => ({
+  //         label: `${vendor.supplierName}`,
+  //         value: vendor.supplierId,
+  //       }));
+
+  //       setOptionsSelectVendor(vendorOptions);
+  //     }
+  //   } catch (error) {
+  //     console.error("Error fetching vendors:", error);
+  //   }
+  // };
+
+  // useEffect(() => {
+  //   fetchVendors();
+  // }, [queryFilter.plantId, queryFilter.rangeDate]);
 
   const currentItemDashboard = dataSchedules.slice(indexOfFirstItem, indexOfLastItem);
   console.log("Current Dashboard Data:", currentItemDashboard); // Ensure data is sliced correctly
 
+  useEffect(()=>{
+    setCurrentItems(dataSchedules.slice(indexOfFirstItem, indexOfLastItem))
+    console.log("SLICING :", dataSchedules.slice(indexOfFirstItem, indexOfLastItem))
+  }, [currentPage])
+
   // Panggil hook `useChartData` dengan `currentItems`
-  const { setChartData, getChartOption, selectedVendor } = useChartData({ currentItemDashboard });
+  const { setChartData, getChartOption, selectedVendor } = useChartData({ dataSchedules });
 
   
 
@@ -303,6 +319,43 @@ const Dashboard = () => {
     schedule: true,
     receiving: true
   })
+
+  const handleFilterSchedule = async (selectedOption) => {
+    const status = selectedOption ? selectedOption.value : "delayed"; // Jika tidak ada status, kirim ""
+    setSelectedStatus(selectedOption || { label: "Delayed", value: "delayed" }); // Update state
+    console.log("Fetching chart data with status:", status);
+  
+    // try {
+    //   const response = await getChartReceiving(
+    //     queryFilter.plantId, 
+    //     status,  // Kirim status dari filter
+    //     "",      // vendor kosong
+    //     queryFilter.rangeDate[0]?.toISOString().split("T")[0], 
+    //     queryFilter.rangeDate[1]?.toISOString().split("T")[0]
+    //   );
+  
+    //   if (response && response.data) {
+    //     console.log("Filtered Chart Receiving Data:", response.data);
+    //     setDataSchedules(response.data); // Simpan data hasil filter ke state
+  
+    //     // Ubah data agar sesuai dengan format yang digunakan di UI
+    //     const items = response.data.map((item) => ({
+    //       vendor_id: item.supplierCode,
+    //       vendor_name: item.supplierName,
+    //       day: item.rit,
+    //       schedule_from: item.arrivalPlanTime,
+    //       arrival_time: item.arrivalActualTime,
+    //       status: item.status,
+    //       materials: item.Materials,
+    //     }));
+        
+    //     setCurrentItems(items); // Simpan data yang diformat ke state
+    //   }
+    // } catch (error) {
+    //   console.error("Error fetching filtered chart data:", error);
+    // }
+  };
+  
 
   const plantOptions = [
     { value: 'all', label: 'All' }, // Menambahkan opsi "All" di awal
