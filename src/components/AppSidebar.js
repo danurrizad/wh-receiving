@@ -15,12 +15,14 @@ import { AppSidebarNav } from './AppSidebarNav'
 import LogoTWIIS from 'src/assets/images/logo-twiis.png'
 
 // sidebar nav config
-import navigation from '../_nav'
+// import navigation from '../_nav'
+import useNavigation from '../_nav'
 
 const AppSidebar = () => {
   const dispatch = useDispatch()
   const unfoldable = useSelector((state) => state.sidebarUnfoldable)
   const sidebarShow = useSelector((state) => state.sidebarShow)
+  const _nav = useNavigation()
 
   return (
     <CSidebar
@@ -43,7 +45,7 @@ const AppSidebar = () => {
           onClick={() => dispatch({ type: 'set', sidebarShow: false })}
         />
       </CSidebarHeader>
-      <AppSidebarNav items={navigation} />
+      <AppSidebarNav items={_nav} />
       <CSidebarFooter className="border-top d-none d-lg-flex">
         <CSidebarToggler
           onClick={() => dispatch({ type: 'set', sidebarUnfoldable: !unfoldable })}
