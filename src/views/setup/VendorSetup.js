@@ -57,6 +57,7 @@ const VendorSetup = () => {
       const [modalAdd, setModalAdd] = useState(false)
       const [modalUpdate, setModalUpdate] = useState(false)
       const [formModal, setFormModal] = useState({})
+      const [formModalId, setFormModalId] = useState()
 
       const [date, setDate] = useState(new Date().toLocaleDateString('en-CA'))
       const [loadingImport, setLoadingImport] = useState(false)
@@ -65,11 +66,12 @@ const VendorSetup = () => {
         importDate: new Date()
       })
       const { getScheduleAllData } = useScheduleDataService()
-      const { getMasterData, uploadMasterData } = useMasterDataService()
+      const { getMasterData, postMasterData, updateMasterDataById, deleteMasterDataById, uploadMasterData } = useMasterDataService()
       const [dataSchedule, setDataSchedule] = useState([])
 
       const getScheduleAll = async(plantId, day) => {
         try {
+          setLoading(true)
           const response = await getScheduleAllData(plantId, day)
           setDataSchedule(response.data.data)
         } catch (error) {
@@ -92,6 +94,10 @@ const VendorSetup = () => {
         selected: ""
       })
       const [ optionsPlant, setOptionsPlant ] = useState({
+        list: [],
+        selected: ""
+      })
+      const [ optionsSupplier, setOptionsSupplier ] = useState({
         list: [],
         selected: ""
       })
@@ -159,9 +165,28 @@ const VendorSetup = () => {
         }
       }
 
+      const getOptionsSupplier = async() => {
+        try {
+          const response = await getMasterData('supplier-public')
+          console.log(response)
+          setOptionsSupplier({
+            ...optionsSupplier,
+            list: response.data.map((data)=>{
+              return{
+                value: Number(data.id),
+                label: `${data.supplierCode} - ${data.supplierName}`
+              }
+            })
+          })
+        } catch (error) {
+          console.error(error)
+        }
+      }
+
       useEffect(()=>{
         getOptionsPlant()
         getOptionsWarehouse()
+        getOptionsSupplier()
       }, [])
 
       const onGlobalFilterChange = (e) => {
@@ -300,79 +325,106 @@ const VendorSetup = () => {
       console.log(data)
       setFormModal({
         ...formModal,
-        supplierCode: data?.Supplier?.supplierCode,
-        supplierName: data?.Supplier?.SupplierName,
-        day: data?.schedule,
-        arrivalPlanTime: formatTime(data?.arrival),
-        departurePlanTime: formatTime(data?.departure),
+        supplierId: Number(data?.Supplier?.id),
+        schedule: data?.schedule,
+        arrival: formatTime(data?.arrival),
+        departure: formatTime(data?.departure),
         rit: data?.rit,
-        plant: data?.plantId,
+        plantId: data?.plantId,
         truckStation: data?.truckStation
       })
+      setFormModalId(data?.id)
       setModalUpdate(true)
     }
 
     const showSwalDelete = (data) => {
       Swal.fire({
-              title: "Delete Confirmation",
-              html: `
-                <div>
-                  <p>Are you sure want to delete schedule </p>
-                  <p>${data?.Supplier?.SupplierName} </p>
-                  <p>Rit : ${data?.rit} </p>
-                </div>`,
-              icon: "warning",
-              showCancelButton: true,
+        title: "Delete Confirmation",
+        html: `
+          <div>
+            <p>Are you sure want to delete this schedule? </p>
+            <p>${data?.Supplier?.SupplierName} </p>
+            <p>Rit : ${data?.rit} </p>
+          </div>`,
+        icon: "warning",
+        showCancelButton: true,
+        // confirmButtonColor: "#3085d6",
+        confirmButtonColor: 'rgb(246, 66, 66)',
+        // cancelButtonColor: "#d33",
+        confirmButtonText: "Delete",
+        preConfirm: async () => {
+          try {
+            Swal.showLoading();
+            const response = await deleteMasterDataById(`delivery-schedule-delete`, data?.id)            
+            return "Schedule deleted!"
+          } catch (error) {
+            console.error(error)
+            return error
+          }
+        }
+      }).then(async(result) => {
+        if (result.isConfirmed) {
+          getScheduleAll(optionsPlant.selected, selectedOptionsDay)
+          if(result.value === "Schedule deleted!"){
+            Swal.fire({
+              title: "Deleted!",
+              text: result.value,
+              icon: "success",
               confirmButtonColor: "#3085d6",
-              cancelButtonColor: "#d33",
-              confirmButtonText: "Delete",
-              preConfirm: async () => {
-                try {
-                 
-                  Swal.showLoading();
-                 
-                  return "Schedule deleted!"
-                } catch (error) {
-                  console.error(error)
-                  return error
-                }
-              }
-            }).then(async(result) => {
-              if (result.isConfirmed) {
-                if(result.value === "Schedule deleted!"){
-                  Swal.fire({
-                    title: "Deleted!",
-                    text: result.value,
-                    icon: "success",
-                    confirmButtonColor: "#3085d6",
-                  });
-                } else {
-                  Swal.fire({
-                    title: "Failed!",
-                    text: result.value,
-                    icon: "error",
-                    confirmButtonColor: "#3085d6",
-                  });
-                }
-              }
             });
+          } else {
+            Swal.fire({
+              title: "Failed!",
+              text: result.value,
+              icon: "error",
+              confirmButtonColor: "#3085d6",
+            });
+          }
+        }
+      });
     }
 
     const actionBodyTemplate = (rowData, rowIndex) => {
       return(
         <div className='d-flex align-items-center justify-content-center gap-3'>
-          <CButton color='info' className='d-flex align-items-center justify-content-center'><FaPenToSquare onClick={()=>showModalUpdate(rowData)} style={{ color: "white"}}/></CButton>
-          <CButton color='danger' className='d-flex align-items-center justify-content-center'><FaTrashCan onClick={()=>showSwalDelete(rowData)} style={{ color: "white"}}/></CButton>
+          <CButton onClick={()=>showModalUpdate(rowData)} color='info' className='d-flex align-items-center justify-content-center'><FaPenToSquare style={{ color: "white"}}/></CButton>
+          <CButton onClick={()=>showSwalDelete(rowData)} color='danger' className='d-flex align-items-center justify-content-center'><FaTrashCan style={{ color: "white"}}/></CButton>
         </div>
       )
     }
 
-    const handleClickAdd = () => {
-      console.log("form modal add :", formModal)
+    const handleClickAdd = async() => {
+      // console.log("form modal add :", formModal)
+      try {
+        setLoadingImport(true)
+        const response = await postMasterData('delivery-schedule', formModal)
+        // console.log("response add:", response)
+        addToast(response.data.message, 'success', 'success')
+        getScheduleAll(optionsPlant.selected, selectedOptionsDay)
+        setModalAdd(false)
+      } catch (error) {
+        console.error(error)
+      } finally{
+        setLoadingImport(false)
+      }
     }
 
-    const handleClickUpdate = () => {
-      console.log("form modal :", formModal)
+    const handleClickUpdate = async() => {
+      // console.log("form modal :", formModal)
+      // console.log("form modal id :", formModalId)
+
+      try {
+        setLoadingImport(true)
+        const response = await updateMasterDataById(`delivery-schedule`, formModalId, formModal)
+        // console.log("response update:", response)
+        addToast(response.message, 'success', 'success')
+        getScheduleAll(optionsPlant.selected, selectedOptionsDay)
+        setModalUpdate(false)
+      } catch (error) {
+        console.error(error)
+      } finally{
+        setLoadingImport(false)
+      }
     }
 
     const convertToDateTime = (timeString) => {
@@ -384,9 +436,9 @@ const VendorSetup = () => {
   return (
     <CContainer fluid>
       <CRow className=''>
-          <CCard className='p-0 mb-3'>
-              <CCardHeader>
-                  <CCardTitle className="text-center">Vendor Schedule Data</CCardTitle>
+          <CCard className='p-0 mb-3' style={{ border: "1px solid #6482AD"}}>
+              <CCardHeader style={{ backgroundColor: "rgb(100, 130, 173)", color: "white"}}>
+                  <CCardTitle className="text-center">VENDOR SCHEDULE DATA</CCardTitle>
               </CCardHeader>
               <CCardBody>
               <CRow>
@@ -397,7 +449,10 @@ const VendorSetup = () => {
                     icon="pi pi-plus"
                     severity=""
                     className="rounded-2 me-2 mb-1 py-2 text-white"
-                    onClick={()=>setModalAdd(true)}
+                    onClick={()=>{
+                      setFormModal({})
+                      setModalAdd(true)
+                    }}
                     data-pr-tooltip="XLS"
                   /> 
                   <Button
@@ -488,21 +543,22 @@ const VendorSetup = () => {
 
               {/* ---------------------------------------------------------------------MODAL----------------------------------------------------------------------------- */}
               {/* MODAL ADD */}
-              <CModal visible={modalAdd} onClose={() => setModalAdd(false)}>
+              <CModal visible={modalAdd} onClose={() => setModalAdd(false)} backdrop="static">
                 <CModalHeader>
                   <CModalTitle id="LiveDemoExampleLabel">Add Vendor Schedule</CModalTitle>
                 </CModalHeader>
                 <CModalBody>
                   <CRow className='mb-3'>
                     <CCol>
-                      <CFormText>Vendor Code</CFormText>
-                      <CFormInput value={formModal.supplierCode} onChange={(e)=>setFormModal({ ...formModal, supplierCode: e.target.value})}/>
-                    </CCol>
-                  </CRow>
-                  <CRow className='mb-3'>
-                    <CCol>
-                      <CFormText>Vendor Name</CFormText>
-                      <CFormInput value={formModal.supplierName} onChange={(e)=>setFormModal({ ...formModal, supplierName: e.target.value})}/>
+                      <CFormText>Vendor</CFormText>
+                      <Select
+                        options={optionsSupplier.list}
+                        isClearable
+                        value={optionsSupplier.list.find((data)=>data.value === formModal.supplierId) || ""}
+                        onChange={(e)=>{
+                          setFormModal({ ...formModal, supplierId: e !== null ? e.value : ""})
+                        }}
+                      />
                     </CCol>
                   </CRow>
                   <CRow className='mb-3'>
@@ -511,8 +567,8 @@ const VendorSetup = () => {
                       <Select 
                         options={optionsDay} 
                         isClearable
-                        value={optionsDay?.find((data)=>data.value === formModal.day) || ""}
-                        onChange={(e)=>setFormModal({...formModal, day: e !== null ? Number(e.value) : ""})}
+                        value={optionsDay?.find((data)=>data.value === formModal.schedule) || ""}
+                        onChange={(e)=>setFormModal({...formModal, schedule: e !== null ? Number(e.value) : ""})}
                       />
                     </CCol>
                     <CCol>
@@ -526,10 +582,10 @@ const VendorSetup = () => {
                       <TimePicker 
                         format="HH:mm" 
                         placeholder="Select time"
-                        value={formModal?.arrivalPlanTime ? convertToDateTime(formModal?.arrivalPlanTime) : null}
+                        value={formModal?.arrival ? convertToDateTime(formModal?.arrival) : null}
                         onChange={(e)=>{
                           console.log(e)
-                          setFormModal({ ...formModal, arrivalPlanTime: formatTime(e)})
+                          setFormModal({ ...formModal, arrival: formatTime(e)})
                         }}/>
                     </CCol>
                     <CCol>
@@ -537,10 +593,10 @@ const VendorSetup = () => {
                       <TimePicker 
                         format="HH:mm" 
                         placeholder="Select time"
-                        value={formModal?.departurePlanTime ? convertToDateTime(formModal?.departurePlanTime) : null}
+                        value={formModal?.departure ? convertToDateTime(formModal?.departure) : null}
                         onChange={(e)=>{
                           console.log(e)
-                          setFormModal({ ...formModal, departurePlanTime: formatTime(e)})
+                          setFormModal({ ...formModal, departure: formatTime(e)})
                         }}/>
                     </CCol>
                   </CRow>
@@ -550,8 +606,8 @@ const VendorSetup = () => {
                       <Select
                         options={optionsPlant.list}
                         isClearable
-                        value={optionsPlant?.list?.find((data)=>data.value === formModal.plant) || ""}
-                        onChange={(e)=>setFormModal({ ...formModal, plant: e !== null ? Number(e.value) : ""})}
+                        value={optionsPlant?.list?.find((data)=>data.value === formModal.plantId) || ""}
+                        onChange={(e)=>setFormModal({ ...formModal, plantId: e !== null ? Number(e.value) : ""})}
                       />
                     </CCol>
                     <CCol>
@@ -584,7 +640,7 @@ const VendorSetup = () => {
               </CModal>
               
               {/* MODAL UPDATE */}
-              <CModal visible={modalUpdate} onClose={() => setModalUpdate(false)}>
+              <CModal visible={modalUpdate} onClose={() => setModalUpdate(false)} backdrop="static">
                 <CModalHeader>
                   <CModalTitle id="LiveDemoExampleLabel">Update Vendor Schedule</CModalTitle>
                 </CModalHeader>
@@ -592,13 +648,14 @@ const VendorSetup = () => {
                   <CRow className='mb-3'>
                     <CCol>
                       <CFormText>Vendor Code</CFormText>
-                      <CFormInput value={formModal.supplierCode} onChange={(e)=>setFormModal({ ...formModal, supplierCode: e.target.value})}/>
-                    </CCol>
-                  </CRow>
-                  <CRow className='mb-3'>
-                    <CCol>
-                      <CFormText>Vendor Name</CFormText>
-                      <CFormInput value={formModal.supplierName} onChange={(e)=>setFormModal({ ...formModal, supplierName: e.target.value})}/>
+                      <Select
+                        options={optionsSupplier.list}
+                        isClearable
+                        value={optionsSupplier.list.find((data)=>data.value === formModal.supplierId) || ""}
+                        onChange={(e)=>{
+                          setFormModal({ ...formModal, supplierId: e !== null ? e.value : ""})
+                        }}
+                      />
                     </CCol>
                   </CRow>
                   <CRow className='mb-3'>
@@ -607,8 +664,8 @@ const VendorSetup = () => {
                       <Select 
                         options={optionsDay} 
                         isClearable
-                        value={optionsDay?.find((data)=>data.value === formModal.day) || ""}
-                        onChange={(e)=>setFormModal({...formModal, day: e !== null ? Number(e.value) : ""})}
+                        value={optionsDay?.find((data)=>data.value === formModal.schedule) || ""}
+                        onChange={(e)=>setFormModal({...formModal, schedule: e !== null ? Number(e.value) : ""})}
                       />
                     </CCol>
                     <CCol>
@@ -622,10 +679,10 @@ const VendorSetup = () => {
                       <TimePicker 
                         format="HH:mm" 
                         placeholder="Select time"
-                        value={formModal?.arrivalPlanTime ? convertToDateTime(formModal?.arrivalPlanTime) : null}
+                        value={formModal?.arrival ? convertToDateTime(formModal?.arrival) : null}
                         onChange={(e)=>{
                           console.log(e)
-                          setFormModal({ ...formModal, arrivalPlanTime: e !== null ? formatTime(e) : ""})
+                          setFormModal({ ...formModal, arrival: e !== null ? formatTime(e) : ""})
                         }}/>
                     </CCol>
                     <CCol>
@@ -633,10 +690,10 @@ const VendorSetup = () => {
                       <TimePicker 
                         format="HH:mm" 
                         placeholder="Select time"
-                        value={formModal?.departurePlanTime ? convertToDateTime(formModal?.departurePlanTime) : null}
+                        value={formModal?.departure ? convertToDateTime(formModal?.departure) : null}
                         onChange={(e)=>{
                           console.log(e)
-                          setFormModal({ ...formModal, departurePlanTime: e !== null ? formatTime(e) : ""})
+                          setFormModal({ ...formModal, departure: e !== null ? formatTime(e) : ""})
                         }}/>
                     </CCol>
                   </CRow>
@@ -646,8 +703,8 @@ const VendorSetup = () => {
                       <Select
                         options={optionsPlant.list}
                         isClearable
-                        value={optionsPlant?.list?.find((data)=>data.value === formModal.plant) || ""}
-                        onChange={(e)=>setFormModal({ ...formModal, plant: e !== null ? Number(e.value) : ""})}
+                        value={optionsPlant?.list?.find((data)=>data.value === formModal.plantId) || ""}
+                        onChange={(e)=>setFormModal({ ...formModal, plantId: e !== null ? Number(e.value) : ""})}
                       />
                     </CCol>
                     <CCol>
@@ -680,7 +737,7 @@ const VendorSetup = () => {
               </CModal>
 
               {/* MODAL UPLOAD */}
-              <CModal visible={modalUpload} onClose={() => setModalUpload(false)}>
+              <CModal visible={modalUpload} onClose={() => setModalUpload(false)} backdrop='static'>
                 <CModalHeader>
                   <CModalTitle id="LiveDemoExampleLabel">Upload Vendor Schedule</CModalTitle>
                 </CModalHeader>
