@@ -21,7 +21,7 @@ const useDashboardReceivingService = () => {
         }
     }
 
-    const getChartReceiving = async(plant,status,vendor,startdate,enddate,page = 1) => {
+    const getChartReceiving = async(plant,status,vendor,startdate,enddate,page) => {
         try {
         const response =  await axiosJWT.get
         (`/arrival-chart?plantId=${plant}&status=${status}&vendorId=${vendor}&startDate=${startdate}&endDate=${enddate}&page=${page}`) 

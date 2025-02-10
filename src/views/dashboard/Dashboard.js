@@ -91,6 +91,7 @@ const Dashboard = () => {
   const indexOfLastItem = currentPage * itemsPerPage
   const indexOfFirstItem = indexOfLastItem - itemsPerPage
   const [currentItems, setCurrentItems] = useState([]); // State untuk opsi vendor
+  // const currentItems = dataSchedules?.length > 0 ? dataSchedules?.slice(indexOfFirstItem, indexOfLastItem) : []
   const [optionsSelectVendor, setOptionsSelectVendor] = useState([]); // State untuk opsi vendor
   const [plant, setPlant] = useState([])
   const [visiblePages, setVisiblePages] = useState([])
@@ -219,46 +220,43 @@ const Dashboard = () => {
     setVisiblePages(pages)
   }, [currentPage, totalPages])
 
-  const fetchChartReceivingData = async (status = "delayed") => {
+  const fetchChartReceivingData = async (status, page) => {
     try {
       const response = await getChartReceiving(
         queryFilter.plantId, 
-        status, // status kosong
-        "", // vendor kosong
+        status, 
+        "", 
         queryFilter.rangeDate[0]?.toISOString().split("T")[0], 
-        queryFilter.rangeDate[1]?.toISOString().split("T")[0]
+        queryFilter.rangeDate[1]?.toISOString().split("T")[0],
+        page, // Make sure page is passed correctly
+        // itemsPerPage // Also pass itemsPerPage to ensure the correct number of items per page
       );
   
       if (response && response.data) {
         console.log("Data Chart Receiving:", response.data);
-        setDataSchedules(response.data); // Simpan data dari API ke state
-        setTotalPages(response.totalPages);
-        setCurrentPage(response.currentPage);
-
-  
-        // Store the data in currentItems based on the API model
-        const items = response.data.map((item) => ({
-          vendor_id: item.supplierCode,
-          vendor_name: item.supplierName,
-          day: item.rit,  // Assuming "rit" corresponds to day (You can adjust this based on actual data)
-          schedule_from: item.arrivalPlanTime,  // Adjusting this to show the schedule
-          arrival_time: item.arrivalActualTime, // Arrival time from the API
-          status: item.status, // Status of the delivery
-          materials: item.Materials,  // Materials data
-        }));
-        setCurrentItems(items);  // Store it in the currentItems state
+        setDataSchedules(response.data); // Store the data in the state
+        // setTotalPages(response.totalPages); // Update total pages for pagination
+        // setCurrentPage(response.currentPage); // Update the current page
+        // setCurrentItems(response.data.map(item => ({
+        //   vendor_id: item.supplierCode,
+        //   vendor_name: item.supplierName,
+        //   day: item.rit,
+        //   schedule_from: item.arrivalPlanTime,
+        //   arrival_time: item.arrivalActualTime,
+        //   status: item.status,
+        //   materials: item.Materials,
+        // })));
       }
     } catch (error) {
       console.error("Error fetching chart data:", error);
     }
   };
-
-
   
   useEffect(() => {
-    fetchChartReceivingData();
-  }, [queryFilter.plantId, queryFilter.rangeDate]);
-
+    console.log("Fetching chart data for page:", currentPage, "and status:", selectedStatus.value);
+    fetchChartReceivingData(selectedStatus.value, currentPage); // Fetch chart data when page or filter changes
+  }, [queryFilter.plantId, queryFilter.rangeDate, selectedStatus.value, currentPage]);
+  
 
   const fetchVendors = async () => {
     try {
@@ -289,8 +287,11 @@ const Dashboard = () => {
   useEffect(() => {
     fetchVendors();
   }, [queryFilter.plantId, queryFilter.rangeDate]);
+  console.log("Chart Data fetch:", dataSchedules);
+  console.log("Current Page:", currentPage, "Items Per Page:", itemsPerPage, "First Index:", indexOfFirstItem, "Last Index:", indexOfLastItem);
 
   const currentItemDashboard = dataSchedules.slice(indexOfFirstItem, indexOfLastItem);
+  console.log("Current Dashboard Data:", currentItemDashboard); // Ensure data is sliced correctly
 
   // Panggil hook `useChartData` dengan `currentItems`
   const { setChartData, getChartOption, selectedVendor } = useChartData({ currentItemDashboard });
@@ -302,43 +303,6 @@ const Dashboard = () => {
     schedule: true,
     receiving: true
   })
-
-  const handleFilterSchedule = async (selectedOption) => {
-    const status = selectedOption ? selectedOption.value : "delayed"; // Jika tidak ada status, kirim ""
-    setSelectedStatus(selectedOption || { label: "Delayed", value: "delayed" }); // Update state
-    console.log("Fetching chart data with status:", status);
-  
-    try {
-      const response = await getChartReceiving(
-        queryFilter.plantId, 
-        status,  // Kirim status dari filter
-        "",      // vendor kosong
-        queryFilter.rangeDate[0]?.toISOString().split("T")[0], 
-        queryFilter.rangeDate[1]?.toISOString().split("T")[0]
-      );
-  
-      if (response && response.data) {
-        console.log("Filtered Chart Receiving Data:", response.data);
-        setDataSchedules(response.data); // Simpan data hasil filter ke state
-  
-        // Ubah data agar sesuai dengan format yang digunakan di UI
-        const items = response.data.map((item) => ({
-          vendor_id: item.supplierCode,
-          vendor_name: item.supplierName,
-          day: item.rit,
-          schedule_from: item.arrivalPlanTime,
-          arrival_time: item.arrivalActualTime,
-          status: item.status,
-          materials: item.Materials,
-        }));
-        
-        setCurrentItems(items); // Simpan data yang diformat ke state
-      }
-    } catch (error) {
-      console.error("Error fetching filtered chart data:", error);
-    }
-  };
-  
 
   const plantOptions = [
     { value: 'all', label: 'All' }, // Menambahkan opsi "All" di awal
@@ -454,8 +418,10 @@ const Dashboard = () => {
         }
 
         const handlePageChange = (pageNumber) => {
-          setCurrentPage(pageNumber)
-        }
+          setCurrentPage(pageNumber); // Update current page
+          fetchChartReceivingData(selectedStatus.value, pageNumber); // Fetch data for the selected page
+        };
+        
 
         const selectStyles = {
           placeholder: (base) => ({
