@@ -245,9 +245,9 @@ const DNSetup = () => {
   return (
     <CContainer fluid>
       <CRow>
-        <CCard className='p-0 mb-4'>
-          <CCardHeader>
-          <CCardTitle className="text-center">Delivery Note Data</CCardTitle>
+        <CCard className='p-0 mb-4' style={{ border: "1px solid #6482AD"}}>
+          <CCardHeader style={{ backgroundColor: "rgb(100, 130, 173)", color: "white"}}>
+            <CCardTitle className="text-center">DELIVERY NOTE DATA</CCardTitle>
           </CCardHeader>
           <CCardBody>
             <CRow className='d-flex align-items-end justify-content-between'>
@@ -297,6 +297,7 @@ const DNSetup = () => {
                 emptyMessage={renderCustomEmptyMsg} 
                 filters={filterQuery}
                 value={dataDN} 
+                removableSort
                 scrollable 
                 scrollHeight="500px" 
                 showGridlines  
@@ -307,15 +308,15 @@ const DNSetup = () => {
                 tableStyle={{ minWidth: '50rem' }}
               >
                 <Column field="no" header="No" body={(rowData, { rowIndex }) => rowIndex + 1}></Column>
-                <Column field="dnNumber" header="DN No"></Column> 
-                <Column field="materialNo" header="Material No"></Column>
-                <Column field="description" header="Material Desc"></Column>
-                <Column field="addressRackName" header="Rack Address"></Column>
-                <Column field="planningQuantity" header="Req. Qty"></Column>
-                <Column field="uom" header="UoM"></Column>
-                <Column field="arrivalPlanDate" header="Arrival Date Plan"></Column>
-                <Column field="importBy" header="Import By"></Column>
-                <Column field="importDate" header="Import Date"></Column>
+                <Column field="dnNumber" sortable header="DN No"></Column> 
+                <Column field="materialNo" sortable header="Material No"></Column>
+                <Column field="description" sortable header="Material Desc"></Column>
+                <Column field="addressRackName" sortable header="Rack Address"></Column>
+                <Column field="planningQuantity" sortable header="Req. Qty"></Column>
+                <Column field="uom" sortable header="UoM"></Column>
+                <Column field="arrivalPlanDate" sortable header="Arrival Date Plan"></Column>
+                <Column field="importBy" sortable header="Import By"></Column>
+                <Column field="importDate" sortable header="Import Date"></Column>
             </DataTable>
 
 

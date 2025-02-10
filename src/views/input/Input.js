@@ -509,7 +509,7 @@ const Input = () => {
   return (
     <CContainer fluid>
         <CRow className='mb-4'>
-          <CCard className='p-0' style={{ border: "1px solid black"}}>
+          <CCard className='p-0' style={{ border: "1px solid #6482AD"}}>
             <CCardHeader style={{backgroundColor: "#6482AD", color: "white", textAlign: "center"}}>
               <CCardTitle>RECEIVING PROCESS</CCardTitle>
             </CCardHeader>

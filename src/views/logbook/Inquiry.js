@@ -416,9 +416,9 @@ const handleSubmitChangeQty = (rowIndex, rowData) => {
   return (
     <CContainer fluid>
         <CRow>
-          <CCard className='p-0'>
-            <CCardHeader>
-              <CCardTitle>INQUIRY DATA</CCardTitle>
+          <CCard className='p-0 mb-4' style={{ border: "1px solid #6482AD"}}>
+            <CCardHeader style={{ backgroundColor: "rgb(100, 130, 173)", color: "white"}}>
+              <CCardTitle className='text-center'>INQUIRY DATA</CCardTitle>
             </CCardHeader>
             <CCardBody>
               <CRow className='d-flex align-items-end'>
