@@ -23,7 +23,7 @@ const Input = () => {
 
   return (
     <CContainer>
-    <CRow className="d-flex justify-content-center" style={{ paddingTop: "125px" }}>
+    <CRow className="d-flex justify-content-center" style={{ paddingTop: "60px" }}>
           <CCard className='p-0' style={{ border: "1px solid #6482AD"}}>
             <CCardHeader style={{backgroundColor: "#6482AD", color: "white", textAlign: "center"}}>
               <CCardTitle>VENDOR REQUREMENTS</CCardTitle>
@@ -166,7 +166,7 @@ const Input = () => {
             <CCardBody>
             <CRow className='mb-2'>
              <CCard>
-                <span className='fs-5 fw-bold'>Identitas Vendor</span>
+                <span className='fs-5 fw-bold'>Identitas Kelengkapan Kendaraan</span>
                 <span>(Silahkan lengkapi identitas Anda)</span>
                 <CRow>
                 <CCol md='5'>
