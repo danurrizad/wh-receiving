@@ -69,6 +69,7 @@ import {
 } from 'chart.js';
 import { Bar } from 'react-chartjs-2';
 import CIcon from '@coreui/icons-react'
+import { useToast } from '../../App'
 
 
 ChartJS.register(
@@ -82,6 +83,7 @@ ChartJS.register(
 
 
 const Dashboard = () => {
+  const addToast = useToast()
   const { getMasterData, getMasterDataById } = useMasterDataService()
   const { getDNInqueryData } = useReceivingDataService()
   const apiPlant = 'plant-public'
@@ -97,7 +99,7 @@ const Dashboard = () => {
   const [visiblePages, setVisiblePages] = useState([])
   const [plants, setPlants] = useState([]); // Plants fetched from API
   const [selectedPlant, setSelectedPlant] = useState({ value: 'all', label: 'All' });
-  const [selectedStatus, setSelectedStatus] = useState({ value: 'delayed', label: "DELAYED"});
+  const [selectedStatus, setSelectedStatus] = useState(null);
   const [dataSchedules, setDataSchedules] = useState([]); // Menyimpan data dari API
   const [isVisible, setIsVisible] = useState(true); // State to control visibility
   const [ dataDNInquery, setDataDNInquery ] = useState([])
@@ -120,7 +122,10 @@ const Dashboard = () => {
  
   const [queryFilter, setQueryFilter] = useState({
     plantId: "",
-    rangeDate: [new Date('2025-01-01'), new Date('2025-01-30')],
+    rangeDate: [
+      new Date(new Date().setHours(0, 0, 0, 0)),  // Today at 00:00
+      new Date(new Date().setHours(23, 59, 59, 999))  // Today at 23:59
+    ],
     global: { value: null, matchMode: FilterMatchMode.CONTAINS },
   })
 
@@ -244,18 +249,7 @@ const Dashboard = () => {
         }));
 
         setOptionsSelectVendor(vendorOptions);
-  
-        // // Store the data in currentItems based on the API model
-        // const items = response.data.map((item) => ({
-        //   vendor_id: item.supplierCode,
-        //   vendor_name: item.supplierName,
-        //   day: item.rit,  // Assuming "rit" corresponds to day (You can adjust this based on actual data)
-        //   schedule_from: item.arrivalPlanTime,  // Adjusting this to show the schedule
-        //   arrival_time: item.arrivalActualTime, // Arrival time from the API
-        //   status: item.status, // Status of the delivery
-        //   materials: item.Materials,  // Materials data
-        // }));
-        // setCurrentItems(items);  // Store it in the currentItems state
+
       }
     } catch (error) {
       console.error("Error fetching chart data:", error);
@@ -263,46 +257,19 @@ const Dashboard = () => {
   };
   
   useEffect(() => {
-    console.log("data chart:", dataSchedules)
-    console.log("currentPage:", currentPage)
-    console.log("totalPage:", totalPages)
-    console.log("status:", selectedStatus)
-    fetchChartReceivingData(selectedStatus, currentPage);
+    // setInterval(()=>{
+      // console.log("data chart:", dataSchedules)
+      // console.log("currentPage:", currentPage)
+      // console.log("totalPage:", totalPages)
+      // console.log("status:", selectedStatus)
+      // addToast("fetched", 'info', 'info')
+      fetchChartReceivingData(selectedStatus, currentPage);
+    // }, 10000)
   }, [queryFilter.plantId, queryFilter.rangeDate, currentPage]);
 
   useEffect(()=> {
     fetchChartReceivingData(selectedStatus, 1)
   }, [selectedStatus])
-
-  // const fetchVendors = async () => {
-  //   try {
-  //     const response = await getChartReceiving(
-  //       queryFilter.plantId,
-  //       "",
-  //       "",
-  //       queryFilter.rangeDate[0]?.toISOString().split("T")[0],
-  //       queryFilter.rangeDate[1]?.toISOString().split("T")[0]
-  //     );
-
-  //     if (response && response.data) {
-  //       // console.log("Vendor Data:", response.data)  ;
-
-  //       // Ubah data menjadi format yang sesuai dengan react-select
-  //       const vendorOptions = response.data.map((vendor) => ({
-  //         label: `${vendor.supplierName}`,
-  //         value: vendor.supplierId,
-  //       }));
-
-  //       setOptionsSelectVendor(vendorOptions);
-  //     }
-  //   } catch (error) {
-  //     console.error("Error fetching vendors:", error);
-  //   }
-  // };
-
-  // useEffect(() => {
-  //   fetchVendors();
-  // }, [queryFilter.plantId, queryFilter.rangeDate]);
 
   const currentItemDashboard = dataSchedules.slice(indexOfFirstItem, indexOfLastItem);
   // console.log("Current Dashboard Data:", currentItemDashboard); // Ensure data is sliced correctly
@@ -349,36 +316,6 @@ const Dashboard = () => {
     const status = selectedOption !== null ? selectedOption.value : ""; // Jika tidak ada status, kirim ""
     setSelectedStatus(selectedOption); // Update state
     console.log("Fetching chart data with status:", status);
-  
-    // try {
-    //   const response = await getChartReceiving(
-    //     queryFilter.plantId, 
-    //     status,  // Kirim status dari filter
-    //     "",      // vendor kosong
-    //     queryFilter.rangeDate[0]?.toISOString().split("T")[0], 
-    //     queryFilter.rangeDate[1]?.toISOString().split("T")[0]
-    //   );
-  
-    //   if (response && response.data) {
-    //     console.log("Filtered Chart Receiving Data:", response.data);
-    //     setDataSchedules(response.data); // Simpan data hasil filter ke state
-  
-    //     // Ubah data agar sesuai dengan format yang digunakan di UI
-    //     const items = response.data.map((item) => ({
-    //       vendor_id: item.supplierCode,
-    //       vendor_name: item.supplierName,
-    //       day: item.rit,
-    //       schedule_from: item.arrivalPlanTime,
-    //       arrival_time: item.arrivalActualTime,
-    //       status: item.status,
-    //       materials: item.Materials,
-    //     }));
-        
-    //     setCurrentItems(items); // Simpan data yang diformat ke state
-    //   }
-    // } catch (error) {
-    //   console.error("Error fetching filtered chart data:", error);
-    // }
   };
   
 
@@ -648,7 +585,21 @@ const Dashboard = () => {
                 {/* <div className="flatpickr-wrapper d-flex flex-column align-items-end" style={{ position: "relative", width: "100%" }}> */}
                 <div>
                   <CFormText>Filter by Date</CFormText>
-                  <DateRangePicker showOneCalendar placeholder='All time' position='start' value={queryFilter.rangeDate}/>
+                  <DateRangePicker 
+                    showOneCalendar 
+                    placeholder='All time' 
+                    position='start' 
+                    value={queryFilter.rangeDate} 
+                    onChange={(e)=>{
+                      console.log(e)
+                      setQueryFilter({ 
+                        ...queryFilter, 
+                        rangeDate: [
+                          new Date(e[0].setHours(0, 0, 0, 0)), 
+                          new Date(e[1].setHours(23, 59, 59, 59))
+                        ]
+                      })
+                    }}/>
                 </div>
               </CCol>
             </div>
