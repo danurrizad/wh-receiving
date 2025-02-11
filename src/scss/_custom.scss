@@ -167,3 +167,42 @@ td input.p-inputtext.p-component {
 .p-datatable .p-datatable-loading-overlay{
   z-index: 10;
 }
+
+.btn-toggle{
+  background-color: white;
+}
+.btn-toggle:hover{
+  background-color: #989898;
+  .icon-toggle{
+    color: white;
+  }
+}
+
+.btn-toggle:active{
+  background-color: #989898 !important;
+}
+
+.icon-toggle{
+  color: #27445D;
+}
+
+.rs-input-group.rs-input-group-inside{
+  height: 42px;
+}
+
+.page-link:hover{
+  color: rgb(100, 130, 173);
+  border-color: rgb(100, 130, 173);
+  cursor: pointer;
+  text-decoration: none;
+}
+.page-link.active, .active > .page-link{
+  background-color: rgb(100, 130, 173);
+  border-color: rgb(100, 130, 173);
+  color: white;
+}
+
+.page-link{
+  border-color: rgb(100, 130, 173);
+  color: rgb(100, 130, 173);
+}

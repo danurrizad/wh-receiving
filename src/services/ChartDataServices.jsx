@@ -2,14 +2,14 @@ import { useState,useEffect} from 'react';
 import { CModal, CModalHeader, CModalBody, CModalFooter, CButton } from '@coreui/react';
 import useDashboardReceivingService from '../services/DashboardService'
 
-const useChartData = ({dataSchedules}) => {
+const useChartData = ({dataSchedules, handleClickOpenMaterials}) => {
     const [selectedVendor, setSelectedVendor] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
  
-
     const setChartData  = () => {
         // console.log("Current Items Data:", dataSchedules); // Debugging awal
         const labelsVendor = dataSchedules?.map((data) => data.supplierName);
+        console.log("dataSchedules :", dataSchedules)
 
         const data = {
             labels: labelsVendor,
@@ -43,6 +43,10 @@ const useChartData = ({dataSchedules}) => {
                         data.status === "delayed" ? "rgb(240, 15, 15)" : "rgb(36, 173, 47)"
                     ),
                     borderWidth: 1,
+                    categoryPercentage: 0.8, // Reduce spacing between bars (default is 0.8)
+
+                    // barThickness: 20,
+                    // maxBarThickness: 20,
                 },
                 {
                     xAxisId: "x-plan",
@@ -69,6 +73,9 @@ const useChartData = ({dataSchedules}) => {
                     backgroundColor: ["rgba(255, 213, 0, 0.56)"],
                     borderColor: ["rgb(255, 205, 86)"],
                     borderWidth: 1,
+                    categoryPercentage: 0.8, 
+                    // barThickness: 20,
+                    // maxBarThickness: 20,
                 },
             ],
         };
@@ -99,14 +106,21 @@ const useChartData = ({dataSchedules}) => {
                     stacked: true,
                     beginAtZero: false,
                     ticks: {
-                        font: { size: 10 },
+                        font: { size: 12 },
                         color: "black",
+                        
+                        
                     },
+                    padding: 0,
+                    barPercetage: 0.2,
                     grid: { color: "#D9EAFD" },
                 },
             },
             elements: {
-                bar: { borderWidth: 3 },
+                bar: { 
+                    borderWidth: 3,
+                    // barPercentage: 1, // Adjust the actual bar width inside each category
+                },
             },
             responsive: true,
             plugins: {
@@ -143,30 +157,24 @@ const useChartData = ({dataSchedules}) => {
                     const firstPoint = points[0];
                     const label = chart.data.labels[firstPoint.index]; // Y-axis label
                     console.log(`Clicked on Y-axis label: ${label}`);
-                    setSelectedVendor(label);
-                    setIsModalOpen(true);
+                    console.log(`Clicked on Data: ${firstPoint.index}`);
+
+                    handleClickOpenMaterials(dataSchedules[firstPoint.index])
+                    // setSelectedVendor(firstPoint.index);
+                    // setIsModalOpen(true);
                 }
             },
         };
 
         return config;
     };
-const ModalComponent = () => (
-        <CModal visible={isModalOpen} onClose={() => setIsModalOpen(false)}>
-            <CModalHeader closeButton>Vendor Selected</CModalHeader>
-            <CModalBody>
-                <p>Vendor: {selectedVendor}</p>
-            </CModalBody>
-            <CModalFooter>
-                <CButton color="secondary" onClick={() => setIsModalOpen(false)}>Close</CButton>
-            </CModalFooter>
-        </CModal>
-    );
+
     return {
         setChartData,
         getChartOption,
-        ModalComponent,
-        selectedVendor
+        // selectedVendor,
+        // isModalOpen,
+        // setIsModalOpen
     }
 }
 export default useChartData

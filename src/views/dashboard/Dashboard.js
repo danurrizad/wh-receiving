@@ -97,7 +97,7 @@ const Dashboard = () => {
   const [visiblePages, setVisiblePages] = useState([])
   const [plants, setPlants] = useState([]); // Plants fetched from API
   const [selectedPlant, setSelectedPlant] = useState({ value: 'all', label: 'All' });
-  const [selectedStatus, setSelectedStatus] = useState({ label: "Delayed", value: "delayed" });
+  const [selectedStatus, setSelectedStatus] = useState({ value: 'delayed', label: "DELAYED"});
   const [dataSchedules, setDataSchedules] = useState([]); // Menyimpan data dari API
   const [isVisible, setIsVisible] = useState(true); // State to control visibility
   const [ dataDNInquery, setDataDNInquery ] = useState([])
@@ -222,10 +222,10 @@ const Dashboard = () => {
 
   const fetchChartReceivingData = async (status, currentPage) => {
     try {
-      console.log("CURRENT PAGE --------------------", currentPage)
+      console.log("status --------------------", status)
       const response = await getChartReceiving(
         queryFilter.plantId, 
-        status.value, // status kosong
+        status?.value !== null ? status?.value : "", // status kosong
         "", // vendor kosong
         queryFilter.rangeDate[0]?.toISOString().split("T")[0], 
         queryFilter.rangeDate[1]?.toISOString().split("T")[0],
@@ -282,7 +282,7 @@ const Dashboard = () => {
   //     );
 
   //     if (response && response.data) {
-  //       // console.log("Vendor Data:", response.data);
+  //       // console.log("Vendor Data:", response.data)  ;
 
   //       // Ubah data menjadi format yang sesuai dengan react-select
   //       const vendorOptions = response.data.map((vendor) => ({
@@ -309,8 +309,29 @@ const Dashboard = () => {
     console.log("SLICING :", dataSchedules.slice(indexOfFirstItem, indexOfLastItem))
   }, [currentPage])
 
+  const handleClickOpenMaterials = (data) => {
+    setShowModalInput({...showModalInput, state: true})
+    
+    const dataVendor = data?.deliveryNotes ? data?.deliveryNotes : data
+    const dataMaterials = data?.deliveryNotes?.Materials ? data?.deliveryNotes?.Materials : data.Materials
+    console.log("data vendor:", dataVendor)
+    console.log("data material:", dataMaterials)
+    setDataMaterialsByDNInquery(dataMaterials)
+
+    setFormUpdate({
+      dnNumber: dataVendor.dnNumber,
+      vendorName: dataVendor.supplierName,
+      rit: dataVendor.rit,
+      incomingIds: dataMaterials.map((data)=>data.incomingId),
+      receivedQuantities: dataMaterials.map((data)=>data.receivedQuantity),
+      statuses: dataMaterials.map((data)=>data.status),
+      remains: dataMaterials.map((data)=>data.remain)
+    })
+  }
+
+  const { setChartData, getChartOption, selectedVendor, isModalOpen, setIsModalOpen } = useChartData({ dataSchedules, handleClickOpenMaterials });
+
   // Panggil hook `useChartData` dengan `currentItems`
-  const { setChartData, getChartOption, selectedVendor } = useChartData({ dataSchedules });
 
   
 
@@ -321,8 +342,9 @@ const Dashboard = () => {
   })
 
   const handleFilterSchedule = async (selectedOption) => {
-    const status = selectedOption ? selectedOption.value : "delayed"; // Jika tidak ada status, kirim ""
-    setSelectedStatus(selectedOption || { label: "Delayed", value: "delayed" }); // Update state
+    console.log(selectedOption)
+    const status = selectedOption !== null ? selectedOption.value : ""; // Jika tidak ada status, kirim ""
+    setSelectedStatus(selectedOption); // Update state
     console.log("Fetching chart data with status:", status);
   
     // try {
@@ -402,25 +424,9 @@ const Dashboard = () => {
     )
   }
 
-  const handleClickOpenMaterials = (data) => {
-    setShowModalInput({...showModalInput, state: true})
-    console.log("data vendor:", data.deliveryNotes)
-    console.log("data material:", data.deliveryNotes.Materials)
+  
 
-    const dataVendor = data.deliveryNotes
-    const dataMaterials = data.deliveryNotes.Materials
-    setDataMaterialsByDNInquery(data.deliveryNotes.Materials)
 
-    setFormUpdate({
-      dnNumber: dataVendor.dnNumber,
-      vendorName: dataVendor.supplierName,
-      rit: dataVendor.rit,
-      incomingIds: dataMaterials.map((data)=>data.incomingId),
-      receivedQuantities: dataMaterials.map((data)=>data.receivedQuantity),
-      statuses: dataMaterials.map((data)=>data.status),
-      remains: dataMaterials.map((data)=>data.remain)
-    })
-  }
   const statusVendorBodyTemplate = (rowData) => {
     const status = rowData.deliveryNotes.status
     const bgColor = status === 'delayed' ? "#F64242" : status === "on schedule" ? "#35A535" : "transparent"
@@ -428,8 +434,9 @@ const Dashboard = () => {
       <div className='text-center' 
       style={{ backgroundColor: bgColor, 
         padding: "5px 10px",
-         color: "white",
-         borderRadius: "8px", 
+        fontWeight: "bold",
+        color: "white",
+        borderRadius: "8px", 
         textTransform: "uppercase"}}>
         {status}
       </div>
@@ -479,14 +486,23 @@ const Dashboard = () => {
         const selectStyles = {
           placeholder: (base) => ({
             ...base,
-            color: "red", // Warna merah untuk placeholder
-            fontWeight: "bold",
+            // color: "red", // Warna merah untuk placeholder
+            // fontWeight: "bold",
           }),
           singleValue: (base, state) => ({
             ...base,
-            color: state.data.value === "delayed" ? "red" : "green", // Warna sesuai status
+            color: "white",
+            // color: state.data.value === "delayed" ? "red" : "green", // Warna sesuai status
+            backgroundColor: state.data.value === "delayed" ? "#F74F4F" : "#43AB43",
             fontWeight: "bold",
+            padding: "5px 10px",
+            borderRadius: "5px"
           }),
+          control: (base) => ({
+            ...base,
+            height: "42px",
+            minWidth: "220px"
+          })
         };
         const handleScrollToVendorSchedule = () => {
           if (vendorScheduleRef.current) {
@@ -503,426 +519,333 @@ const Dashboard = () => {
   return (
   <CContainer fluid>
     <CRow className='mt-1'>
-    <CCard
-         className="px-0 bg-white text-black mb-1"
-          style={{
+      <CCard
+        className="px-0 bg-white text-black mb-1"
+        style={{
           overflow: "hidden",
           transitionDuration: "500ms",
           border: "1px solid #6482AD", // Menambahkan border dengan warna #074799
-        }}>
-         <CCardHeader
+      }}>
+        <CCardHeader
           style={{
             zIndex: 4,
             backgroundColor: "#6482AD",
             color: "white",
             padding: "10px",
-           
-          }}
-           >
+        }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%" }}>
-          <CTooltip content="Scroll to Vendor Schedule">
-        <button
-          className="btn d-flex align-items-center justify-content-center me-2"
-          style={{
-            backgroundColor: "#B0B0B0",
-            borderRadius: "50%",
-            width: "40px",
-            height: "40px",
-          }}
-          onClick={handleScrollToVendorSchedule}
-        >
-          <CIcon icon={cilChart} size="lg" style={{ color: "#27445D" }} />
-        </button>
-      </CTooltip>
-
-      <CTooltip content="Toggle Filter Visibility">
-        <button
-          className="btn d-flex align-items-center justify-content-center"
-          style={{
-            backgroundColor: "#B0B0B0",
-            borderRadius: "50%",
-            width: "40px",
-            height: "40px",
-          }}
-          onClick={toggleFilterVisibility}
-        >
-          <CIcon icon={cilCog} size="sm" style={{ color: "#27445D" }} />
-        </button>
-      </CTooltip>
-            
-              <CCardTitle className="text-center fs-4" style={{ flexGrow: 1 }}>
-                MONITORING RECEIVING WAREHOUSE
-              </CCardTitle>
-            </div>
-          </CCardHeader>
-            <CCardBody style={{overflow: 'auto'}}>
-              <CRow className="d-flex justify-content-between align-items-center mb-2">
-            {/* Tombol Hide/Show di pojok kiri */}
-
-            {isFilterVisible && (
-          <div className="d-flex flex-wrap gap-2 mt-1">
-            <CCol sm={12} md={12} lg={5} xl={5}
-             className="d-flex justify-content-center-start gap-1">
-            <div className="d-flex flex-column align-items-center">
-            <CFormText style={{ alignSelf: "flex-start" }}>Filter Plant</CFormText>
-            <Select
-            className="basic-single"
-            classNamePrefix="select"
-            id="plant"
-            options={[{ value: 'all', label: 'All' }, ...plants]} // Tambahkan opsi "All"
-            value={selectedPlant}
-            onChange={handlePlantChange}
-            styles={{
-              control: (base) => ({
-                ...base,
-                width: '250px', // Atur lebar lebih kecil agar lebih proporsional
-                minWidth: '200px',
-                maxWidth: '100%',
-                borderRadius: '5px',
-                padding: '2px',
-                zIndex: 3, // Memberikan prioritas tinggi agar dropdown muncul di atas elemen lain
-                position: 'relative'
-              }),
-              menu: (base) => ({
-                ...base,
-                zIndex: 3, // Pastikan menu dropdown tidak tertutup elemen lain
-              })
-            }}
-             />
-             </div>
-                 <div className="d-flex flex-column align-items-center">
-              <CFormText style={{ alignSelf: "flex-start" }}>Filter by Status</CFormText>
-                      <Select
-                        onChange={handleFilterSchedule}
-                        placeholder="Delayed" // Default placeholder
-                        isClearable
-                        styles={ selectStyles}
-                        value={selectedStatus} // Default ke "Delayed"
-                        options={[
-                          { label: "On Schedule", value: "on schedule" },
-                          { label: "Delayed", value: "delayed" },
-                         
-                        ]}
-                         />
-            </div>
-          </CCol>
-          {/* Kolom kedua */}
-           <CCol sm={12} md={12} lg={7} xl={6}
-           className="d-flex justify-content-end gap-2" // Elemen berada di pojok kanan dengan jarak antar elemen
-         >
-           <div className="d-flex flex-column align-items-end">
-             <CFormText style={{ alignSelf: "flex-start" }}>Search vendor</CFormText>
-             <Select 
-               options={optionsSelectVendor} 
-               isClearable 
-               placeholder="Vendor code or name" 
-               styles={{
-                 container: (provided) => ({
-                   ...provided,
-                   width: "250px", // Sesuaikan lebar input Select
-                   zIndex: 1000, // Z-index untuk elemen container
-                 }),
-               }}
-             />
-           </div>
-         
-           <div 
-             className="flatpickr-wrapper d-flex flex-column align-items-end" 
-             style={{ position: "relative", width: "240px" }} // Sesuaikan ukuran DatePicker
-           >
-             <CFormText style={{ alignSelf: "flex-start" }}>Filter by Date</CFormText>
-             <DateRangePicker showOneCalendar placeholder='All time' position='start' value={queryFilter.rangeDate} />
-           </div>
-         </CCol>
-         </div>
-             
-            )}
-         </CRow>
-              <CRow >
-              <div className="card">
-              <DataTable
-  removableSort
-  globalFilterFields={['deliveryNotes.dnNumber', 'deliveryNotes.supplierName', 'deliveryNotes.truckStation']}
-  filters={queryFilter}
-  showGridlines 
-  size="small"
-  paginator
-  rows={15}
-  rowsPerPageOptions={[15, 25, 50, 100]}
-  tableStyle={{ minWidth: '50rem' }}
-  value={dataDNInquery}
-  filterDisplay="row"
-   className="custom-table"
->
-                    <Column className='' header="No" body={(rowBody, {rowIndex})=>rowIndex+1}></Column>
-                    <Column className='' field='deliveryNotes.dnNumber'  header="DN No"></Column>
-                    <Column className='' field='deliveryNotes.supplierName'  header="Vendor Name" ></Column>
-                    <Column className='' field='deliveryNotes.truckStation'  header="Truck Station" ></Column>
-                    <Column className='' field='deliveryNotes.rit'  header="Rit" ></Column>
-                    <Column className='' field='deliveryNotes.arrivalPlanDate'  header="Plan Date" ></Column>
-                    <Column className='' field='deliveryNotes.arrivalPlanTime'  header="Plan Time" body={plantTimeBodyTemplate} ></Column>
-                    <Column className='' field='deliveryNotes.arrivalActualDate'  header="Arriv. Date" ></Column>
-                    <Column className='' field='deliveryNotes.arrivalActualTime'  header="Arriv. Time" ></Column>
-                    {/* <Column className='' field='deliveryNotes.departureActualDate'  header="Departure Date" /> */}
-                    <Column className='' field='deliveryNotes.departureActualTime'  header="Dept. Time" ></Column>
-                    <Column className='' field='deliveryNotes.status'  header="Status" body={statusVendorBodyTemplate} ></Column>
-                    <Column className='' field=''  header="Materials" body={materialsBodyTemplate} ></Column>
-                
-                  </DataTable>
-                 </div>
-              </CRow>
-               <CModal 
-                        visible={showModalInput.state}
-                        onClose={() => setShowModalInput({state: false, enableSubmit: false})}
-                        size='xl'
-                        backdrop="static"
-                      >
-                        <CModalHeader>
-                          <CModalTitle>List Materials Received</CModalTitle>
-                        </CModalHeader>
-                        <CModalBody> 
-                          <CRow>
-                            <CCol sm='3'>
-                              <CFormText>DN NO</CFormText>  
-                              <CFormLabel>{formUpdate.dnNumber}</CFormLabel>
-                            </CCol>
-                            <CCol>
-                              <CFormText>VENDOR NAME</CFormText>  
-                              <CFormLabel>{formUpdate.vendorName}</CFormLabel>
-                            </CCol>
-                          </CRow>
-                        <CRow className='pt-1'>
-                        <DataTable
-                             className="p-datatable-sm custom-datatable text-nowrap"
-                             tableStyle={{ minWidth: '50rem' }}
-                             removableSort
-                             size="small"
-                             scrollable
-                             scrollHeight="50vh"
-                             showGridlines
-                             paginator
-                             rows={10}
-                             value={dataMaterialsByDNInquery}
-                             filterDisplay="row"
-                           >
-                                  <Column header="No" body={(rowBody, {rowIndex})=>rowIndex+1} />
-                                  <Column field='materialNo'  header="Material No" />
-                                  <Column field='description'  header="Material Description" />
-                                  <Column field='address'  header="Rack Address" />
-                                  <Column field="reqQuantity" header="Req. Qty" body={(data) => <div className="text-center">{data.reqQuantity}</div>} />
-                                  <Column field="receivedQuantity" header="Act. Qty" body={(data) => <div className="text-center">{data.receivedQuantity}</div>} />
-                                  <Column field="remain" header="Remain" body={remainBodyTemplate} align="center" />
-                                  <Column field='status'  header="Status" body={statusQtyBodyTemplate} />
-                              
-                                </DataTable>
-                        </CRow>
-                        <CRow className='mt-1 px-2'>
-                        </CRow>
-                        </CModalBody>
-                        
-                      </CModal>
-            </CCardBody>   
-       </CCard>
-        </CRow>
-        {isVisible && (
-        <CRow className='mb-3 mt-5'>
-          <CCard ref={vendorScheduleRef} className='px-0 ' style={{ maxHeight: `${showCard.schedule ? "2000px" : "50px"}`, overflow: "hidden", transitionDuration: '500ms'}}>
-            <CCardHeader style={{ position: "relative", cursor: "pointer"}} onClick={()=>setShowCard({ ...showCard, schedule: !showCard.schedule})}>
-                <CCardTitle className='text-center'> DETAIL VENDOR ARRIVAL SCHEDULE </CCardTitle>
-                </CCardHeader>
-                <CCardBody style={{ overflow: "auto"  }}>
-                       <CRow>
-                         <CCol xs={12} sm={7} md={7} xl={7} >
-                         <label className="fs-6 fw-bold text-center d-block mt-1">ARRIVAL MONITORING</label>
-                          <CCard  style={{ backgroundColor: "white",border: "1px solid #BCCCDC"}} className="p-1">
-             
-                          <CRow className="justify-content-center gap-0">
-                           <CCol  xs={6} sm={3} md={3} xl={3}>
-                             <CCard 
-                              className="mb-2 mt-1 bg-transparent" 
-                              style={{ border: "1px solid #3D3D3D" }}
-                             >
-                                <CCardHeader
-                                className="text-muted small text-center"
-                                 style={{ backgroundColor: "#C62300" }}>
-                                <h6 style={{ color: "white", fontSize: "12px" }}>DELAYED</h6>
-                                </CCardHeader>
-                                 <CCardBody className="text-center ">
-                                 <CCardText className="fs-3 fw-bold" style={{ color: "black" }}> 
-                                  {cardData.delayed}</CCardText>
-                                </CCardBody>
-                             </CCard>
-                           </CCol>
-
-                            <CCol  xs={6} sm={3} md={3} xl={3}>
-                            <CCard 
-                                className="mb-2 mt-1 bg-transparent" 
-                                style={{ border: "1px solid #3D3D3D" }}
-                               >
-                               <CCardHeader
-                                className="text-muted small text-center"
-                                style={{ backgroundColor: "#5CB338" }}
-                                >
-                                <h6 style={{ color: "white", fontSize: "12px" }}>ON SCHEDULE</h6>
-                                </CCardHeader>
-                                <CCardBody className="text-center">
-                               <CCardText className="fs-3 fw-bold" style={{ color: "black" }}>
-                                 {cardData.onSchedule}</CCardText>
-                             </CCardBody>
-                           </CCard>
-                         </CCol>
-
-           <CCol  xs={6} sm={3} md={3} xl={3}>
-             <CCard 
-                  className="mb-2 mt-1 bg-transparent" 
-                  style={{ border: "1px solid #3D3D3D" }}
-                 >
-               <CCardHeader
-                 className="text-muted small text-center"
-                 style={{ backgroundColor: "#EB5B00" }}>
-                  <h6 style={{ color: "white", fontSize: "12px" }}>REMAINING</h6>
-                 </CCardHeader>
-                   <CCardBody className="text-center">
-                    <CCardText className="fs-3 fw-bold" style={{ color: "black" }}>{cardData.remaining}</CCardText>
-                  </CCardBody>
-                 </CCard>    
-               </CCol>
-               <CCol  xs={6} sm={3} md={3} xl={3}>
-               <CCard 
-                  className="mb-2 mt-1 bg-transparent" 
-                  style={{ border: "1px solid #3D3D3D" }}
-                 >
-               <CCardHeader
-                 className="text-muted small text-center"
-                 style={{ backgroundColor: "black" }}
-               >
-                 <h6 style={{ color: "white", fontSize: "12px" }}>TOTAL</h6>
-               </CCardHeader>
-                 <CCardBody className="text-center">
-                   <CCardText className="fs-3 fw-bold"style={{ color: "black" }}>{cardData.total}</CCardText>
-                 </CCardBody>
-                </CCard>
-               </CCol>
-              </CRow>
-              </CCard>
-             <CCard className='mt-2'>
-             <CRow>
-                <CCol className='d-flex gap-2' xxl={7} md={8}>
-                <h7><CBadge color="warning">ARRIVAL PLAN</CBadge> </h7>
-                <h7><CBadge color="success">ARRIVAL ON SCHEDULE</CBadge></h7>
-                <h7><CBadge color="danger">ARRIVAL DELAYED</CBadge></h7>
-                </CCol>
-                </CRow>
-                 <CRow>
-                 <Bar 
-                 options={getChartOption()} 
-                 data={setChartData()} 
-                 height={200} // Tinggi chart
-                />
-               </CRow>
-               <CCol className="d-flex justify-content-center sticky-pagination">
-                  <CPagination aria-label="Page navigation example">
-                    <CPaginationItem
-                      disabled={currentPage === 1}
-                      onClick={() => handlePageChange(currentPage - 1)}
-                    >
-                      Previous
-                    </CPaginationItem>
-
-                    {visiblePages.map((page) => (
-                      <CPaginationItem
-                        key={page}
-                        active={currentPage === page}
-                        onClick={() => handlePageChange(page)}
-                      >
-                        {page}
-                      </CPaginationItem>
-                    ))}
-
-                    <CPaginationItem
-                      disabled={currentPage === totalPages}
-                      onClick={() => handlePageChange(currentPage + 1)}
-                    >
-                      Next
-                    </CPaginationItem>
-                  </CPagination>
-                </CCol>
-               </CCard>
-              </CCol>
-              {/* //untuk tabel */}
-
-              <CCol sm={5}>
-  <label className="fs-6 fw-bold text-center d-block mt-1">TABLE RECEIVING MATERIAL</label>
-  <CCard style={{ backgroundColor: "white", border: "1px solid #BCCCDC" }} className="p-1">
-    {selectedVendor ? (
-      currentItems
-        .filter((data) => data.vendor_name === selectedVendor)
-        .map((data, index) => (
-          <div key={index}>
-            <CRow className="mb-1">
-              <CCol sm={12}>
-                <div><strong>Supplier:</strong> {data.vendor_id}</div>
-              </CCol>
-              <CRow>
-                <CCol sm={6}>
-                  <div><strong>Day:</strong> {daysOfWeek[data.day]}</div>
-                </CCol>
-                <CCol sm={6}>
-                  <div><strong>Schedule Plan:</strong> {data.schedule_from}</div>
-                </CCol>
-              </CRow>
-              <CRow>
-                <CCol sm={6}>
-                  <div><strong>Arrival:</strong> {data.arrival_time}</div>
-                </CCol>
-                <CCol sm={6}>
-                  <div><strong>Status:</strong> {data.status}</div>
-                </CCol>
-              </CRow>
-            </CRow>
-
-            <CTable style={{ fontSize: '10px' }} bordered>
-              <CTableHead color='light'>
-                <CTableRow>
-                  <CTableHeaderCell>Material Description</CTableHeaderCell>
-                  <CTableHeaderCell>Rack Address</CTableHeaderCell>
-                  <CTableHeaderCell>Plan Qty</CTableHeaderCell>
-                  <CTableHeaderCell>Act Qty</CTableHeaderCell>
-                  <CTableHeaderCell>Diff</CTableHeaderCell>
-                  <CTableHeaderCell>Date</CTableHeaderCell>
-                </CTableRow>
-              </CTableHead>
-              <CTableBody>
-                {data.materials.map((material, materialIndex) => (
-                  <CTableRow key={materialIndex}>
-                    <CTableDataCell>{material.description}</CTableDataCell>
-                    <CTableDataCell>{material.address}</CTableDataCell>
-                    <CTableDataCell>{material.reqQuantity}</CTableDataCell>
-                    <CTableDataCell>{material.receivedQuantity}</CTableDataCell>
-                    <CTableDataCell>{material.remain}</CTableDataCell>
-                    <CTableDataCell>{data.arrivalActualDate}</CTableDataCell>
-                  </CTableRow>
-                ))}
-              </CTableBody>
-            </CTable>
+            <CTooltip content="Scroll to Vendor Schedule">
+              <button
+                className="btn d-flex align-items-center justify-content-center me-2 btn-toggle"
+                style={{
+                  // backgroundColor: "white",
+                  borderRadius: "50%",
+                  width: "40px",
+                  height: "40px",
+                }}
+                onClick={handleScrollToVendorSchedule}
+              >
+                <CIcon icon={cilChart} size="lg" className='icon-toggle'/>
+              </button>
+            </CTooltip>
+            <CTooltip content="Toggle Filter Visibility">
+              <button
+                className="btn d-flex align-items-center justify-content-center btn-toggle"
+                style={{
+                  // backgroundColor: "#B0B0B0",
+                  // backgroundColor: "white",
+                  borderRadius: "50%",
+                  width: "40px",
+                  height: "40px",
+                }}
+                onClick={toggleFilterVisibility}
+              >
+                <CIcon icon={cilCog} size="sm" className='icon-toggle' />
+              </button>
+            </CTooltip>
+            <CCardTitle className="text-center fs-4" style={{ flexGrow: 1 }}>
+              MONITORING RECEIVING WAREHOUSE
+            </CCardTitle>
           </div>
-        ))
-    ) : (
-      <div className="text-center p-3">
-        <strong>SILAHKAN PILIH VENDOR. VENDOR BELUM DIPILIH</strong>
-      </div>
-    )}
-  </CCard>
-</CCol>
+        </CCardHeader>
+        <CCardBody className='px-4' style={{overflow: 'auto'}}>
+          <CRow className="d-flex justify-content-between align-items-center mb-2">
+          {/* Tombol Hide/Show di pojok kiri */}
 
+          {isFilterVisible && (
+            <div className="d-flex  gap- mt-1">
+              <CCol sm={12} md={12} lg={5} xl={5} className="d-flex gap-1">
+                <div>
+                  <CFormText>Filter Plant</CFormText>
+                  <Select
+                    className="basic-single"
+                    classNamePrefix="select"
+                    id="plant"
+                    options={[{ value: 'all', label: 'All' }, ...plants]} // Tambahkan opsi "All"
+                    value={selectedPlant}
+                    onChange={handlePlantChange}
+                    styles={{
+                      control: (base) => {
+                        return ({
+                          ...base,
+                          width: '250px', // Atur lebar lebih kecil agar lebih proporsional
+                          minWidth: '200px',
+                          maxWidth: '100%',
+                          borderRadius: '5px',
+                          padding: '2px',
+                          zIndex: 3, // Memberikan prioritas tinggi agar dropdown muncul di atas elemen lain
+                          position: 'relative',
+                          height: "100%"
+                        })
+                      },
+                      menu: (base) => ({
+                        ...base,
+                        zIndex: 3, // Pastikan menu dropdown tidak tertutup elemen lain
+                      })
+                    }}
+                  />
+                </div>
+                <div>
+                  <CFormText >Filter by Status</CFormText>
+                  <Select
+                    onChange={handleFilterSchedule}
+                    placeholder="All" // Default placeholder
+                    isClearable
+                    styles={ selectStyles}
+                    value={selectedStatus} // Default ke ""
+                    options={[
+                      { label: "ON SCHEDULE", value: "on schedule" },
+                      { label: "DELAYED", value: "delayed" },
+                      
+                    ]}
+                  />
+                </div>
+              </CCol>
+              {/* Kolom kedua */}
+              <CCol sm={12} md={12} lg={7} xl={7} className="d-flex justify-content-end gap-2 "> 
+                <div>
+                  <CFormText style={{ alignSelf: "flex-start" }}>Search vendor</CFormText>
+                  <Select 
+                    options={optionsSelectVendor} 
+                    isClearable 
+                    placeholder="Vendor name" 
+                    styles={{
+                      container: (provided) => ({
+                        ...provided,
+                        width: "250px", // Sesuaikan lebar input Select
+                        zIndex: 1000, // Z-index untuk elemen container
+                      }),
+                      control: (base) => ({
+                        ...base,
+                        height: '42px'
+                      })
+                    }}
+                  />
+                </div>
+                {/* <div className="flatpickr-wrapper d-flex flex-column align-items-end" style={{ position: "relative", width: "100%" }}> */}
+                <div>
+                  <CFormText>Filter by Date</CFormText>
+                  <DateRangePicker showOneCalendar placeholder='All time' position='start' value={queryFilter.rangeDate}/>
+                </div>
+              </CCol>
+            </div>
+          )}
+         </CRow>
+          <CRow >
+            <CCard className='p-0 overflow-hidden'>
+              <CCardBody className="p-0">
+                <DataTable
+                  removableSort
+                  globalFilterFields={['deliveryNotes.dnNumber', 'deliveryNotes.supplierName', 'deliveryNotes.truckStation']}
+                  filters={queryFilter}
+                  showGridlines 
+                  size="small"
+                  paginator
+                  rows={15}
+                  rowsPerPageOptions={[15, 25, 50, 100]}
+                  tableStyle={{ minWidth: '50rem' }}
+                  value={dataDNInquery}
+                  filterDisplay="row"
+                  className="custom-table"
+                >
+                  <Column className='' header="No" body={(rowBody, {rowIndex})=>rowIndex+1}></Column>
+                  <Column className='' field='deliveryNotes.dnNumber'  header="DN No"></Column>
+                  <Column className='' field='deliveryNotes.supplierName'  header="Vendor Name" ></Column>
+                  <Column className='' field='deliveryNotes.truckStation'  header="Truck Station" ></Column>
+                  <Column className='' field='deliveryNotes.rit'  header="Rit" ></Column>
+                  <Column className='' field='deliveryNotes.arrivalPlanDate'  header="Plan Date" ></Column>
+                  <Column className='' field='deliveryNotes.arrivalPlanTime'  header="Plan Time" body={plantTimeBodyTemplate} ></Column>
+                  <Column className='' field='deliveryNotes.arrivalActualDate'  header="Arriv. Date" ></Column>
+                  <Column className='' field='deliveryNotes.arrivalActualTime'  header="Arriv. Time" ></Column>
+                  {/* <Column className='' field='deliveryNotes.departureActualDate'  header="Departure Date" /> */}
+                  <Column className='' field='deliveryNotes.departureActualTime'  header="Dept. Time" ></Column>
+                  <Column className='' field='deliveryNotes.status'  header="Status" body={statusVendorBodyTemplate} ></Column>
+                  <Column className='' field=''  header="Materials" body={materialsBodyTemplate} ></Column>
+              
+                </DataTable>
+              </CCardBody>
+
+            </CCard>
+            </CRow>
+            <CModal 
+              visible={showModalInput.state}
+              onClose={() => setShowModalInput({state: false, enableSubmit: false})}
+              size='xl'
+              backdrop="static"
+            >
+              <CModalHeader>
+                <CModalTitle>List Materials Received</CModalTitle>
+              </CModalHeader>
+              <CModalBody> 
+                <CRow>
+                  <CCol sm='3'>
+                    <CFormText>DN NO</CFormText>  
+                    <CFormLabel>{formUpdate.dnNumber}</CFormLabel>
+                  </CCol>
+                  <CCol>
+                    <CFormText>VENDOR NAME</CFormText>  
+                    <CFormLabel>{formUpdate.vendorName}</CFormLabel>
+                  </CCol>
+                </CRow>
+                <CRow className='pt-1'>
+                  <DataTable
+                    className="p-datatable-sm custom-datatable text-nowrap"
+                    tableStyle={{ minWidth: '50rem' }}
+                    removableSort
+                    size="small"
+                    scrollable
+                    scrollHeight="50vh"
+                    showGridlines
+                    paginator
+                    rows={10}
+                    value={dataMaterialsByDNInquery}
+                    filterDisplay="row"
+                  >
+                    <Column header="No" body={(rowBody, {rowIndex})=>rowIndex+1} />
+                    <Column field='materialNo'  header="Material No" />
+                    <Column field='description'  header="Material Description" />
+                    <Column field='address'  header="Rack Address" />
+                    <Column field="reqQuantity" header="Req. Qty" body={(data) => <div className="text-center">{data.reqQuantity}</div>} />
+                    <Column field="receivedQuantity" header="Act. Qty" body={(data) => <div className="text-center">{data.receivedQuantity}</div>} />
+                    <Column field="remain" header="Remain" body={remainBodyTemplate} align="center" />
+                    <Column   field='status'  header="Status" body={statusQtyBodyTemplate} />
+                  </DataTable>
+                </CRow>
+                <CRow  className='mt-1 px-2'></CRow>
+              </CModalBody>
+            </CModal>
+       </CCardBody>   
+       </CCard>
+
+
+        </CRow>
+          {/* <div ref={vendorScheduleRef}></div> */}
+        {isVisible && (
+        <CRow ref={vendorScheduleRef} className='mb-3 mt-5 '>
+          <CCard  className='px-0 ' style={{maxHeight: `${showCard.schedule ? "2000px" : "50px"}`, overflow: "hidden", transitionDuration: '500ms', border: "1px solid #6482AD"}}>
+            <CCardHeader style={{ position: "relative", cursor: "pointer", backgroundColor: "#6482AD", color: "white"}} onClick={()=>setShowCard({ ...showCard, schedule: !showCard.schedule})}>
+              <CCardTitle className='text-center fs-4'> DETAIL VENDOR ARRIVAL SCHEDULE </CCardTitle>
+            </CCardHeader>
+            <CCardBody style={{ overflow: "auto"  }}>
+              <CRow>
+                <CCol xl={2} className='d-flex flex-column justify-content-between'>
+                  <CCard className="bg-transparent" style={{ border: "1px solid #3D3D3D" }}>
+                    <CCardHeader className="text-muted small text-center" style={{ backgroundColor: "#C62300" }}>
+                      <h6 style={{ color: "white", fontSize: "12px" }}>DELAYED</h6>
+                    </CCardHeader>
+                    <CCardBody className="text-center ">
+                      <CCardText className="fs-3 fw-bold" style={{ color: "black" }}> 
+                        {cardData.delayed}
+                      </CCardText>
+                    </CCardBody>
+                  </CCard>
+
+                  <CCard className=" bg-transparent" style={{ border: "1px solid #3D3D3D" }}>
+                    <CCardHeader className="text-muted small text-center" style={{ backgroundColor: "#5CB338" }}>
+                      <h6 style={{ color: "white", fontSize: "12px" }}>ON SCHEDULE</h6>
+                    </CCardHeader>
+                    <CCardBody className="text-center">
+                      <CCardText className="fs-3 fw-bold" style={{ color: "black" }}>
+                        {cardData.onSchedule}
+                      </CCardText>
+                    </CCardBody>
+                  </CCard>
+
+                  <CCard className=" bg-transparent" style={{ border: "1px solid #3D3D3D" }}>
+                    <CCardHeader className="text-muted small text-center" style={{ backgroundColor: "#EB5B00" }}>
+                      <h6 style={{ color: "white", fontSize: "12px" }}>REMAINING</h6>
+                    </CCardHeader>
+                    <CCardBody className="text-center">
+                      <CCardText className="fs-3 fw-bold" style={{ color: "black" }}>{cardData.remaining}</CCardText>
+                    </CCardBody>
+                  </CCard>    
+
+                  <CCard className=" bg-transparent" style={{ border: "1px solid #3D3D3D" }}>
+                    <CCardHeader className="text-muted small text-center" style={{ backgroundColor: "black" }}>
+                      <h6 style={{ color: "white", fontSize: "12px" }}>TOTAL</h6>
+                    </CCardHeader>
+                    <CCardBody className="text-center">
+                      <CCardText className="fs-3 fw-bold"style={{ color: "black" }}>{cardData.total}</CCardText>
+                    </CCardBody>
+                  </CCard>
+                </CCol>
+
+                <CCol xs={12} sm={7} md={7} xl={10} >
+                  <CCard className='p-3'>
+                    <CRow>
+                      <CCol className='d-flex gap-2 justify-content-end'>
+                        <h6><CBadge color="warning">ARRIVAL PLAN</CBadge> </h6>
+                        <h6><CBadge color="success">ARRIVAL ON SCHEDULE</CBadge></h6>
+                        <h6><CBadge color="danger">ARRIVAL DELAYED</CBadge></h6>
+                      </CCol>
+                    </CRow>
+                    <CRow>
+                      <Bar 
+                        options={getChartOption()} 
+                        data={setChartData()} 
+                        height={135} // Tinggi chart
+                      />
+                    </CRow>
+                    <CCol className="d-flex justify-content-center sticky-pagination">
+                      <CPagination aria-label="Page navigation">
+                        <CPaginationItem
+                          disabled={currentPage === 1}
+                          onClick={() => handlePageChange(currentPage - 1)}
+                        >
+                          Previous
+                        </CPaginationItem>
+
+                        {visiblePages.map((page) => (
+                          <CPaginationItem
+                            key={page}
+                            active={currentPage === page}
+                            onClick={() => handlePageChange(page)}
+                          >
+                            {page}
+                          </CPaginationItem>
+                        ))}
+
+                        <CPaginationItem
+                          disabled={currentPage === totalPages}
+                          onClick={() => handlePageChange(currentPage + 1)}
+                        >
+                          Next
+                        </CPaginationItem>
+                      </CPagination>
+                    </CCol>
+                  </CCard>
+                </CCol>
+              {/* //untuk tabel */}
         </CRow>
       </CCardBody>
-          </CCard>
-        </CRow>
+    </CCard>
+  </CRow>
         
-       )}
-       
-      </CContainer>
+  )}
+
+  {/* Modal List Materials */}
+
+  </CContainer>
   )
 }
 
