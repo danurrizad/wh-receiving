@@ -191,18 +191,55 @@ td input.p-inputtext.p-component {
 }
 
 .page-link:hover{
-  color: rgb(100, 130, 173);
-  border-color: rgb(100, 130, 173);
+  // color: rgb(100, 130, 173);
+  // border-color: rgb(100, 130, 173);
+  color: #697077;
+  background-color: #DDE1E6;
   cursor: pointer;
   text-decoration: none;
+  border-radius: 10px;
 }
 .page-link.active, .active > .page-link{
   background-color: rgb(100, 130, 173);
   border-color: rgb(100, 130, 173);
   color: white;
+  border-radius: 10px;
+}
+
+.page-link.disabled, .disabled > .page-link{
+  background-color: transparent;
+  color: #A5A9AD;
+  border: none;
 }
 
 .page-link{
-  border-color: rgb(100, 130, 173);
-  color: rgb(100, 130, 173);
+  // border-color: rgb(100, 130, 173);
+  // color: rgb(100, 130, 173);
+  border: none;
+  border-radius: 10px;
+  color: #697077;
+  // height: 37.7031px;
+  // width: 37.7031px;
+  padding: 7.5px 15px;
+}
+
+.p-dropdown{
+  height: 42px
+}
+
+.rs-input{
+  height: 42px;
+}
+
+.rs-input-group.rs-input-group-inside .rs-input{
+  height: 40px;
+}
+
+
+.pagination{
+  gap: 5px
+}
+
+.page-item:last-child .page-link{
+  border-radius: 10px;
 }

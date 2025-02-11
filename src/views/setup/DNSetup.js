@@ -117,7 +117,9 @@ const DNSetup = () => {
   const uploadDN = async(warehouseId, bodyForm) => {
     try {
       const response = await uploadMasterData(`upload-delivery-note/${warehouseId}`, bodyForm)
-      addToast(response.data.mess)
+      // console.log("RESPONSE RESPONSE :", response)
+      addToast(response.data.message, 'success', 'success')
+      console.log("importDate :", uploadData.importDate)
       setModalUpload(false)
       setFilterQuery({
         ...filterQuery,
@@ -147,11 +149,7 @@ const DNSetup = () => {
         for (let [key, value] of formData.entries()) {
           console.log(`${key}:`, value);
       }
-
-      const response = await uploadDN(optionsWarehouse.selected, formData)
-      console.log("Response upload :", response)  
-      // addToast(TemplateToast("success", "success", response.message))
-      // addToast("File uploaded", 'success', 'success')
+      await uploadDN(optionsWarehouse.selected, formData)
 
     } catch (error) {
       console.log("Error response upload :", error)          

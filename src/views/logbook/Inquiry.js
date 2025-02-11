@@ -104,11 +104,11 @@ const Book = () => {
         const formattedTo = endDate.toISOString().split('T')[0]
         
         const response = await getDNInqueryData(idPlant, formattedStart, formattedTo) 
-        console.log("response :", response.data.data)
+        // console.log("response :", response.data.data)
         setDataDNInquery(response.data.data)
       }else{
         const response = await getDNInqueryData(idPlant, "", "") 
-        console.log("response :", response.data.data)
+        // console.log("response :", response.data.data)
         setDataDNInquery(response.data.data)
       }
     } catch (error) {
