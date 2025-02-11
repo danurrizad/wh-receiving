@@ -48,7 +48,8 @@ const DNSetup = () => {
   const [dataDN, setDataDN] = useState([])
   const [optionsWarehouse, setOptionsWarehouse] = useState({})
   const [filterQuery, setFilterQuery] = useState({
-    date: new Date('2024-01-16'),
+    // date: new Date('2024-01-16'),
+    date: new Date(),
     global: { value: null, matchMode: FilterMatchMode.CONTAINS },
   })
   const [globalFilterValue, setGlobalFilterValue] = useState('');
@@ -84,7 +85,7 @@ const DNSetup = () => {
   const getDNbyDate = async(importedDate) => {
     try {
       setLoading(true)
-      // console.log("Imported Date :", importedDate)
+      console.log("Imported Date :", importedDate)
       const dateFormat = importedDate !== null && importedDate !== "" ? importedDate.toLocaleDateString('en-CA') : importedDate
       console.log("dateFormat :", dateFormat)
       const response = await getDNByDateData(dateFormat)
@@ -117,18 +118,26 @@ const DNSetup = () => {
   const uploadDN = async(warehouseId, bodyForm) => {
     try {
       const response = await uploadMasterData(`upload-delivery-note/${warehouseId}`, bodyForm)
-      // console.log("RESPONSE RESPONSE :", response)
-      addToast(response.data.message, 'success', 'success')
+      console.log("RESPONSE RESPONSE :", response)
       console.log("importDate :", uploadData.importDate)
       setModalUpload(false)
-      setFilterQuery({
-        ...filterQuery,
-        date: uploadData.importDate
-      })
-      setUploadData({
-        file: "",
-        importDate: "",
-      })
+
+      if(response.data.errors){
+        // Cek apakah terdapat banyak errors
+        response.data.errors.map((errs)=>{
+          addToast(errs.error, 'danger', 'error')
+        })
+      }else{
+        addToast(response.data.message, 'success', 'success')
+        setFilterQuery({
+          ...filterQuery,
+          date: new Date(uploadData.importDate)
+        })
+        setUploadData({
+          file: "",
+          importDate: "",
+        })
+      }
     } catch (error) {
       console.error(error)
     }
@@ -319,49 +328,49 @@ const DNSetup = () => {
 
 
             </CRow>
-            <CModal visible={modalUpload} onClose={() => setModalUpload(false)}>
-           <CModalHeader>
-          <CModalTitle id="LiveDemoExampleLabel">Upload Master Material</CModalTitle>
-        </CModalHeader>
-        <CModalBody>
-          <div className="mb-3">
-            <CFormLabel>Date</CFormLabel>
-            <Flatpickr
-              value={date}
-              options={{
-                dateFormat: 'Y-m-d',
-                maxDate: new Date(),
-                allowInput: true,
-              }}
-              disabled
-              onChange={handleDateChange}
-              className="form-control"
-              placeholder="Select a date"
-            />
-          </div>
-          <div className='mb-3'>
-            <CFormLabel>Warehouse</CFormLabel>
-            <Select 
-              options={optionsWarehouse.list} 
-              isClearable 
-              value={optionsWarehouse?.list?.find((opt)=>opt.value===optionsWarehouse.selected) || null} 
-              onChange={(e)=>{
-                setOptionsWarehouse({
-                  ...optionsWarehouse,
-                  selected: e !== null ? e.value : null
-                })
-            }}/>
-          </div>
-          <div className="mb-3">
-            <CFormInput
-              onChange={handleFileChange} // Handle perubahan file
-              type="file"
-              label="Excel File"
-              accept={[".xlsx", '.xls']} // Hanya menerima file Excel
-            />
-          </div>
-        </CModalBody>
-        <CModalFooter>
+            <CModal visible={modalUpload} onClose={() => setModalUpload(false)} backdrop='static'>
+              <CModalHeader>
+                <CModalTitle id="LiveDemoExampleLabel">Upload Master Material</CModalTitle>
+              </CModalHeader>
+              <CModalBody>
+                <div className="mb-3">
+                  <CFormLabel>Date</CFormLabel>
+                  <Flatpickr
+                    value={date}
+                    options={{
+                      dateFormat: 'Y-m-d',
+                      maxDate: new Date(),
+                      allowInput: true,
+                    }}
+                    disabled
+                    onChange={handleDateChange}
+                    className="form-control"
+                    placeholder="Select a date"
+                  />
+                </div>
+                <div className='mb-3'>
+                  <CFormLabel>Warehouse</CFormLabel>
+                  <Select 
+                    options={optionsWarehouse.list} 
+                    isClearable 
+                    value={optionsWarehouse?.list?.find((opt)=>opt.value===optionsWarehouse.selected) || null} 
+                    onChange={(e)=>{
+                      setOptionsWarehouse({
+                        ...optionsWarehouse,
+                        selected: e !== null ? e.value : null
+                      })
+                  }}/>
+                </div>
+                <div className="mb-3">
+                  <CFormInput
+                    onChange={handleFileChange} // Handle perubahan file
+                    type="file"
+                    label="Excel File"
+                    accept={[".xlsx", '.xls']} // Hanya menerima file Excel
+                  />
+                </div>
+              </CModalBody>
+              <CModalFooter>
           <Suspense
             fallback={
               <div className="pt-3 text-center">
