@@ -110,10 +110,23 @@ const useNavigation = () => {
       icon: <CIcon icon={icon.cilTablet} customClassName="nav-icon" />,
       items: [
      {    
-      component: CNavItem,
+      component: CNavGroup,
       name: 'Vendor Requirement',
-      to: '/vendor/requirement',
-      icon: <CIcon icon={icon.cilStar} size="xl" customClassName="nav-icon" />,
+      icon: <CIcon icon={icon.cilListRich} size="xl" customClassName="nav-icon" />,
+      items: [
+        {   
+          component: CNavItem,
+          name: 'Input Requirement',
+          to: '/vendor/input/requirement',
+          icon: <CIcon icon={icon.cilStar} size="xl" customClassName="nav-icon" />,
+         },
+         {   
+          component: CNavItem,
+          name: 'Inquery Requirement',
+          to: '/vendor/inquery/requirement',
+          icon: <CIcon icon={icon.cilStar} size="xl" customClassName="nav-icon" />,
+         }
+      ]
       },  
      {   
       component: CNavItem,
