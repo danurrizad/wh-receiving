@@ -21,7 +21,7 @@ import 'primeicons/primeicons.css';
 import { FilterMatchMode, FilterOperator } from 'primereact/api';
 import useReceivingDataService from '../../services/ReceivingDataServices'
 import { cilChart,cilCog} from '@coreui/icons';
-import { FaArrowUpRightFromSquare, FaCircleCheck, FaCircleExclamation, FaCircleXmark } from 'react-icons/fa6';
+import { FaAnglesLeft, FaAnglesRight, FaArrowUpRightFromSquare, FaChevronLeft, FaChevronRight, FaCircleCheck, FaCircleExclamation, FaCircleXmark } from 'react-icons/fa6';
 import {
   CAvatar,
   CModal ,
@@ -158,7 +158,7 @@ const Dashboard = () => {
       
       const response = await getDNInqueryData(plantId, startDate, endDate);
       
-      // console.log("Response DN:", response.data.data);
+      console.log("Response DN:", response.data.data);
       setDataDNInquery(response.data.data);
     } catch (error) {
       console.error("Error fetching DN Inquiry:", error);
@@ -198,7 +198,7 @@ const Dashboard = () => {
   }, []);
 
   useEffect(() => {
-    const maxVisiblePages = 6 // Max number of pages to show
+    const maxVisiblePages = 3 // Max number of pages to show
     const halfVisible = Math.floor(maxVisiblePages / 2)
 
     let startPage = Math.max(1, currentPage - halfVisible)
@@ -222,17 +222,16 @@ const Dashboard = () => {
 
   const fetchChartReceivingData = async (status, currentPage) => {
     try {
-      console.log("status --------------------", status)
       const response = await getChartReceiving(
         queryFilter.plantId, 
-        status?.value !== null ? status?.value : "", // status kosong
+        status !== null ? status?.value : "", // status kosong
         "", // vendor kosong
         queryFilter.rangeDate[0]?.toISOString().split("T")[0], 
         queryFilter.rangeDate[1]?.toISOString().split("T")[0],
         currentPage
       );
       console.log("response fetchChartReceiving :", response)
-      if (response && response.data) {
+      if (response) {
         // console.log("Data Chart Receiving:", response.data);
         setDataSchedules(response.data); // Simpan data dari API ke state
         setTotalPages(response.totalPages);
@@ -267,9 +266,13 @@ const Dashboard = () => {
     console.log("data chart:", dataSchedules)
     console.log("currentPage:", currentPage)
     console.log("totalPage:", totalPages)
+    console.log("status:", selectedStatus)
     fetchChartReceivingData(selectedStatus, currentPage);
-  }, [queryFilter.plantId, queryFilter.rangeDate, selectedStatus, currentPage]);
+  }, [queryFilter.plantId, queryFilter.rangeDate, currentPage]);
 
+  useEffect(()=> {
+    fetchChartReceivingData(selectedStatus, 1)
+  }, [selectedStatus])
 
   // const fetchVendors = async () => {
   //   try {
@@ -302,11 +305,11 @@ const Dashboard = () => {
   // }, [queryFilter.plantId, queryFilter.rangeDate]);
 
   const currentItemDashboard = dataSchedules.slice(indexOfFirstItem, indexOfLastItem);
-  console.log("Current Dashboard Data:", currentItemDashboard); // Ensure data is sliced correctly
+  // console.log("Current Dashboard Data:", currentItemDashboard); // Ensure data is sliced correctly
 
   useEffect(()=>{
     setCurrentItems(dataSchedules.slice(indexOfFirstItem, indexOfLastItem))
-    console.log("SLICING :", dataSchedules.slice(indexOfFirstItem, indexOfLastItem))
+    // console.log("SLICING :", dataSchedules.slice(indexOfFirstItem, indexOfLastItem))
   }, [currentPage])
 
   const handleClickOpenMaterials = (data) => {
@@ -406,8 +409,8 @@ const Dashboard = () => {
   const daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
 
   const plantTimeBodyTemplate = (rowData) => {
-    const timeFrom = rowData.deliveryNotes.arrivalPlanTime
-    const timeTo = rowData.deliveryNotes.departurePlanTime
+    const timeFrom = rowData.arrivalPlanTime
+    const timeTo = rowData.departurePlanTime
     return(
       <div>
         {timeFrom} - {timeTo}
@@ -428,7 +431,7 @@ const Dashboard = () => {
 
 
   const statusVendorBodyTemplate = (rowData) => {
-    const status = rowData.deliveryNotes.status
+    const status = rowData.status
     const bgColor = status === 'delayed' ? "#F64242" : status === "on schedule" ? "#35A535" : "transparent"
     return(
       <div className='text-center' 
@@ -438,7 +441,7 @@ const Dashboard = () => {
         color: "white",
         borderRadius: "8px", 
         textTransform: "uppercase"}}>
-        {status}
+        {status !== 'schedule plan' ? status : ""}
       </div>
     )
   }
@@ -656,33 +659,72 @@ const Dashboard = () => {
               <CCardBody className="p-0">
                 <DataTable
                   removableSort
-                  globalFilterFields={['deliveryNotes.dnNumber', 'deliveryNotes.supplierName', 'deliveryNotes.truckStation']}
+                  globalFilterFields={['dnNumber', 'supplierName', 'truckStation']}
                   filters={queryFilter}
                   showGridlines 
                   size="small"
-                  paginator
-                  rows={15}
+                  // paginator
+                  rows={10}
                   rowsPerPageOptions={[15, 25, 50, 100]}
                   tableStyle={{ minWidth: '50rem' }}
-                  value={dataDNInquery}
+                  value={dataSchedules}
                   filterDisplay="row"
                   className="custom-table"
                 >
                   <Column className='' header="No" body={(rowBody, {rowIndex})=>rowIndex+1}></Column>
-                  <Column className='' field='deliveryNotes.dnNumber'  header="DN No"></Column>
-                  <Column className='' field='deliveryNotes.supplierName'  header="Vendor Name" ></Column>
-                  <Column className='' field='deliveryNotes.truckStation'  header="Truck Station" ></Column>
-                  <Column className='' field='deliveryNotes.rit'  header="Rit" ></Column>
-                  <Column className='' field='deliveryNotes.arrivalPlanDate'  header="Plan Date" ></Column>
-                  <Column className='' field='deliveryNotes.arrivalPlanTime'  header="Plan Time" body={plantTimeBodyTemplate} ></Column>
-                  <Column className='' field='deliveryNotes.arrivalActualDate'  header="Arriv. Date" ></Column>
-                  <Column className='' field='deliveryNotes.arrivalActualTime'  header="Arriv. Time" ></Column>
+                  <Column className='' field='dnNumber'  header="DN No"></Column>
+                  <Column className='' field='supplierName'  header="Vendor Name" ></Column>
+                  <Column className='' field='truckStation'  header="Truck Station" ></Column>
+                  <Column className='' field='rit'  header="Rit" ></Column>
+                  <Column className='' field='arrivalPlanDate'  header="Plan Date" ></Column>
+                  <Column className='' field='arrivalPlanTime'  header="Plan Time" body={plantTimeBodyTemplate} ></Column>
+                  <Column className='' field='arrivalActualDate'  header="Arriv. Date" ></Column>
+                  <Column className='' field='arrivalActualTime'  header="Arriv. Time" ></Column>
                   {/* <Column className='' field='deliveryNotes.departureActualDate'  header="Departure Date" /> */}
-                  <Column className='' field='deliveryNotes.departureActualTime'  header="Dept. Time" ></Column>
-                  <Column className='' field='deliveryNotes.status'  header="Status" body={statusVendorBodyTemplate} ></Column>
+                  <Column className='' field='departureActualTime'  header="Dept. Time" ></Column>
+                  <Column className='' field='status'  header="Status" body={statusVendorBodyTemplate} ></Column>
                   <Column className='' field=''  header="Materials" body={materialsBodyTemplate} ></Column>
               
                 </DataTable>
+                <CCol className="d-flex justify-content-center py-3">
+                      <CPagination aria-label="Page navigation">
+                        <CPaginationItem
+                          disabled={currentPage === 1}
+                          onClick={() => setCurrentPage(1)}
+                        >
+                          <FaAnglesLeft/>
+                        </CPaginationItem>
+                        <CPaginationItem
+                          disabled={currentPage === 1}
+                          onClick={() => handlePageChange(currentPage - 1)}
+                        >
+                          <FaChevronLeft/>
+                        </CPaginationItem>
+
+                        {visiblePages.map((page) => (
+                          <CPaginationItem
+                            key={page}
+                            active={currentPage === page}
+                            onClick={() => handlePageChange(page)}
+                          >
+                            {page}
+                          </CPaginationItem>
+                        ))}
+
+                        <CPaginationItem
+                          disabled={currentPage === totalPages}
+                          onClick={() => handlePageChange(currentPage + 1)}
+                        >
+                          <FaChevronRight/>
+                        </CPaginationItem>
+                        <CPaginationItem
+                          disabled={currentPage === totalPages}
+                          onClick={() => setCurrentPage(totalPages)}
+                        >
+                          <FaAnglesRight/>
+                        </CPaginationItem>
+                      </CPagination>
+                    </CCol>
               </CCardBody>
 
             </CCard>
@@ -716,7 +758,7 @@ const Dashboard = () => {
                     scrollable
                     scrollHeight="50vh"
                     showGridlines
-                    paginator
+                    // paginator
                     rows={10}
                     value={dataMaterialsByDNInquery}
                     filterDisplay="row"
@@ -748,7 +790,7 @@ const Dashboard = () => {
             </CCardHeader>
             <CCardBody style={{ overflow: "auto"  }}>
               <CRow>
-                <CCol xl={2} className='d-flex flex-column justify-content-between'>
+                <CCol sm={2} className='d-flex flex-column justify-content-between'>
                   <CCard className="bg-transparent" style={{ border: "1px solid #3D3D3D" }}>
                     <CCardHeader className="text-muted small text-center" style={{ backgroundColor: "#C62300" }}>
                       <h6 style={{ color: "white", fontSize: "12px" }}>DELAYED</h6>
@@ -790,7 +832,7 @@ const Dashboard = () => {
                   </CCard>
                 </CCol>
 
-                <CCol xs={12} sm={7} md={7} xl={10} >
+                <CCol xs={12} sm={10} >
                   <CCard className='p-3'>
                     <CRow>
                       <CCol className='d-flex gap-2 justify-content-end'>
@@ -806,33 +848,6 @@ const Dashboard = () => {
                         height={135} // Tinggi chart
                       />
                     </CRow>
-                    <CCol className="d-flex justify-content-center sticky-pagination">
-                      <CPagination aria-label="Page navigation">
-                        <CPaginationItem
-                          disabled={currentPage === 1}
-                          onClick={() => handlePageChange(currentPage - 1)}
-                        >
-                          Previous
-                        </CPaginationItem>
-
-                        {visiblePages.map((page) => (
-                          <CPaginationItem
-                            key={page}
-                            active={currentPage === page}
-                            onClick={() => handlePageChange(page)}
-                          >
-                            {page}
-                          </CPaginationItem>
-                        ))}
-
-                        <CPaginationItem
-                          disabled={currentPage === totalPages}
-                          onClick={() => handlePageChange(currentPage + 1)}
-                        >
-                          Next
-                        </CPaginationItem>
-                      </CPagination>
-                    </CCol>
                   </CCard>
                 </CCol>
               {/* //untuk tabel */}

@@ -7,7 +7,11 @@ const useReceivingDataService = () => {
 
     const handleError = (error, message) => {
         console.error(message, error)
-        addToast(error.response.data.message, 'danger', 'error')
+        if(error.response.data.message){
+            addToast(error.response.data.message, 'danger', 'error')
+        }else{
+            addToast(error.response.data.error, 'danger', 'error')
+        }
         throw new Error(message + error.message)
       }
 

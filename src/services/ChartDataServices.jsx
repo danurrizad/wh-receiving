@@ -9,7 +9,7 @@ const useChartData = ({dataSchedules, handleClickOpenMaterials}) => {
     const setChartData  = () => {
         // console.log("Current Items Data:", dataSchedules); // Debugging awal
         const labelsVendor = dataSchedules?.map((data) => data.supplierName);
-        console.log("dataSchedules :", dataSchedules)
+        // console.log("dataSchedules :", dataSchedules)
 
         const data = {
             labels: labelsVendor,
