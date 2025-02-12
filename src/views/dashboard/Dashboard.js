@@ -231,11 +231,11 @@ const Dashboard = () => {
       console.log("ori tes from :", queryFilter.rangeDate[0])
       console.log("ori tes to :", queryFilter.rangeDate[1])
 
-      console.log("tes from :", queryFilter.rangeDate[0].toLocaleDateString())
-      console.log("tes to :", queryFilter.rangeDate[1].toLocaleDateString())
+      console.log("tes from :", queryFilter.rangeDate[0].toLocaleDateString('en-GB'))
+      console.log("tes to :", queryFilter.rangeDate[1].toLocaleDateString('en-GB'))
 
-      const [fromDate, fromMonth, fromYear] = queryFilter.rangeDate[0].toLocaleDateString().split("/").map(Number)
-      const [toDate, toMonth, toYear] = queryFilter.rangeDate[1].toLocaleDateString().split("/").map(Number)
+      const [fromDate, fromMonth, fromYear] = queryFilter.rangeDate[0].toLocaleDateString('en-GB').split("/").map(Number)
+      const [toDate, toMonth, toYear] = queryFilter.rangeDate[1].toLocaleDateString('en-GB').split("/").map(Number)
       // const [fromMonth, fromDate, fromYear] = queryFilter.rangeDate[0].toLocaleDateString().split("/").map(Number)
       // const [toMonth, toDate, toYear] = queryFilter.rangeDate[1].toLocaleDateString().split("/").map(Number)
 
