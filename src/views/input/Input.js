@@ -72,15 +72,33 @@ const Input = () => {
     return { date, time };
   };
 
+  function addMinutes(time, minutesToAdd) {
+    const [hours, minutes] = time.split(':').map(Number);
+    const date = new Date();
+    date.setHours(hours, minutes);
+    date.setMinutes(date.getMinutes() + minutesToAdd);
+  
+    // Format the result as HH:mm
+    return date.toTimeString().slice(0, 5);
+  }
+
   const getStatusBasedOnTime = (matchesVendor) => {
-    const { time } = getCurrentDateTime();
+    const { date, time } = getCurrentDateTime();
+    console.log("date now :", date)
+    console.log("date plan :", matchesVendor.arrivalPlanDate)
+    
+    const state = date <= matchesVendor.arrivalPlanDate
+    console.log("state :", state)
+
+    const addedTime = addMinutes(matchesVendor.arrivalPlanTime, 15);
+    console.log("added time plan:", addedTime)
     // console.log("time now :", time)
     // console.log("vendor by dn :", dataVendorByDN)
     // console.log("formInput :", matchesVendor)
     // console.log("departure plan :", matchesVendor.departurePlanTime)
 
     // Compare times
-    if (time <= matchesVendor.departurePlanTime) {
+    if (date <= matchesVendor.arrivalPlanDate && time <= addedTime) {
       return 'on schedule'; // Status if current time is within the range
     } else {
       return 'delayed'; // Status if current time is outside the range
