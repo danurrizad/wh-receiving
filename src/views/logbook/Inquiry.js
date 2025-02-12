@@ -38,7 +38,10 @@ const Book = () => {
   const [queryFilter, setQueryFilter] = useState({
     plantId: "",
 
-    rangeDate: [new Date('2025-01-01'), new Date('2025-01-30')],
+    rangeDate: [
+      new Date(), 
+      new Date()
+    ],
     global: { value: null, matchMode: FilterMatchMode.CONTAINS },
   })
 
