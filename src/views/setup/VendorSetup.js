@@ -299,6 +299,7 @@ const VendorSetup = () => {
           // addToast(TemplateToast("success", "success", response.message))
           addToast("File uploaded", 'success', 'success')
 
+
         } catch (error) {
           console.log("Error response upload :", error)          
         } finally{
@@ -307,8 +308,16 @@ const VendorSetup = () => {
       }
 
       const formatTime = (dateStr) => {
+        return dateStr.split("T")[1].slice(0, 5); 
+
         const date = new Date(dateStr);
-        return date.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+        // return date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+
+        return date.toLocaleTimeString('id-ID', { 
+          hour: '2-digit', 
+          minute: '2-digit', 
+          timeZone: 'Asia/Jakarta'
+        });
       };
 
   

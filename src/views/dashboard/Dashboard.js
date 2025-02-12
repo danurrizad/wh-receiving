@@ -124,7 +124,7 @@ const Dashboard = () => {
   const [queryFilter, setQueryFilter] = useState({
     plantId: "",
     rangeDate: [
-      new Date(new Date().setHours(0, 0, 0, 0)),  // Today at 00:00
+      new Date(new Date().setHours(0, 0, 0, 1)),  // Today at 00:00
       new Date(new Date().setHours(23, 59, 59, 999))  // Today at 23:59
     ],
     global: { value: null, matchMode: FilterMatchMode.CONTAINS },
@@ -228,15 +228,22 @@ const Dashboard = () => {
 
   const fetchChartReceivingData = async (status, currentPage,limit=12) => {
     try {
+      console.log("tes from :", queryFilter.rangeDate[0].toLocaleDateString())
+      console.log("tes to :", queryFilter.rangeDate[1].toLocaleDateString())
+
+      const [fromYear, fromMonth, fromDate] = queryFilter.rangeDate[0].toLocaleDateString().split("/").map(Number)
+      const [toYear, toMonth, toDate] = queryFilter.rangeDate[1].toLocaleDateString().split("/").map(Number)
+
+      const formattedFrom = `${fromYear}-${fromMonth}-${fromDate}`
+      const formattedTo = `${toYear}-${toMonth}-${toDate}`
+
       const response = await getChartReceiving(
         queryFilter.plantId, 
         status !== null ? status?.value : "", // status kosong
         "", // vendor kosong
-        queryFilter.rangeDate[0]?.toISOString().split("T")[0], 
-        queryFilter.rangeDate[1]?.toISOString().split("T")[0],
-        currentPage,
-        limit
-
+        formattedFrom, 
+        formattedTo,
+        currentPage
       );
       console.log("response fetchChartReceiving :", response)
       if (response) {
@@ -627,7 +634,7 @@ const Dashboard = () => {
                       setQueryFilter({ 
                         ...queryFilter, 
                         rangeDate: [
-                          new Date(e[0].setHours(0, 0, 0, 0)), 
+                          new Date(e[0].setHours(0, 0, 0, 1)), 
                           new Date(e[1].setHours(23, 59, 59, 59))
                         ]
                       })

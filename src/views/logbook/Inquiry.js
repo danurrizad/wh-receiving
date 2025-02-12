@@ -100,10 +100,16 @@ const Book = () => {
       setLoading(true)
       const idPlant = getPlantId(plantId)
       if(startDate !== null && endDate !== null) {
-        const formattedStart = startDate.toISOString().split('T')[0]
-        const formattedTo = endDate.toISOString().split('T')[0]
+        // const formattedStart = startDate.toISOString().split('T')[0]
+        // const formattedTo = endDate.toISOString().split('T')[0]
+
+        const [fromYear, fromMonth, fromDate] = startDate.toLocaleDateString().split("/").map(Number)
+        const [toYear, toMonth, toDate] = endDate.toLocaleDateString().split("/").map(Number)
+
+        const formattedFrom = `${fromYear}-${fromMonth}-${fromDate}`
+        const formattedTo = `${toYear}-${toMonth}-${toDate}`
         
-        const response = await getDNInqueryData(idPlant, formattedStart, formattedTo) 
+        const response = await getDNInqueryData(idPlant, formattedFrom, formattedTo) 
         // console.log("response :", response.data.data)
         setDataDNInquery(response.data.data)
       }else{
@@ -384,7 +390,7 @@ const handleSubmitChangeQty = (rowIndex, rowData) => {
             preConfirm: async () => {
               try {
                 const response = await submitUpdateMaterialByDNData(warehouseId, formBody)
-                await getMaterialByDN(formUpdate.dnNumber)
+                // await getMaterialByDN(formUpdate.dnNumber)
                 return "Material quantities updated!"
               } catch (error) {
                 console.warn("ERROR :", error)
