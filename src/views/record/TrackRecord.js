@@ -43,7 +43,7 @@ const TrackRecord = () => {
               backgroundSize: "cover",
               backgroundPosition: "center",
               color: "white",
-              minHeight: "200px",}}>
+              minHeight: "53rem",}}>
             <CCardHeader style={{backgroundColor: "#6482AD", color: "white", textAlign: "center"}}>
               <CCardTitle>Vendor Queue</CCardTitle>
             </CCardHeader>
@@ -51,29 +51,27 @@ const TrackRecord = () => {
           <CRow className='mb-2'>
                 <CCol md='12'>
                 <div style={{ display: "flex",flexDirection: "column", justifyContent: "center", alignItems: "center", flex: 1 }}>
-                    <span style={{ fontSize: "1rem", fontWeight: "lighter" }}>
+                    <span style={{ fontSize: "0.8rem", fontWeight: "lighter" }}>
                         Queue Number
                     </span>
-                    <br />
-                    <span style={{ fontSize: "6.7rem" }}>01</span>
+                    <span className="fw-bold" style={{ fontSize: "8rem" }}>01</span>
                  </div>
                 <div style={{ display: "flex",flexDirection: "column", justifyContent: "center", alignItems: "center", flex: 1 }}>
                <span style={{ fontSize: '1rem', fontWeight: 'lighter' }}>
                 Vendor Name
                </span>
-               <br />
                
-               <span style={{ fontSize: '3.8rem' }}>
+               <span className="fw-bold" style={{ fontSize: "4rem" }}>
                 KANSAI PAINT INDONESIA SEJAHTERA
-               </span>
+                </span>
+
                </div>
                <br />
                <div style={{ display: "flex",flexDirection: "column", justifyContent: "center", alignItems: "center", flex: 1 }}>
-               <span style={{ fontSize: '1rem', fontWeight: 'lighter' }}>
+               <span  style={{ fontSize: '1rem', fontWeight: 'lighter' }}>
                Estimated Remaining Time
                </span>
-               <br />
-                  <span style={{ fontSize: "5.8rem" }}>00:04:26</span>
+                  <span  className="fw-bold" style={{ fontSize: "6rem" }}>00:04:26</span>
                </div>
                </CCol>
                 </CRow>

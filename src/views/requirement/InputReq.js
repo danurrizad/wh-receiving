@@ -22,8 +22,8 @@ const Input = () => {
   const { getMaterialByDNData, submitMaterialByDNData } = useReceivingDataService()
 
   return (
-    <CContainer>
-    <CRow className="d-flex justify-content-center" style={{ paddingTop: "60px" }}>
+    <>
+    <div style={{ marginTop: "50px" }}>
           <CCard className='p-0' style={{ border: "1px solid #6482AD"}}>
             <CCardHeader style={{backgroundColor: "#6482AD", color: "white", textAlign: "center"}}>
               <CCardTitle>VENDOR REQUREMENTS</CCardTitle>
@@ -48,7 +48,7 @@ const Input = () => {
           </CRow>
           <CRow>
           <CCol md='12'>
-          <CCard  style={{ backgroundColor: '#F7F7F7', color: 'black', minHeight: '200px'}}>
+          <CCard  style={{ backgroundColor: '#F7F7F7', color: 'black', minHeight: '240px'}}>
           <CCardBody className='d-flex align-items-center justify-content-center gap-3'>
           <div className='d-flex align-items-center justify-content-center gap-3'>
           <CCardText className='fs-1 fw-bold'>
@@ -67,9 +67,8 @@ const Input = () => {
           </CRow>
             </CCardBody>
           </CCard>
-          </CRow>
-
-         <CRow className='mt-2' style={{ paddingTop: "150px" }}>
+          </div>
+          <div style={{ marginTop: "90px" }}>
         <CCard >
         <CCardHeader style={{backgroundColor: "#6482AD", color: "white", textAlign: "center"}}>
         <CCardTitle> INPUT VENDOR REQUREMENTS</CCardTitle>
@@ -170,7 +169,7 @@ const Input = () => {
                 <span>(Silahkan lengkapi identitas Anda)</span>
                 <CRow>
                 <CCol md='5'>
-                 <CFormText className='px-3'>Vendor Name</CFormText>
+                 <CFormText className='px-3'>Apakah Anda Membawa SIM?</CFormText>
                 <CFormInput 
                   type='text'
                   inputMode='numeric'
@@ -179,7 +178,7 @@ const Input = () => {
                  
                 </CCol>
                 <CCol md='5'>
-                 <CFormText className='px-3'>Truck Station</CFormText>
+                 <CFormText className='px-3'>Berapa Jangka Waktu SIM Anda?</CFormText>
                 <CFormInput 
                   type='text'
                   inputMode='numeric'
@@ -190,11 +189,11 @@ const Input = () => {
              </CRow>
              <hr/>
               <CRow className='mb-2'>
-                <span className='fs-5 fw-bold'>Identitas  Driver</span>
+                <span className='fs-5 fw-bold'></span>
                 <span>(Silahkan lengkapi identitas Anda)</span>
                 <CRow>
                 <CCol md='5'>
-                 <CFormText className='px-3'>Nama Driver</CFormText>
+                 <CFormText className='px-3'>Apakah Anda Membawa STNK</CFormText>
                 <CFormInput 
                   type='text'
                   inputMode='numeric'
@@ -203,10 +202,10 @@ const Input = () => {
                  
                 </CCol>
                 <CCol md='3'>
-                 <CFormText className='px-3'>Apakah Anda Dalam Kondisi Sehat?</CFormText>
+                 <CFormText className='px-3'>STNK Anda dalam kondisi pajak ?</CFormText>
                  <div>
-                 <CButton color="success" variant="ghost">Yes</CButton>
-                 <CButton color="danger" variant="ghost">No</CButton>
+                 <CButton color="success" variant="ghost">Hidup</CButton>
+                 <CButton color="danger" variant="ghost">Mati</CButton>
                  </div>
                 </CCol>
                 <CCol md='4'>
@@ -342,11 +341,8 @@ const Input = () => {
             </CRow>
             </CCardBody>
             </CCard>
-            </CRow>
-            </CContainer>
-      
-       
-         
+            </div>
+            </>   
 
   )
 }
