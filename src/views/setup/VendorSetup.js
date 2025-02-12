@@ -59,7 +59,7 @@ const VendorSetup = () => {
       const [formModal, setFormModal] = useState({})
       const [formModalId, setFormModalId] = useState()
 
-      const [date, setDate] = useState(new Date().toLocaleDateString('en-CA'))
+      const [date, setDate] = useState(new Date().toLocaleDateString('en-GB'))
       const [loadingImport, setLoadingImport] = useState(false)
       const [uploadData, setUploadData] = useState({
         file: null,

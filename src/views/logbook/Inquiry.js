@@ -103,8 +103,8 @@ const Book = () => {
         // const formattedStart = startDate.toISOString().split('T')[0]
         // const formattedTo = endDate.toISOString().split('T')[0]
 
-        const [fromYear, fromMonth, fromDate] = startDate.toLocaleDateString().split("/").map(Number)
-        const [toYear, toMonth, toDate] = endDate.toLocaleDateString().split("/").map(Number)
+        const [fromDate, fromMonth, fromYear] = startDate.toLocaleDateString('en-GB').split("/").map(Number)
+        const [toDate, toMonth, toYear] = endDate.toLocaleDateString('en-GB').split("/").map(Number)
 
         const formattedFrom = `${fromYear}-${fromMonth}-${fromDate}`
         const formattedTo = `${toYear}-${toMonth}-${toDate}`
