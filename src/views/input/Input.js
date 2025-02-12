@@ -260,7 +260,9 @@ const Input = () => {
       ),
       status: prevState.status.map((value, index) => 
         index === rowIndex.rowIndex && newRemainQty === 0 ? "completed" : 
-        index === rowIndex.rowIndex && newRemainQty === rowData.remain ? "not complete" : 
+        index === rowIndex.rowIndex && rowData.remain === null ? "not complete" : 
+        index === rowIndex.rowIndex && newRemainQty === rowData.remain ? "partial" : 
+        // index === rowIndex.rowIndex && newRemainQty === rowData.remain ? "partial" : 
         index === rowIndex.rowIndex && newRemainQty !== rowData.remain && newRemainQty < 0 ? "partial" : 
         index === rowIndex.rowIndex && newRemainQty !== rowData.remain && newRemainQty > 0 ? "completed" : 
         value
@@ -595,7 +597,6 @@ const Input = () => {
     if(!stateVendorArrived){
       const remaining = dataMaterialsByDN.length - selectedRows.length
       setConfirmedRemaining(remaining)
-      addToast("here")
     }
   }, [selectedRows])
 
