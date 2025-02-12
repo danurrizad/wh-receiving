@@ -27,6 +27,8 @@ const Input = () => {
   const [dataVendorByDN, setDataVendorByDN] = useState([])
   const [dataMaterialsByDN, setDataMaterialsByDN] = useState([])
   const [stateVendorArrived, setStateVendorArrived] = useState(false)
+  const [selectedRows, setSelectedRows] = useState([])
+  const [confirmedRemaining, setConfirmedRemaining] = useState(0)
 
   const [selectedRit, setSelectedRit] = useState(0)
   const [formInput, setFormInput] = useState({
@@ -70,11 +72,15 @@ const Input = () => {
     return { date, time };
   };
 
-  const getStatusBasedOnTime = () => {
+  const getStatusBasedOnTime = (matchesVendor) => {
     const { time } = getCurrentDateTime();
-  
+    // console.log("time now :", time)
+    // console.log("vendor by dn :", dataVendorByDN)
+    // console.log("formInput :", matchesVendor)
+    // console.log("departure plan :", matchesVendor.departurePlanTime)
+
     // Compare times
-    if (time <= dataVendorByDN.departurePlanTime) {
+    if (time <= matchesVendor.departurePlanTime) {
       return 'on schedule'; // Status if current time is within the range
     } else {
       return 'delayed'; // Status if current time is outside the range
@@ -120,6 +126,7 @@ const Input = () => {
     setQtyEachMaterials({})
     setRemainQty({})
     setStateVendorArrived(false)
+    setSelectedRows([])
   }
 
   const handleOnEnterInputDN = async(e) => {
@@ -156,27 +163,30 @@ const Input = () => {
         const responseDN = response.data.data[0].deliveryNotes
         const responseVendor = response.data.data[0].vendorSchedules
         const responseStateArrived = response.data.viewOnly
-        
         console.log("Response:", response.data)
+        console.log("Response Status:", responseDN.map((data)=>data.status))
         // console.log("Response DN:", responseDN)
-        // console.log("Response Vendor:", responseVendor)
+        console.log("Response Vendor:", responseVendor)
         console.log("Response State Arrived:", responseStateArrived)
-  
+        
         setDataMaterialsByDN(responseDN)
         setDataVendorByDN(responseVendor)
         setQtyEachMaterials({
           incomingId: responseDN.map((data) => Number(data.incomingId)),
-          // qty: responseDN.map((data) => data.receivedQuantity === null ? "" : data.receivedQuantity),
-          qty: responseDN.map((data) => data.receivedQuantity),
+          qty: responseDN.map((data) => data.receivedQuantity === null ? data.reqQuantity : data.receivedQuantity),
+          // qty: responseDN.map((data) => data.reqQuantity),
         });
         setRemainQty({
-          qty: responseDN.map((data)=> Number(data.remain)),
-          status: responseDN.map((data)=>data.status)
+          qty: responseDN.map((data)=> ""),
+          status: responseDN.map((data)=>data.status === 'not complete' ? "" : data.status )
         })
         setStateVendorArrived(responseStateArrived)
-  
+        
         if(responseStateArrived){
           setSelectedRit(1)
+          setConfirmedRemaining(0)
+        } else{
+          setConfirmedRemaining(responseDN.length)
         }
       }else{
         addToast("Invalid DN Number!", 'danger', 'error')
@@ -196,8 +206,8 @@ const Input = () => {
   const getArrivalNow = (rit) => {
     setLoading(true)
     const { date, time } = getCurrentDateTime();
-    const statusSchedule = getStatusBasedOnTime()
     const matchesVendor = dataVendorByDN.find((data)=> data.rit === rit)
+    const statusSchedule = getStatusBasedOnTime(matchesVendor)
     // console.log("MATCHES :", matchesVendor)
     setFormInput({ 
       ...formInput, 
@@ -255,8 +265,15 @@ const Input = () => {
         index === rowIndex.rowIndex && newRemainQty !== rowData.remain && newRemainQty > 0 ? "completed" : 
         value
       )
-    }));
+    }))
+
+    const alreadySelected = selectedRows.find((rows)=>rows.incomingId === rowData.incomingId)
+    if(!alreadySelected){
+      setSelectedRows([...selectedRows, rowData])
+    }
   }
+
+
 
   const handleInputChangeQty = (rowIndex, rowData, eValue) => {
     setQtyEachMaterials((prevState) => ({
@@ -366,6 +383,9 @@ const Input = () => {
             const response = await submitMaterialByDNData(warehouseId, formBody)
             console.log("Response submit :", response)
             await getMaterialByDN(formBody.dnNumber)
+            setFormInput({...formInput, rit: 0})
+            setSelectedRows([])
+            setConfirmedRemaining(0)
             // return response.data.message
             return "Material quantities received!"
           } catch (error) {
@@ -416,6 +436,7 @@ const Input = () => {
             remainQty.status[indexMaterial] === "not complete" ? "NOT DELIVERED" : 
             remainQty.status[indexMaterial] === "partial" ? "NOT COMPLETED" : 
             remainQty.status[indexMaterial] === "completed" ? "COMPLETED" : 
+            remainQty.status[indexMaterial] === "" ? "" : 
             "COMPLETED"
           } 
           placement="top"
@@ -424,6 +445,7 @@ const Input = () => {
             { remainQty.status[indexMaterial] === "not complete" ? <FaCircleXmark style={{ color: "#FF0000", fontSize: "24px"}}/> : 
               remainQty.status[indexMaterial] === "partial" ? <FaCircleExclamation style={{ color: "#FFD43B", fontSize: "24px"}}/> : 
               remainQty.status[indexMaterial] === "completed" ? <FaCircleCheck style={{ color: "#00DB42", fontSize: "24px"}}/> : 
+              remainQty.status[indexMaterial] === "" ? "-" : 
               <FaCircleCheck style={{ color: "#00DB42", fontSize: "24px"}}/>
             }
             
@@ -457,7 +479,9 @@ const Input = () => {
   const renderArrivalTimePlan = () => {
     const arrivedVendor = dataVendorByDN.find((data)=>data.status!=='schedule plan')
     return(
-      arrivedVendor ? arrivedVendor.arrivalPlanTime : formInput.arrival_time_plan !== "" ? formInput?.arrival_time_plan : " -"
+      arrivedVendor ? `${arrivedVendor.arrivalPlanTime} - ${arrivedVendor.departurePlanTime}` 
+      : formInput.arrival_time_plan !== "" ? `${formInput?.arrival_time_plan} - ${formInput?.departure_time_plan}` 
+      : " -"
     )
   }
 
@@ -505,6 +529,75 @@ const Input = () => {
       </div>
     )
   }
+
+  const handleSelectRow = (e) => {
+    if(formInput.rit){
+      // console.log("selected row:", e)
+      setSelectedRows(e.value)
+
+      // const remainInData = e.value.remain
+      // const reqQty = rowData.reqQuantity
+      // const inputAct = Number(qtyEachMaterials.qty[rowIndex.rowIndex])
+      // const newRemainQty = inputAct - reqQty
+
+      // setRemainQty((prevState) => ({
+      //   ...prevState,
+      //   qty: prevState.qty.map((value, index) =>
+      //     index === rowIndex.rowIndex ? Number(newRemainQty) : value
+      //   ),
+      //   status: prevState.status.map((value, index) => 
+      //     index === rowIndex.rowIndex && newRemainQty === 0 ? "completed" : 
+      //     index === rowIndex.rowIndex && newRemainQty === rowData.remain ? "not complete" : 
+      //     index === rowIndex.rowIndex && newRemainQty !== rowData.remain && newRemainQty < 0 ? "partial" : 
+      //     index === rowIndex.rowIndex && newRemainQty !== rowData.remain && newRemainQty > 0 ? "completed" : 
+      //     value
+      //   )
+      // }))
+
+      // const remaining = dataMaterialsByDN.length - e.value.length
+      // setConfirmedRemaining(Number(remaining))
+      // const alreadySelected = selectedRows.find((rows,index)=>rows.incomingId === e.value[index].incomingId)
+      // // console.log("alreadySelected :", alreadySelected)
+      // // console.log("SELECTEDROWS: ", selectedRows)
+      // if(!alreadySelected){
+      //   setConfirmedRemaining(confirmedRemaining-1)
+      // }
+    }
+  }
+
+  const onRowSelect = (e) =>{
+    console.log(e.data)
+    console.log("qtyEachMaterials: ", qtyEachMaterials.incomingId)
+    const indexRow = qtyEachMaterials.incomingId.indexOf(e.data.incomingId)
+    console.log("indexRow :", indexRow)
+    
+    //   const remainInData = e.value.remain
+      const reqQty = e.data.reqQuantity
+      const inputAct = Number(qtyEachMaterials.qty[indexRow])
+      const newRemainQty = inputAct - reqQty
+
+      setRemainQty((prevState) => ({
+        ...prevState,
+        qty: prevState.qty.map((value, index) =>
+          index === indexRow ? Number(newRemainQty) : value
+        ),
+        status: prevState.status.map((value, index) => 
+          index === indexRow && newRemainQty === 0 ? "completed" : 
+          index === indexRow && newRemainQty === e.data.remain ? "not complete" : 
+          index === indexRow && newRemainQty !== e.data.remain && newRemainQty < 0 ? "partial" : 
+          index === indexRow && newRemainQty !== e.data.remain && newRemainQty > 0 ? "completed" : 
+          value
+        )
+      }))
+  }
+
+  useEffect(()=>{
+    if(!stateVendorArrived){
+      const remaining = dataMaterialsByDN.length - selectedRows.length
+      setConfirmedRemaining(remaining)
+      addToast("here")
+    }
+  }, [selectedRows])
 
   return (
     <CContainer fluid>
@@ -621,9 +714,26 @@ const Input = () => {
                 </CCol>
               </CRow>
               <CRow className='mt-4'>
+                <h5>Confirmed Remaining : {confirmedRemaining}</h5>
+              </CRow>
+              <CRow className='mt-1'>
                   
                   {/* Table */}
-                  <DataTable className='p-datatable-gridlines p-datatable-sm custom-datatable text-nowrap' size='small' showGridlines stripedRows value={dataMaterialsByDN} paginator rows={10} dataKey="materialNo" emptyMessage={renderCustomEmptyMsg}>
+                  <DataTable 
+                    className='p-datatable-gridlines p-datatable-sm custom-datatable text-nowrap' 
+                    size='small'  
+                    showGridlines 
+                    stripedRows 
+                    value={dataMaterialsByDN} 
+                    paginator 
+                    rows={10} 
+                    dataKey="materialNo" 
+                    emptyMessage={renderCustomEmptyMsg}
+                    selectionMode={formInput.rit ? "multiple" : undefined} 
+                    selection={selectedRows} 
+                    onSelectionChange={handleSelectRow}
+                    onRowSelect={onRowSelect}
+                  >
                       <Column className='' field="" header="No" body={(rowData, { rowIndex }) => rowIndex + 1}/>
                       <Column className='' field='materialNo' header="Material No"  />
                       <Column className='' field='description' header="Material Description"  />
@@ -640,7 +750,8 @@ const Input = () => {
                 <CCol xs='auto'>
                   { stateVendorArrived ? <CButton style={{ backgroundColor: "#758694"}} className='text-white' onClick={handleClearInputDN}>Clear</CButton> 
                       : 
-                  <CButton disabled={formInput.rit === 0 || qtyEachMaterials?.qty?.filter((data)=>data===null).length > 0} style={{ backgroundColor: "#5B913B"}} className='text-white' onClick={handleSubmitMaterials}>Submit</CButton>
+                  // <CButton disabled={formInput.rit === 0 || qtyEachMaterials?.qty?.filter((data)=>data===null).length > 0} style={{ backgroundColor: "#5B913B"}} className='text-white' onClick={handleSubmitMaterials}>Submit</CButton>
+                  <CButton disabled={formInput.rit === 0 || confirmedRemaining !== 0} style={{ backgroundColor: "#5B913B"}} className='text-white' onClick={handleSubmitMaterials}>Submit</CButton>
                         }
                 </CCol>
               </CRow>

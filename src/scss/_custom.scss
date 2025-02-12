@@ -243,3 +243,9 @@ td input.p-inputtext.p-component {
 .page-item:last-child .page-link{
   border-radius: 10px;
 }
+
+.p-datatable .p-datatable-tbody > tr.p-highlight, .p-datatable.p-datatable-striped .p-datatable-tbody > tr.p-row-odd.p-highlight{
+  background-color: rgba(100, 130, 173, 0.66);
+  color: black;
+}
+
