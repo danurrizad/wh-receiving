@@ -105,6 +105,7 @@ const Dashboard = () => {
   const [isVisible, setIsVisible] = useState(true); // State to control visibility
   const [ dataDNInquery, setDataDNInquery ] = useState([])
    const [totalPages, setTotalPages] = useState(1);
+   const [limitPerPage, setLimitPerPage] = useState({name: 10, code: 10})
    const [isFilterVisible, setIsFilterVisible] = useState(false);
    const vendorScheduleRef = useRef(null);
    const [ showModalInput, setShowModalInput] = useState({
@@ -226,23 +227,13 @@ const Dashboard = () => {
     setVisiblePages(pages)
   }, [currentPage, totalPages])
 
-  const fetchChartReceivingData = async (status, currentPage,limit=12) => {
+  const fetchChartReceivingData = async (status, currentPage, limitPerPage) => {
     try {
-      console.log("ori tes from :", queryFilter.rangeDate[0])
-      console.log("ori tes to :", queryFilter.rangeDate[1])
-
-      console.log("tes from :", queryFilter.rangeDate[0].toLocaleDateString('en-GB'))
-      console.log("tes to :", queryFilter.rangeDate[1].toLocaleDateString('en-GB'))
-
       const [fromDate, fromMonth, fromYear] = queryFilter.rangeDate[0].toLocaleDateString('en-GB').split("/").map(Number)
       const [toDate, toMonth, toYear] = queryFilter.rangeDate[1].toLocaleDateString('en-GB').split("/").map(Number)
-      // const [fromMonth, fromDate, fromYear] = queryFilter.rangeDate[0].toLocaleDateString().split("/").map(Number)
-      // const [toMonth, toDate, toYear] = queryFilter.rangeDate[1].toLocaleDateString().split("/").map(Number)
 
       const formattedFrom = `${fromYear}-${fromMonth}-${fromDate}`
       const formattedTo = `${toYear}-${toMonth}-${toDate}`
-      console.log("tes formattedFrom :", formattedFrom)
-      console.log("tes formattedTo :", formattedTo)
 
       const response = await getChartReceiving(
         queryFilter.plantId, 
@@ -250,7 +241,8 @@ const Dashboard = () => {
         "", // vendor kosong
         formattedFrom, 
         formattedTo,
-        currentPage
+        currentPage,
+        limitPerPage
       );
       console.log("response fetchChartReceiving :", response)
       if (response) {
@@ -272,27 +264,26 @@ const Dashboard = () => {
     }
   };
   
+  // auto fetch in every 10 seconds
   useEffect(() => {
-    // setInterval(()=>{
-      // console.log("data chart:", dataSchedules)
-      // console.log("currentPage:", currentPage)
-      // console.log("totalPage:", totalPages)
-      // console.log("status:", selectedStatus)
-      // addToast("fetched", 'info', 'info')
-      fetchChartReceivingData(selectedStatus, currentPage);
-    // }, 10000)
+    const intervalId = setInterval(() => {
+      fetchChartReceivingData(selectedStatus, currentPage, limitPerPage.code);
+    }, 10000);
+  
+    return () => clearInterval(intervalId); // Cleanup on unmount
+  }, [selectedStatus, currentPage, limitPerPage]); 
+
+  useEffect(() => {
+      fetchChartReceivingData(selectedStatus, currentPage, limitPerPage.code);
   }, [queryFilter.plantId, queryFilter.rangeDate, currentPage]);
 
-  useEffect(()=> {
-    fetchChartReceivingData(selectedStatus, 1)
-  }, [selectedStatus])
+ 
 
   const currentItemDashboard = dataSchedules.slice(indexOfFirstItem, indexOfLastItem);
   // console.log("Current Dashboard Data:", currentItemDashboard); // Ensure data is sliced correctly
 
   useEffect(()=>{
     setCurrentItems(dataSchedules.slice(indexOfFirstItem, indexOfLastItem))
-    // console.log("SLICING :", dataSchedules.slice(indexOfFirstItem, indexOfLastItem))
   }, [currentPage])
 
   const handleClickOpenMaterials = (data) => {
@@ -331,6 +322,7 @@ const Dashboard = () => {
     console.log(selectedOption)
     const status = selectedOption !== null ? selectedOption.value : ""; // Jika tidak ada status, kirim ""
     setSelectedStatus(selectedOption); // Update state
+    fetchChartReceivingData(selectedOption, 1, limitPerPage.code)
     console.log("Fetching chart data with status:", status);
   
     // try {
@@ -462,12 +454,6 @@ const Dashboard = () => {
             </div>
           )
         }
-
-        const handlePageChange = (pageNumber) => {
-          setCurrentPage(pageNumber); // Update current page
-          fetchChartReceivingData(selectedStatus.value, pageNumber); // Fetch data for the selected page
-        };
-        
 
         const selectStyles = {
           placeholder: (base) => ({
@@ -683,45 +669,69 @@ const Dashboard = () => {
                   <Column className='' field=''  header="Materials" body={materialsBodyTemplate} ></Column>
               
                 </DataTable>
-                <CCol className="d-flex justify-content-center py-3">
-                      <CPagination aria-label="Page navigation">
-                        <CPaginationItem
-                          disabled={currentPage === 1}
-                          onClick={() => setCurrentPage(1)}
-                        >
-                          <FaAnglesLeft/>
-                        </CPaginationItem>
-                        <CPaginationItem
-                          disabled={currentPage === 1}
-                          onClick={() => handlePageChange(currentPage - 1)}
-                        >
-                          <FaChevronLeft/>
-                        </CPaginationItem>
+                <CCol className="d-flex justify-content-center py-3" style={{ position: "relative" }}>
+                  <CPagination aria-label="Page navigation">
+                    <CPaginationItem
+                      disabled={currentPage === 1}
+                      onClick={() => setCurrentPage(1)}
+                    >
+                      <FaAnglesLeft/>
+                    </CPaginationItem>
+                    <CPaginationItem
+                      disabled={currentPage === 1}
+                      onClick={() => setCurrentPage(currentPage - 1)}
+                    >
+                      <FaChevronLeft/>
+                    </CPaginationItem>
 
-                        {visiblePages.map((page) => (
-                          <CPaginationItem
-                            key={page}
-                            active={currentPage === page}
-                            onClick={() => handlePageChange(page)}
-                          >
-                            {page}
-                          </CPaginationItem>
-                        ))}
+                    {visiblePages.map((page) => (
+                      <CPaginationItem
+                        key={page}
+                        active={currentPage === page}
+                        onClick={() => {
+                          console.log("page:", page)
+                          setCurrentPage(page)
+                        }}
+                      >
+                        {page}
+                      </CPaginationItem>
+                    ))}
 
-                        <CPaginationItem
-                          disabled={currentPage === totalPages}
-                          onClick={() => handlePageChange(currentPage + 1)}
-                        >
-                          <FaChevronRight/>
-                        </CPaginationItem>
-                        <CPaginationItem
-                          disabled={currentPage === totalPages}
-                          onClick={() => setCurrentPage(totalPages)}
-                        >
-                          <FaAnglesRight/>
-                        </CPaginationItem>
-                      </CPagination>
-                    </CCol>
+                    <CPaginationItem
+                      disabled={currentPage === totalPages}
+                      onClick={() => {
+                        console.log("currentPage in pagination:", currentPage)
+                        setCurrentPage(currentPage + 1)
+                      }}
+                    >
+                      <FaChevronRight/>
+                    </CPaginationItem>
+                    <CPaginationItem
+                      disabled={currentPage === totalPages}
+                      onClick={() => setCurrentPage(totalPages)}
+                    >
+                      <FaAnglesRight/>
+                    </CPaginationItem>
+                  </CPagination>
+               
+                  <div style={{ position: "absolute", right: "30%"}}>
+                    <Dropdown 
+                      value={limitPerPage} 
+                      onChange={(e) => {
+                        fetchChartReceivingData(selectedStatus, 1, e.value.code)
+                        setLimitPerPage(e.value)
+                      }} 
+                      options={[
+                        {name: 10, code: 10},
+                        {name: 25, code: 25},
+                        {name: 50, code: 50},
+                      ]} 
+                      optionLabel="name" 
+                      // placeholder="Select a City" 
+                      className="w-full md:w-14rem" 
+                    />
+                  </div>
+                </CCol>
               </CCardBody>
 
             </CCard>
@@ -838,11 +848,11 @@ const Dashboard = () => {
                         <h6><CBadge color="danger">ARRIVAL DELAYED</CBadge></h6>
                       </CCol>
                     </CRow>
-                    <CRow>
+                    <CRow className='' style={{ overflow: "auto", height: "100%"}}>
                       <Bar 
                         options={getChartOption()} 
                         data={setChartData()} 
-                        height={135} // Tinggi chart
+                        // maxHeight={135} // Tinggi chart
                       />
                     </CRow>
                   </CCard>

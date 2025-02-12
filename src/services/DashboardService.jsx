@@ -7,7 +7,7 @@ const useDashboardReceivingService = () => {
 
     const handleError = (error, message) => {
         console.error(message, error)
-        addToast(error.response.data.message, 'danger', 'error')
+        addToast(error.response.data.error, 'danger', 'error')
         throw new Error(message + error.message)
       }
 
@@ -25,7 +25,7 @@ const useDashboardReceivingService = () => {
         try {
         const response =  await axiosJWT.get
         (`/arrival-chart?plantId=${plant}&status=${status}&vendorId=${vendor}&startDate=${startdate}&endDate=${enddate}&page=${page}&limit=${limit}`) 
-        console.log("params in service: ", plant,status,vendor,startdate,enddate,page)
+        console.log("params in service: ", plant,status,vendor,startdate,enddate,page,limit)
             return response.data; 
     } catch (error) {
         handleError(error, "Error fetching chart data:");
