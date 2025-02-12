@@ -73,6 +73,7 @@ const VendorSetup = () => {
         try {
           setLoading(true)
           const response = await getScheduleAllData(plantId, day)
+          // console.log("response schedule all:", response)
           setDataSchedule(response.data.data)
         } catch (error) {
           console.error(error)
@@ -110,7 +111,7 @@ const VendorSetup = () => {
         { value: 5, label: 'Friday' },
         { value: 6, label: 'Saturday'},
       ]
-      const [selectedOptionsDay, setSelectedOptionsDay] = useState("") 
+      const [selectedOptionsDay, setSelectedOptionsDay] = useState(new Date().getDay()) 
       
       const getDays = (day) => {
         switch (day) {
@@ -168,7 +169,7 @@ const VendorSetup = () => {
       const getOptionsSupplier = async() => {
         try {
           const response = await getMasterData('supplier-public')
-          console.log(response)
+          // console.log(response)
           setOptionsSupplier({
             ...optionsSupplier,
             list: response.data.map((data)=>{
