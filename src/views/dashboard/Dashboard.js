@@ -228,11 +228,16 @@ const Dashboard = () => {
 
   const fetchChartReceivingData = async (status, currentPage,limit=12) => {
     try {
+      console.log("ori tes from :", queryFilter.rangeDate[0])
+      console.log("ori tes to :", queryFilter.rangeDate[1])
+
       console.log("tes from :", queryFilter.rangeDate[0].toLocaleDateString())
       console.log("tes to :", queryFilter.rangeDate[1].toLocaleDateString())
 
-      const [fromMonth, fromDate, fromYear] = queryFilter.rangeDate[0].toLocaleDateString().split("/").map(Number)
-      const [toMonth, toDate, toYear] = queryFilter.rangeDate[1].toLocaleDateString().split("/").map(Number)
+      const [fromDate, fromMonth, fromYear] = queryFilter.rangeDate[0].toLocaleDateString().split("/").map(Number)
+      const [toDate, toMonth, toYear] = queryFilter.rangeDate[1].toLocaleDateString().split("/").map(Number)
+      // const [fromMonth, fromDate, fromYear] = queryFilter.rangeDate[0].toLocaleDateString().split("/").map(Number)
+      // const [toMonth, toDate, toYear] = queryFilter.rangeDate[1].toLocaleDateString().split("/").map(Number)
 
       const formattedFrom = `${fromYear}-${fromMonth}-${fromDate}`
       const formattedTo = `${toYear}-${toMonth}-${toDate}`
