@@ -231,11 +231,13 @@ const Dashboard = () => {
       console.log("tes from :", queryFilter.rangeDate[0].toLocaleDateString())
       console.log("tes to :", queryFilter.rangeDate[1].toLocaleDateString())
 
-      const [fromYear, fromMonth, fromDate] = queryFilter.rangeDate[0].toLocaleDateString().split("/").map(Number)
-      const [toYear, toMonth, toDate] = queryFilter.rangeDate[1].toLocaleDateString().split("/").map(Number)
+      const [fromMonth, fromDate, fromYear] = queryFilter.rangeDate[0].toLocaleDateString().split("/").map(Number)
+      const [toMonth, toDate, toYear] = queryFilter.rangeDate[1].toLocaleDateString().split("/").map(Number)
 
       const formattedFrom = `${fromYear}-${fromMonth}-${fromDate}`
       const formattedTo = `${toYear}-${toMonth}-${toDate}`
+      console.log("tes formattedFrom :", formattedFrom)
+      console.log("tes formattedTo :", formattedTo)
 
       const response = await getChartReceiving(
         queryFilter.plantId, 
