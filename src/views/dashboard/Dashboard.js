@@ -6,7 +6,7 @@ import Select from 'react-select'
 import Flatpickr from 'react-flatpickr'
 import 'flatpickr/dist/flatpickr.css'
 import Pagination from '../../components/Pagination'
-import { DatePicker, DateRangePicker } from 'rsuite';
+import { DatePicker, DateRangePicker, Input } from 'rsuite';
 import 'primeicons/primeicons.css'
 import { IconField } from 'primereact/iconfield'
 import { InputIcon } from 'primereact/inputicon'
@@ -21,7 +21,7 @@ import 'primeicons/primeicons.css';
 import { FilterMatchMode, FilterOperator } from 'primereact/api';
 import useReceivingDataService from '../../services/ReceivingDataServices'
 import { cilChart,cilCog} from '@coreui/icons';
-import { FaAnglesLeft, FaAnglesRight, FaArrowUpRightFromSquare, FaChevronLeft, FaChevronRight, FaCircleCheck, FaCircleExclamation, FaCircleXmark } from 'react-icons/fa6';
+import { FaAnglesLeft, FaAnglesRight, FaArrowUpRightFromSquare, FaChevronLeft, FaChevronRight, FaCircleCheck, FaCircleExclamation, FaCircleXmark, FaInbox } from 'react-icons/fa6';
 import {
   CAvatar,
   CModal ,
@@ -51,6 +51,7 @@ import {
   CTableHead,
   CTableHeaderCell,
   CTableRow,
+  CFormInput,
 } from '@coreui/react'
 import {
   cilCalendar,
@@ -70,6 +71,7 @@ import {
 import { Bar } from 'react-chartjs-2';
 import CIcon from '@coreui/icons-react'
 import { useToast } from '../../App'
+import CustomTableLoading from '../../components/LoadingTemplate'
 
 
 ChartJS.register(
@@ -84,29 +86,33 @@ ChartJS.register(
 
 const Dashboard = () => {
   const addToast = useToast()
-  const { getMasterData, getMasterDataById } = useMasterDataService()
-  const { getDNInqueryData } = useReceivingDataService()
+  const [loading, setLoading] = useState(false)
+  const { getMasterData } = useMasterDataService()
   const apiPlant = 'plant-public'
   const { getCardStatusArrival,getChartReceiving } = useDashboardReceivingService()
-  const [currentPage, setCurrentPage] = useState(1)
-  const [itemsPerPage, setItemsPerPage] = useState(10)
-  const indexOfLastItem = currentPage * itemsPerPage
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage
-  const [currentItems, setCurrentItems] = useState([]); // State untuk opsi vendor
-  // const currentItems = dataSchedules?.length > 0 ? dataSchedules?.slice(indexOfFirstItem, indexOfLastItem) : []
-  const [optionsSelectVendor, setOptionsSelectVendor] = useState([]); // State untuk opsi vendor
+
+  const [optionsSelectVendor, setOptionsSelectVendor] = useState({
+    list: [],
+    selected: ""
+  }); // State untuk opsi vendor
   const [plant, setPlant] = useState([])
-  const [refreshInterval, setRefreshInterval] = useState(null);
   const [visiblePages, setVisiblePages] = useState([])
   const [plants, setPlants] = useState([]); // Plants fetched from API
   const [selectedPlant, setSelectedPlant] = useState({ value: 'all', label: 'All' });
   const [selectedStatus, setSelectedStatus] = useState(null);
   const [dataSchedules, setDataSchedules] = useState([]); // Menyimpan data dari API
+  const [dataChartSchedules, setDataChartSchedules] = useState(dataSchedules.slice(1, 10)); // Synchronized chart data
+
+  const [pagination, setPagination] = useState({ page: 0, rows: 12 });
+  const [filteredData, setFilteredData] = useState([]);
+
   const [isVisible, setIsVisible] = useState(true); // State to control visibility
-  const [ dataDNInquery, setDataDNInquery ] = useState([])
+
    const [totalPages, setTotalPages] = useState(1);
-   const [limitPerPage, setLimitPerPage] = useState({name: 10, code: 10})
+   const [currentPage, setCurrentPage] = useState(1);
+   const [limitPerPage, setLimitPerPage] = useState({name: 12, code: 12})
    const [isFilterVisible, setIsFilterVisible] = useState(false);
+   
    const vendorScheduleRef = useRef(null);
    const [ showModalInput, setShowModalInput] = useState({
       state: false,
@@ -120,7 +126,6 @@ const Dashboard = () => {
     remaining: 0,
   });
   const [ dataMaterialsByDNInquery, setDataMaterialsByDNInquery ] = useState([])
-  const toggleVisibility = () => setIsVisible(!isVisible); // Toggle function
  
   const [queryFilter, setQueryFilter] = useState({
     plantId: "",
@@ -131,7 +136,21 @@ const Dashboard = () => {
     global: { value: null, matchMode: FilterMatchMode.CONTAINS },
   })
 
-
+  const onChangeFilterVendor = (e) => {
+    if(e !== null){
+      const value = e.value;
+      let _filters = { ...queryFilter };
+  
+      _filters['global'].value = value;
+      setQueryFilter(_filters);
+      setOptionsSelectVendor({...optionsSelectVendor, selected: e !== null ? value : ""});
+    } else{
+      let _filters = { ...queryFilter };
+      _filters['global'].value = null;
+      setQueryFilter(_filters);
+      setOptionsSelectVendor({...optionsSelectVendor, selected: e !== null ? value : ""});
+    }
+};
  
   const fetchPlants = async () => {
     try {
@@ -154,29 +173,11 @@ const Dashboard = () => {
   useEffect(() => {
     fetchPlants();
   }, []);
-  // console.log("dataDNInquery",dataDNInquery);
 
 
-
-
-  const getDNInquery = async (plantId, startDate, endDate) => {
-    try {
-      // console.log("Fetching DN Inquiry for Plant ID:", plantId || "All Plants");
-      
-      const response = await getDNInqueryData(plantId, startDate, endDate);
-      
-      console.log("Response DN:", response.data.data);
-      setDataDNInquery(response.data.data);
-    } catch (error) {
-      console.error("Error fetching DN Inquiry:", error);
-    }
-  };
   
   
-  useEffect(() => {
-    getDNInquery(queryFilter.plantId, queryFilter.rangeDate[0], queryFilter.rangeDate[1]);
-  }, [queryFilter.plantId, queryFilter.rangeDate]);
- 
+
 
 
   const GetDataArrivalDashboard = async (plantId) => {
@@ -192,7 +193,6 @@ const Dashboard = () => {
       );
   
       if (response && response.data) {
-        // console.log("Cek Arrival Data:", response.data.data);
         setCardData(response.data.data);
       }
     } catch (error) {
@@ -200,9 +200,9 @@ const Dashboard = () => {
     }
   };
   
-    useEffect(() => {
-    GetDataArrivalDashboard();
-  }, []);
+  // useEffect(() => {
+  //   GetDataArrivalDashboard();
+  // }, []);
 
   useEffect(() => {
     const maxVisiblePages = 3 // Max number of pages to show
@@ -227,7 +227,7 @@ const Dashboard = () => {
     setVisiblePages(pages)
   }, [currentPage, totalPages])
 
-  const fetchChartReceivingData = async (status, currentPage, limitPerPage) => {
+  const fetchChartReceivingData = async (status, vendorId, currentPage, limitPerPage) => {
     try {
       const [fromDate, fromMonth, fromYear] = queryFilter.rangeDate[0].toLocaleDateString('en-GB').split("/").map(Number)
       const [toDate, toMonth, toYear] = queryFilter.rangeDate[1].toLocaleDateString('en-GB').split("/").map(Number)
@@ -238,61 +238,77 @@ const Dashboard = () => {
       const response = await getChartReceiving(
         queryFilter.plantId, 
         status !== null ? status?.value : "", // status kosong
-        "", // vendor kosong
+        vendorId,
         formattedFrom, 
         formattedTo,
         currentPage,
         limitPerPage
       );
-      console.log("response fetchChartReceiving :", response)
+      // console.log("response fetchChartReceiving :", response)
       if (response) {
-        // console.log("Data Chart Receiving:", response.data);
-        setDataSchedules(response.data); // Simpan data dari API ke state
-        setTotalPages(response.totalPages);
-        setCurrentPage(response.currentPage);
+        console.log("Data Chart Receiving:", response.data);
+        const allResponse = response.data
+        const filteredResponse = response.data.filter((data)=>data.arrivalPlanTime[0] !== '00:00')
 
-        // Ubah data menjadi format yang sesuai dengan react-select
-        const vendorOptions = response.data.map((vendor) => ({
-          label: `${vendor.supplierName}`,
-          value: vendor.supplierId,
-        }));
+        setDataSchedules(filteredResponse); // Simpan data dari API ke state
+        updateChartData(filteredData.length > 0 ? filteredData : filteredResponse, pagination.page, pagination.rows);
+    
 
-        setOptionsSelectVendor(vendorOptions);
+        // add options in vendor select
+        const vendorOptions = filteredResponse
+        ? Array.from(
+            new Map(
+              filteredResponse
+                .filter(vendor => vendor.supplierName) // Skip missing names
+                .map(vendor => [
+                  vendor.supplierName,
+                  {
+                    label: vendor.supplierName,
+                    value: vendor.supplierName,
+                  }
+                ])
+            ).values()
+          )
+        : []; // Return empty array if response.data is not valid
+        
+        setOptionsSelectVendor({ ...optionsSelectVendor, list: vendorOptions});
       }
     } catch (error) {
       console.error("Error fetching chart data:", error);
+      
     }
   };
   
+
   // auto fetch in every 10 seconds
   useEffect(() => {
     const intervalId = setInterval(() => {
-      fetchChartReceivingData(selectedStatus, currentPage, limitPerPage.code);
+      fetchChartReceivingData(selectedStatus, optionsSelectVendor.selected, currentPage, limitPerPage.code);
+      GetDataArrivalDashboard(queryFilter.plantId)
     }, 10000);
   
     return () => clearInterval(intervalId); // Cleanup on unmount
-  }, [selectedStatus, currentPage, limitPerPage]); 
+  }, [selectedStatus, optionsSelectVendor.selected, currentPage, limitPerPage, queryFilter, pagination]); 
 
   useEffect(() => {
-      fetchChartReceivingData(selectedStatus, currentPage, limitPerPage.code);
-  }, [queryFilter.plantId, queryFilter.rangeDate, currentPage]);
+      fetchChartReceivingData(selectedStatus, optionsSelectVendor.selected, currentPage, limitPerPage.code);
+  }, [queryFilter.plantId, optionsSelectVendor.selected, queryFilter.rangeDate, currentPage]);
+
+  useEffect(()=>{
+    GetDataArrivalDashboard(queryFilter.plantId)
+  }, [queryFilter.plantId])
 
  
 
-  const currentItemDashboard = dataSchedules.slice(indexOfFirstItem, indexOfLastItem);
-  // console.log("Current Dashboard Data:", currentItemDashboard); // Ensure data is sliced correctly
-
-  useEffect(()=>{
-    setCurrentItems(dataSchedules.slice(indexOfFirstItem, indexOfLastItem))
-  }, [currentPage])
+  
 
   const handleClickOpenMaterials = (data) => {
     setShowModalInput({...showModalInput, state: true})
     
     const dataVendor = data?.deliveryNotes ? data?.deliveryNotes : data
     const dataMaterials = data?.deliveryNotes?.Materials ? data?.deliveryNotes?.Materials : data.Materials
-    console.log("data vendor:", dataVendor)
-    console.log("data material:", dataMaterials)
+    // console.log("data vendor:", dataVendor)
+    // console.log("data material:", dataMaterials)
     setDataMaterialsByDNInquery(dataMaterials)
 
     setFormUpdate({
@@ -306,86 +322,23 @@ const Dashboard = () => {
     })
   }
 
-  const { setChartData, getChartOption, selectedVendor, isModalOpen, setIsModalOpen } = useChartData({ dataSchedules, handleClickOpenMaterials });
-
-  // Panggil hook `useChartData` dengan `currentItems`
+  const { setChartData, getChartOption, selectedVendor, isModalOpen, setIsModalOpen } = useChartData({ dataChartSchedules, handleClickOpenMaterials });
 
   
 
   const [ showCard, setShowCard ] = useState({
-
     schedule: true,
     receiving: true
   })
 
   const handleFilterSchedule = async (selectedOption) => {
-    console.log(selectedOption)
-    const status = selectedOption !== null ? selectedOption.value : ""; // Jika tidak ada status, kirim ""
     setSelectedStatus(selectedOption); // Update state
-    fetchChartReceivingData(selectedOption, 1, limitPerPage.code)
-    console.log("Fetching chart data with status:", status);
-  
-    // try {
-    //   const response = await getChartReceiving(
-    //     queryFilter.plantId, 
-    //     status,  // Kirim status dari filter
-    //     "",      // vendor kosong
-    //     queryFilter.rangeDate[0]?.toISOString().split("T")[0], 
-    //     queryFilter.rangeDate[1]?.toISOString().split("T")[0]
-    //   );
-  
-    //   if (response && response.data) {
-    //     console.log("Filtered Chart Receiving Data:", response.data);
-    //     setDataSchedules(response.data); // Simpan data hasil filter ke state
-  
-    //     // Ubah data agar sesuai dengan format yang digunakan di UI
-    //     const items = response.data.map((item) => ({
-    //       vendor_id: item.supplierCode,
-    //       vendor_name: item.supplierName,
-    //       day: item.rit,
-    //       schedule_from: item.arrivalPlanTime,
-    //       arrival_time: item.arrivalActualTime,
-    //       status: item.status,
-    //       materials: item.Materials,
-    //     }));
-        
-    //     setCurrentItems(items); // Simpan data yang diformat ke state
-    //   }
-    // } catch (error) {
-    //   console.error("Error fetching filtered chart data:", error);
-    // }
+    fetchChartReceivingData(selectedOption, optionsSelectVendor.selected, 1, limitPerPage.code)
   };
   
-
-  const plantOptions = [
-    { value: 'all', label: 'All' }, // Menambahkan opsi "All" di awal
-    ...plant.map((plant) => ({
-      value: plant.id,
-      label: plant.plantName,
-    })),
-  ]
-
-  const handlePlantChange = (selectedPlant) => {
-    setSelectedPlant(selectedPlant);
-  
-    const plantId = selectedPlant.value !== 'all' ? selectedPlant.value : "";
-  
-    setQueryFilter((prevFilter) => ({
-      ...prevFilter,
-      plantId: plantId, // Simpan plantId yang dipilih
-    }));
-  
-    // Panggil API untuk update data
-    GetDataArrivalDashboard(plantId);
-  };
-  
-  
- 
-  const daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
-
   const plantTimeBodyTemplate = (rowData) => {
-    const timeFrom = rowData.arrivalPlanTime
-    const timeTo = rowData.departurePlanTime
+    const timeFrom = Array.isArray(rowData.arrivalPlanTime) ? rowData.arrivalPlanTime[0] : rowData.arrivalPlanTime
+    const timeTo = Array.isArray(rowData.departurePlanTime) ? rowData.departurePlanTime[0] : rowData.departurePlanTime
     return(
       <div>
         {timeFrom} - {timeTo}
@@ -402,22 +355,41 @@ const Dashboard = () => {
     )
   }
 
-  
-
-
   const statusVendorBodyTemplate = (rowData) => {
     const status = rowData.status
-    const bgColor = status === 'delayed' ? "#F64242" : status === "on schedule" ? "#35A535" : "transparent"
+    const bgColor = 
+      status === "delayed" ? "#F64242" : 
+      status === "scheduled" ? "#6E9CFF" : 
+      status === "overdue" ? "#FBC550" : 
+      status === "on schedule" ? "#43AB43" : 
+      "transparent"
     return(
-      <div className='text-center' 
-      style={{ backgroundColor: bgColor, 
-        padding: "5px 10px",
-        fontWeight: "bold",
-        color: "white",
-        borderRadius: "8px", 
-        textTransform: "uppercase"}}>
-        {status !== 'schedule plan' ? status : ""}
-      </div>
+      <CTooltip 
+        content={ 
+          status === "delayed" ? "Vendor belum tiba dan melebihi jadwal" : 
+          status === "scheduled" ? "Vendor belum tiba" : 
+          status === "overdue" ? "Vendor telah tiba dengan melebihi jadwal" : 
+          status === "on scheduled" ? "Vendor telah tiba tepat waktu" : 
+          "COMPLETED"
+        } 
+        placement="top"
+        >
+          <button
+            className='text-center' 
+            style={{ 
+              backgroundColor: bgColor, 
+              width: "100%",
+              padding: "5px 10px",
+              fontWeight: "bold",
+              color: "white",
+              borderRadius: "8px", 
+              textTransform: "uppercase",
+              cursor: "pointer"
+            }}
+          >
+            {status}
+          </button>
+        </CTooltip>
     )
   }
    const materialsBodyTemplate = (rowBody) => {
@@ -455,7 +427,33 @@ const Dashboard = () => {
           )
         }
 
-        const selectStyles = {
+        const selectStatusStyles = {
+          option: (base, {data, isDisabled, isSelected}) => ({
+            ...base,
+            backgroundColor: data.color,
+            display: 'flex',
+            justifyContent: "center",
+            padding: "10px",
+            borderRadius: '5px',
+            marginTop: "10px",
+            marginLeft: "10px",
+            width: '90%',
+            color: "white",
+            fontWeight: "bold",
+            ':active': {
+              ...base[':active'],
+              backgroundColor: data.color ,
+            },
+            ':hover': {
+              ...base[':hover'],
+              backgroundColor: 
+                data.value === 'scheduled' ? "#B8CEFF" : 
+                data.value === 'delayed' ? "#FFA4A4" : 
+                data.value === 'on schedule' ? "#97D497" : 
+                data.value === 'overdue' ? "#FFDE97" : 
+                "gray"
+            }
+          }),
           placeholder: (base) => ({
             ...base,
             // color: "red", // Warna merah untuk placeholder
@@ -465,10 +463,17 @@ const Dashboard = () => {
             ...base,
             color: "white",
             // color: state.data.value === "delayed" ? "red" : "green", // Warna sesuai status
-            backgroundColor: state.data.value === "delayed" ? "#F74F4F" : "#43AB43",
+            backgroundColor: 
+              state.data.value === "delayed" ? "#F64242" : 
+              state.data.value === "scheduled" ? "#6E9CFF" : 
+              state.data.value === "overdue" ? "#FBC550" : 
+              state.data.value === "on schedule" ? "#43AB43" : 
+              "transparent",
             fontWeight: "bold",
             padding: "5px 10px",
-            borderRadius: "5px"
+            borderRadius: "5px",
+            display: 'flex',
+            justifyContent: "center",
           }),
           control: (base) => ({
             ...base,
@@ -476,6 +481,7 @@ const Dashboard = () => {
             minWidth: "220px"
           })
         };
+
         const handleScrollToVendorSchedule = () => {
           if (vendorScheduleRef.current) {
             vendorScheduleRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -486,7 +492,56 @@ const Dashboard = () => {
           setIsFilterVisible(!isFilterVisible);
         };
         
+        const renderCustomEmptyMsg = () => {
+            return(
+              <div className='w-100 d-flex h-100 flex-column align-items-center justify-content-center py-3' style={{ color: "black", opacity: "50%"}}>
+                <FaInbox size={40}/>
+                <p>NO SCHEDULES FOUND FROM {queryFilter.rangeDate[0].toLocaleDateString('en-CA')} UNTIL {queryFilter.rangeDate[1].toLocaleDateString('en-CA')}</p>
+              </div>
+            )
+          }
 
+         const groupedOptions = [
+            {
+              label: 'PLAN',
+              options: [
+                { label: "SCHEDULED", value: "scheduled", color: '#6F9CFF' },
+                { label: "DELAYED", value: "delayed", color: '#F64242' },
+              ],
+            },
+            {
+              label: 'ARRIVAL',
+              options: [
+                { label: "ON SCHEDULE", value: "on schedule", color: '#49C05F' },
+                { label: "OVERDUE", value: "overdue", color: '#FBC550' },
+              ],
+            },
+          ];
+    
+          const handlePageChange = (event) => {
+            setPagination({ page: event.page, rows: event.rows });
+            updateChartData(filteredData.length > 0 ? filteredData : dataSchedules, event.page, event.rows);
+          };
+          
+          const handleFilter = (event) => {
+            if (event.filters) {
+              const filtered = dataSchedules.filter((item) => {
+                return Object.keys(event.filters).every((key) => {
+                  if (!event.filters[key].value) return true; // No filter applied
+                  return item[key]?.toString().toLowerCase().includes(event.filters[key].value.toLowerCase());
+                });
+              });
+              setFilteredData(filtered);
+              updateChartData(filtered, pagination.page, pagination.rows);
+            }
+          };
+          
+          const updateChartData = (data, page, rows) => {
+            const paginatedData = data.slice(page * rows, (page + 1) * rows);
+            setDataChartSchedules(paginatedData);
+          };
+
+      
       
   return (
   <CContainer fluid>
@@ -540,7 +595,7 @@ const Dashboard = () => {
             </CCardTitle>
           </div>
         </CCardHeader>
-        <CCardBody className='px-4' style={{overflow: 'auto'}}>
+        <CCardBody className='px-4' style={{overflow: 'auto', minHeight: "400px"}}>
           <CRow className="d-flex justify-content-between align-items-center mb-2">
           {/* Tombol Hide/Show di pojok kiri */}
 
@@ -552,10 +607,13 @@ const Dashboard = () => {
                   <Select
                     className="basic-single"
                     classNamePrefix="select"
+                    isClearable
                     id="plant"
-                    options={[{ value: 'all', label: 'All' }, ...plants]} // Tambahkan opsi "All"
-                    value={selectedPlant}
-                    onChange={handlePlantChange}
+                    options={plants}
+                    value={plants.find((opt)=>opt.value === queryFilter.plantId) || ""}
+                    onChange={(e)=>{
+                      setQueryFilter({...queryFilter, plantId: e !== null ? e.value : ""})
+                    }}
                     styles={{
                       control: (base) => {
                         return ({
@@ -583,13 +641,10 @@ const Dashboard = () => {
                     onChange={handleFilterSchedule}
                     placeholder="All" // Default placeholder
                     isClearable
-                    styles={ selectStyles}
+                    styles={ selectStatusStyles}
                     value={selectedStatus} // Default ke ""
-                    options={[
-                      { label: "ON SCHEDULE", value: "on schedule" },
-                      { label: "DELAYED", value: "delayed" },
-                      
-                    ]}
+                    options={groupedOptions}
+                    // formatGroupLabel={formatGroupLabel}
                   />
                 </div>
               </CCol>
@@ -598,7 +653,9 @@ const Dashboard = () => {
                 <div>
                   <CFormText style={{ alignSelf: "flex-start" }}>Search vendor</CFormText>
                   <Select 
-                    options={optionsSelectVendor} 
+                    options={optionsSelectVendor?.list} 
+                    value={optionsSelectVendor?.list?.find((option)=>option.value===optionsSelectVendor?.selected) || ""}
+                    onChange={onChangeFilterVendor}
                     isClearable 
                     placeholder="Vendor name" 
                     styles={{
@@ -624,6 +681,7 @@ const Dashboard = () => {
                     value={queryFilter.rangeDate} 
                     onChange={(e)=>{
                       console.log(e)
+                      setCurrentPage(1)
                       setQueryFilter({ 
                         ...queryFilter, 
                         rangeDate: [
@@ -637,24 +695,34 @@ const Dashboard = () => {
             </div>
           )}
          </CRow>
-          <CRow >
-            <CCard className='p-0 overflow-hidden'>
+          <CRow className='h-100'>
+            <CCard className='p-0 overflow-hidden h-100'>
               <CCardBody className="p-0">
                 <DataTable
+                  loading={loading}
+                  loadingIcon={<CustomTableLoading/>}
                   removableSort
                   globalFilterFields={['dnNumber', 'supplierName', 'truckStation']}
                   filters={queryFilter}
                   showGridlines 
                   size="small"
-                  // paginator
-                  rows={10}
-                  rowsPerPageOptions={[15, 25, 50, 100]}
-                  tableStyle={{ minWidth: '50rem' }}
-                  value={dataSchedules}
+                  paginator
+                  rows={pagination.rows}
+                  // rowsPerPageOptions={[15, 25, 50, 100]}
+                  tableStyle={{ minWidth: '50rem', height: "100%" }}
+                  // value={getPaginatedData}
+                  value={filteredData.length > 0 ? filteredData : dataSchedules} // Sync filter
+                  first={pagination.page * pagination.rows}
                   filterDisplay="row"
                   className="custom-table"
+                  emptyMessage={renderCustomEmptyMsg}
+                  onPage={(e)=>{
+                    console.log("e handlePageChange", e)
+                    handlePageChange(e)
+                  }} // Track pagination
+                  onFilter={handleFilter} // Track filtering
                 >
-                  <Column className='' header="No" body={(rowBody, {rowIndex})=>rowIndex+1}></Column>
+                  <Column className='' header="No" body={(rowBody, { rowIndex }) => rowIndex + 1}></Column>
                   <Column className='' field='dnNumber'  header="DN No"></Column>
                   <Column className='' field='supplierName'  header="Vendor Name" ></Column>
                   <Column className='' field='truckStation'  header="Truck Station" ></Column>
@@ -666,10 +734,10 @@ const Dashboard = () => {
                   {/* <Column className='' field='deliveryNotes.departureActualDate'  header="Departure Date" /> */}
                   <Column className='' field='departureActualTime'  header="Dept. Time" ></Column>
                   <Column className='' field='status'  header="Status" body={statusVendorBodyTemplate} ></Column>
-                  <Column className='' field=''  header="Materials" body={materialsBodyTemplate} ></Column>
+                  {/* <Column className='' field=''  header="Materials" body={materialsBodyTemplate} ></Column> */}
               
                 </DataTable>
-                <CCol className="d-flex justify-content-center py-3" style={{ position: "relative" }}>
+                {/* <CCol className="d-flex justify-content-center py-3" style={{ position: "relative" }}>
                   <CPagination aria-label="Page navigation">
                     <CPaginationItem
                       disabled={currentPage === 1}
@@ -698,7 +766,7 @@ const Dashboard = () => {
                     ))}
 
                     <CPaginationItem
-                      disabled={currentPage === totalPages}
+                      disabled={currentPage === totalPages || totalPages === 0}
                       onClick={() => {
                         console.log("currentPage in pagination:", currentPage)
                         setCurrentPage(currentPage + 1)
@@ -707,7 +775,7 @@ const Dashboard = () => {
                       <FaChevronRight/>
                     </CPaginationItem>
                     <CPaginationItem
-                      disabled={currentPage === totalPages}
+                      disabled={currentPage === totalPages || totalPages === 0}
                       onClick={() => setCurrentPage(totalPages)}
                     >
                       <FaAnglesRight/>
@@ -731,7 +799,7 @@ const Dashboard = () => {
                       className="w-full md:w-14rem" 
                     />
                   </div>
-                </CCol>
+                </CCol> */}
               </CCardBody>
 
             </CCard>
@@ -759,6 +827,8 @@ const Dashboard = () => {
                 <CRow className='pt-1'>
                   <DataTable
                     className="p-datatable-sm custom-datatable text-nowrap"
+                    loading={loading}
+                    loadingIcon={<CustomTableLoading/>}
                     tableStyle={{ minWidth: '50rem' }}
                     removableSort
                     size="small"
@@ -795,12 +865,12 @@ const Dashboard = () => {
             <CCardHeader style={{ position: "relative", cursor: "pointer", backgroundColor: "#6482AD", color: "white"}} onClick={()=>setShowCard({ ...showCard, schedule: !showCard.schedule})}>
               <CCardTitle className='text-center fs-4'> DETAIL VENDOR ARRIVAL SCHEDULE </CCardTitle>
             </CCardHeader>
-            <CCardBody style={{ overflow: "auto"  }}>
+            <CCardBody>
               <CRow>
                 <CCol sm={2} className='d-flex flex-column justify-content-between'>
-                  <CCard className="bg-transparent" style={{ border: "1px solid #3D3D3D" }}>
-                    <CCardHeader className="text-muted small text-center" style={{ backgroundColor: "#C62300" }}>
-                      <h6 style={{ color: "white", fontSize: "12px" }}>DELAYED</h6>
+                  <CCard className="bg-transparent" style={{ border: "2px solid #F64242" }}>
+                    <CCardHeader className="text-muted small text-center" style={{ backgroundColor: "#F64242" }}>
+                      <h6 style={{ color: "white", fontSize: "12px" }}>DELAYED PLAN</h6>
                     </CCardHeader>
                     <CCardBody className="text-center ">
                       <CCardText className="fs-3 fw-bold" style={{ color: "black" }}> 
@@ -809,9 +879,9 @@ const Dashboard = () => {
                     </CCardBody>
                   </CCard>
 
-                  <CCard className=" bg-transparent" style={{ border: "1px solid #3D3D3D" }}>
-                    <CCardHeader className="text-muted small text-center" style={{ backgroundColor: "#5CB338" }}>
-                      <h6 style={{ color: "white", fontSize: "12px" }}>ON SCHEDULE</h6>
+                  <CCard className=" bg-transparent" style={{ border: "2px solid #49C05F" }}>
+                    <CCardHeader className="text-muted small text-center" style={{ backgroundColor: "#49C05F" }}>
+                      <h6 style={{ color: "white", fontSize: "12px" }}>ON SCHEDULE ARRIVAL</h6>
                     </CCardHeader>
                     <CCardBody className="text-center">
                       <CCardText className="fs-3 fw-bold" style={{ color: "black" }}>
@@ -820,40 +890,69 @@ const Dashboard = () => {
                     </CCardBody>
                   </CCard>
 
-                  <CCard className=" bg-transparent" style={{ border: "1px solid #3D3D3D" }}>
-                    <CCardHeader className="text-muted small text-center" style={{ backgroundColor: "#EB5B00" }}>
-                      <h6 style={{ color: "white", fontSize: "12px" }}>REMAINING</h6>
+                  <CCard className=" bg-transparent" style={{ border: "2px solid #FBC550" }}>
+                    <CCardHeader className="text-muted small text-center" style={{ backgroundColor: "#FBC550" }}>
+                      <h6 style={{ color: "white", fontSize: "12px" }}>OVERDUE ARRIVAL</h6>
+                    </CCardHeader>
+                    <CCardBody className="text-center">
+                      <CCardText className="fs-3 fw-bold"style={{ color: "black" }}>{cardData.total}</CCardText>
+                    </CCardBody>
+                  </CCard>
+
+                  <CCard className=" bg-transparent" style={{ border: "2px solid #6E9CFF" }} >
+                    <CCardHeader className="text-muted small text-center" style={{ backgroundColor: "transparent", borderBottom: "2px solid #6E9CFF" }}>
+                      <h6 style={{ color: "#6E9CFF", fontSize: "12px" }}>REMAINING</h6>
                     </CCardHeader>
                     <CCardBody className="text-center">
                       <CCardText className="fs-3 fw-bold" style={{ color: "black" }}>{cardData.remaining}</CCardText>
                     </CCardBody>
                   </CCard>    
 
-                  <CCard className=" bg-transparent" style={{ border: "1px solid #3D3D3D" }}>
-                    <CCardHeader className="text-muted small text-center" style={{ backgroundColor: "black" }}>
-                      <h6 style={{ color: "white", fontSize: "12px" }}>TOTAL</h6>
-                    </CCardHeader>
-                    <CCardBody className="text-center">
-                      <CCardText className="fs-3 fw-bold"style={{ color: "black" }}>{cardData.total}</CCardText>
-                    </CCardBody>
-                  </CCard>
                 </CCol>
 
-                <CCol xs={12} sm={10} >
-                  <CCard className='p-3'>
+                <CCol xs={12} sm={10}  >
+                  <CCard className='p-3' style={{ maxHeight:"70vh", overflow: "auto"  }} >
                     <CRow>
-                      <CCol className='d-flex gap-2 justify-content-end'>
-                        <h6><CBadge color="warning">ARRIVAL PLAN</CBadge> </h6>
-                        <h6><CBadge color="success">ARRIVAL ON SCHEDULE</CBadge></h6>
-                        <h6><CBadge color="danger">ARRIVAL DELAYED</CBadge></h6>
+                      <CCol className='d-flex gap-2'>
+                        <CTooltip content="Vendor belum tiba" placement="top">
+                          <button style={{ backgroundColor: "transparent"}}>
+                            <h6><CBadge style={{width: "160px", border: "2px solid #6F9CFF", backgroundColor: "transparent", color: "#6F9CFF"}}>SCHEDULED PLAN</CBadge> </h6>
+                          </button>
+                        </CTooltip>
+
+                        <CTooltip content="Vendor telah tiba" placement="top">
+                          <button style={{ backgroundColor: "transparent"}}>
+                            <h6><CBadge style={{width: "160px", border: "2px solid #6F9CFF", backgroundColor: "#6F9CFF"}}>ARRIVED</CBadge> </h6>
+                          </button>
+                        </CTooltip>
+
+                        <CTooltip content="Vendor belum tiba dan melebihi jadwal" placement="top">
+                          <button style={{ backgroundColor: "transparent"}}>
+                            <h6><CBadge style={{width: "160px", border: "2px solid #FF0000", backgroundColor: "#FF0000"}}>DELAYED PLAN</CBadge></h6>
+                          </button>
+                        </CTooltip>
+
+                        <CTooltip content="Kedatangan tepat waktu" placement="top">
+                          <button style={{ backgroundColor: "transparent"}}>
+                            <h6><CBadge style={{width: "160px", border: "2px solid #49C05F", backgroundColor: "#49C05F"}}>ON SCHEDULE ARRIVAL</CBadge></h6>
+                          </button>
+                        </CTooltip>
+                        
+                        <CTooltip content="Kedatangan terlambat" placement="top">
+                          <button style={{ backgroundColor: "transparent"}}>
+                            <h6><CBadge style={{width: "160px", border: "2px solid #FBC550", backgroundColor: "#FBC550"}}>OVERDUE ARRIVAL</CBadge> </h6>
+                          </button>
+                        </CTooltip>
                       </CCol>
                     </CRow>
-                    <CRow className='' style={{ overflow: "auto", height: "100%"}}>
-                      <Bar 
-                        options={getChartOption()} 
-                        data={setChartData()} 
-                        // maxHeight={135} // Tinggi chart
-                      />
+                    <hr style={{ border: "1px solid #D3D4D4"}}></hr>
+                    <CRow className='' style={{ overflow: "auto", height: "2000px"}}>
+                      <div style={{height: "100%"}}>
+                        <Bar 
+                          options={getChartOption()} 
+                          data={setChartData()} 
+                        />
+                      </div>
                     </CRow>
                   </CCard>
                 </CCol>
