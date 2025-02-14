@@ -572,7 +572,8 @@ const Input = () => {
         ),
         status: prevState.status.map((value, index) => 
           index === indexRow && newRemainQty === 0 ? "completed" : 
-          index === indexRow && newRemainQty === e.data.remain ? "not complete" : 
+          index === indexRow && e.data.remain === null ? "note complete" : 
+          index === indexRow && newRemainQty === e.data.remain ? "partial" : 
           index === indexRow && newRemainQty !== e.data.remain && newRemainQty < 0 ? "partial" : 
           index === indexRow && newRemainQty !== e.data.remain && newRemainQty > 0 ? "completed" : 
           value
