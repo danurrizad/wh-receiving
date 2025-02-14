@@ -14,6 +14,7 @@ import { useToast } from '../../App'
 import { InputText } from 'primereact/inputtext'
 import { FaCircleCheck, FaCircleExclamation, FaCircleXmark, FaInbox } from "react-icons/fa6";
 import Swal from 'sweetalert2'
+import CustomTableLoading from '../../components/LoadingTemplate'
 
 const Input = () => {
   const [loading, setLoading] = useState(false)
@@ -84,14 +85,11 @@ const Input = () => {
 
   const getStatusBasedOnTime = (matchesVendor) => {
     const { date, time } = getCurrentDateTime();
-    console.log("date now :", date)
-    console.log("date plan :", matchesVendor.arrivalPlanDate)
-    
-    const state = date <= matchesVendor.arrivalPlanDate
-    console.log("state :", state)
+    // console.log("date now :", date)
+    // console.log("date plan :", matchesVendor.arrivalPlanDate)
 
     const addedTime = addMinutes(matchesVendor.arrivalPlanTime, 15);
-    console.log("added time plan:", addedTime)
+    // console.log("added time plan:", addedTime)
     // console.log("time now :", time)
     // console.log("vendor by dn :", dataVendorByDN)
     // console.log("formInput :", matchesVendor)
@@ -101,7 +99,7 @@ const Input = () => {
     if (date <= matchesVendor.arrivalPlanDate && time <= addedTime) {
       return 'on schedule'; // Status if current time is within the range
     } else {
-      return 'delayed'; // Status if current time is outside the range
+      return 'overdue'; // Status if current time is outside the range
     }
   };
 
@@ -181,11 +179,11 @@ const Input = () => {
         const responseDN = response.data.data[0].deliveryNotes
         const responseVendor = response.data.data[0].vendorSchedules
         const responseStateArrived = response.data.viewOnly
-        console.log("Response:", response.data)
-        console.log("Response Status:", responseDN.map((data)=>data.status))
-        // console.log("Response DN:", responseDN)
-        console.log("Response Vendor:", responseVendor)
-        console.log("Response State Arrived:", responseStateArrived)
+        // console.log("Response:", response.data)
+        // console.log("Response Status:", responseDN.map((data)=>data.status))
+        console.log("Response DN:", responseDN)
+        // console.log("Response Vendor:", responseVendor)
+        // console.log("Response State Arrived:", responseStateArrived)
         
         setDataMaterialsByDN(responseDN)
         setDataVendorByDN(responseVendor)
@@ -196,7 +194,7 @@ const Input = () => {
         });
         setRemainQty({
           qty: responseDN.map((data)=> ""),
-          status: responseDN.map((data)=>data.status === 'not complete' ? "" : data.status )
+          status: responseDN.map((data)=>data.status )
         })
         setStateVendorArrived(responseStateArrived)
         
@@ -477,27 +475,27 @@ const Input = () => {
 
 
   const renderTruckStation = () => {
-    const arrivedVendor = dataVendorByDN.find((data)=>data.status!=='schedule plan')
+    const arrivedVendor = dataVendorByDN.find((data)=>data.status!=='scheduled')
     return(
       arrivedVendor ? arrivedVendor.truckStation : formInput.truckStation !== "" ? formInput?.truckStation : "-"
     )
   }
   const renderRit = () => {
-    const arrivedVendor = dataVendorByDN.find((data)=>data.status!=='schedule plan')
+    const arrivedVendor = dataVendorByDN.find((data)=>data.status!=='scheduled')
     return(
       arrivedVendor ? arrivedVendor.rit : formInput.rit !== 0 ? formInput?.rit : "-"
     )
   }
 
   const renderArrivalDatePlan = () => {
-    const arrivedVendor = dataVendorByDN.find((data)=>data.status!=='schedule plan')
+    const arrivedVendor = dataVendorByDN.find((data)=>data.status!=='scheduled')
     return(
       arrivedVendor ? arrivedVendor.arrivalPlanDate : formInput.arrival_date_plan !== "" ? formInput?.arrival_date_plan : " -"
     )
   }
   
   const renderArrivalTimePlan = () => {
-    const arrivedVendor = dataVendorByDN.find((data)=>data.status!=='schedule plan')
+    const arrivedVendor = dataVendorByDN.find((data)=>data.status!=='scheduled')
     return(
       arrivedVendor ? `${arrivedVendor.arrivalPlanTime} - ${arrivedVendor.departurePlanTime}` 
       : formInput.arrival_time_plan !== "" ? `${formInput?.arrival_time_plan} - ${formInput?.departure_time_plan}` 
@@ -506,35 +504,35 @@ const Input = () => {
   }
 
   const renderArrivalDateAct = () => {
-    const arrivedVendor = dataVendorByDN.find((data)=>data.status!=='schedule plan')
+    const arrivedVendor = dataVendorByDN.find((data)=>data.status!=='scheduled')
     return(
       arrivedVendor ? arrivedVendor.arrivalActualDate : formInput.arrival_date_actual ? formInput.arrival_date_actual : " -"
     )
   }
 
   const renderArrivalTimeAct = () => {
-    const arrivedVendor = dataVendorByDN.find((data)=>data.status!=='schedule plan')
+    const arrivedVendor = dataVendorByDN.find((data)=>data.status!=='scheduled')
     return(
       arrivedVendor ? arrivedVendor.arrivalActualTime : formInput.arrival_time_actual ? formInput.arrival_time_actual : " -"
     )
   }
 
   const renderDepartureDateAct = () => {
-    const arrivedVendor = dataVendorByDN.find((data)=>data.status!=='schedule plan')
+    const arrivedVendor = dataVendorByDN.find((data)=>data.status!=='scheduled')
     return(
       arrivedVendor ? arrivedVendor.departureActualDate : formInput.departure_date_actual ? formInput.departure_date_actual : " -"
     )
   }
 
   const renderDepartureTimeAct = () => {
-    const arrivedVendor = dataVendorByDN.find((data)=>data.status!=='schedule plan')
+    const arrivedVendor = dataVendorByDN.find((data)=>data.status!=='scheduled')
     return(
       arrivedVendor ? arrivedVendor.departureActualTime : formInput.departure_time_actual ? formInput.departure_time_actual : " -"
     )
   }
 
   const renderStatusVendor = () => {
-    const arrivedVendor = dataVendorByDN.find((data)=>data.status!=='schedule plan')
+    const arrivedVendor = dataVendorByDN.find((data)=>data.status!=='scheduled')
     // console.log(arrivedVendor)
     return(
       arrivedVendor ? arrivedVendor.status.toUpperCase() : formInput.status ? formInput.status.toUpperCase() : " -"
@@ -554,42 +552,13 @@ const Input = () => {
     if(formInput.rit){
       // console.log("selected row:", e)
       setSelectedRows(e.value)
-
-      // const remainInData = e.value.remain
-      // const reqQty = rowData.reqQuantity
-      // const inputAct = Number(qtyEachMaterials.qty[rowIndex.rowIndex])
-      // const newRemainQty = inputAct - reqQty
-
-      // setRemainQty((prevState) => ({
-      //   ...prevState,
-      //   qty: prevState.qty.map((value, index) =>
-      //     index === rowIndex.rowIndex ? Number(newRemainQty) : value
-      //   ),
-      //   status: prevState.status.map((value, index) => 
-      //     index === rowIndex.rowIndex && newRemainQty === 0 ? "completed" : 
-      //     index === rowIndex.rowIndex && newRemainQty === rowData.remain ? "not complete" : 
-      //     index === rowIndex.rowIndex && newRemainQty !== rowData.remain && newRemainQty < 0 ? "partial" : 
-      //     index === rowIndex.rowIndex && newRemainQty !== rowData.remain && newRemainQty > 0 ? "completed" : 
-      //     value
-      //   )
-      // }))
-
-      // const remaining = dataMaterialsByDN.length - e.value.length
-      // setConfirmedRemaining(Number(remaining))
-      // const alreadySelected = selectedRows.find((rows,index)=>rows.incomingId === e.value[index].incomingId)
-      // // console.log("alreadySelected :", alreadySelected)
-      // // console.log("SELECTEDROWS: ", selectedRows)
-      // if(!alreadySelected){
-      //   setConfirmedRemaining(confirmedRemaining-1)
-      // }
     }
   }
 
   const onRowSelect = (e) =>{
-    console.log(e.data)
-    console.log("qtyEachMaterials: ", qtyEachMaterials.incomingId)
+    // console.log(e.data)
+    console.log("qtyEachMaterials: ", qtyEachMaterials)
     const indexRow = qtyEachMaterials.incomingId.indexOf(e.data.incomingId)
-    console.log("indexRow :", indexRow)
     
     //   const remainInData = e.value.remain
       const reqQty = e.data.reqQuantity
@@ -720,8 +689,8 @@ const Input = () => {
                     <CCardBody style={{backgroundColor: 
                             stateVendorArrived && dataVendorByDN[0]?.status === "on schedule" ? "#00DB42" : 
                             formInput.status === "on schedule" ? "#00DB42" : 
-                            stateVendorArrived && dataVendorByDN[0]?.status === "delayed" ? "#F64242" : 
-                            formInput.status === "delayed" ? "#F64242" : 
+                            stateVendorArrived && dataVendorByDN[0]?.status === "overdue" ? "#FBC550" : 
+                            formInput.status === "overdue" ? "#FBC550" : 
                             "transparent"
                             }} className='d-flex justify-content-center align-items-center' >
                       <h4 
@@ -739,6 +708,8 @@ const Input = () => {
                   
                   {/* Table */}
                   <DataTable 
+                    loading={loading}
+                    loadingIcon={<CustomTableLoading/>}
                     className='p-datatable-gridlines p-datatable-sm custom-datatable text-nowrap' 
                     size='small'  
                     showGridlines 
