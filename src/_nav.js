@@ -45,6 +45,12 @@ const useNavigation = () => {
       icon: <CIcon icon={icon.cilSpeedometer} customClassName="nav-icon" />,
     },
     {
+      component: CNavItem,
+      name: 'Maps Truck Station',
+      to: '/dashboard/map-truck',
+      icon: <CIcon icon={icon.cilMap} customClassName="nav-icon" />,
+    },
+    {
       component: CNavTitle,
       name: 'RECEIVING ',
     },

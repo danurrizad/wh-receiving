@@ -20,7 +20,7 @@ import { DataTable } from 'primereact/datatable'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faWrench,faOilCan} from '@fortawesome/free-solid-svg-icons';
 import { Column } from 'primereact/column'
-import useReceivingDataService from './../../services/ReceivingDataServices';
+import useReceivingDataService from '../../services/ReceivingDataServices';
 import 'primereact/resources/themes/nano/theme.css'
 import 'primereact/resources/primereact.min.css'
 import 'primeicons/primeicons.css'; // Icon bawaan PrimeReact
@@ -75,10 +75,8 @@ const TrackRecord = () => {
                </div>
                </CCol>
                 </CRow>
-          </CCardBody>
-          </CCard>
-          </CRow>
-          /* <CCol md='6'>
+          
+          <CCol md='6'>
              <CCardBody className="p-0">
             <DataTable
                 removableSort
@@ -137,7 +135,10 @@ const TrackRecord = () => {
                     </CPagination>
                 </CCol>
             </CCardBody>
-           </CCol> */
+           </CCol> 
+           </CCardBody>
+          </CCard>
+          </CRow>
         )
         }
 

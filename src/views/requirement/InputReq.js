@@ -18,7 +18,9 @@ import { FaCircleCheck, FaCircleExclamation, FaCircleXmark, FaInbox } from "reac
 import Swal from 'sweetalert2'
 
 const Input = () => {
-
+  const [isInputPlatDisabled, setIsInputPlatDisabled] = useState(true);
+  const [isSTNKButtonDisabled, setIsSTNKButtonDisabled] = useState(true);
+  const [isInputSTNKDisabled, setIsInputSTNKDisabled] = useState(true);
   const { getMaterialByDNData, submitMaterialByDNData } = useReceivingDataService()
 
   return (
@@ -80,7 +82,7 @@ const Input = () => {
                 <span>(Silahkan lengkapi identitas Anda)</span>
                 <CRow>
                 <CCol md='5'>
-                 <CFormText className='px-3'>Vendor Name</CFormText>
+                 <CFormText >Vendor Name</CFormText>
                 <CFormInput 
                   type='text'
                   inputMode='numeric'
@@ -89,7 +91,7 @@ const Input = () => {
                  
                 </CCol>
                 <CCol md='5'>
-                 <CFormText className='px-3'>Truck Station</CFormText>
+                 <CFormText >Truck Station</CFormText>
                 <CFormInput 
                   type='text'
                   inputMode='numeric'
@@ -104,7 +106,7 @@ const Input = () => {
                 <span>(Silahkan lengkapi identitas Anda)</span>
                 <CRow>
                 <CCol md='5'>
-                 <CFormText className='px-3'>Nama Driver</CFormText>
+                 <CFormText >Nama Driver</CFormText>
                 <CFormInput 
                   type='text'
                   inputMode='numeric'
@@ -113,14 +115,14 @@ const Input = () => {
                  
                 </CCol>
                 <CCol md='3'>
-                 <CFormText className='px-3'>Apakah Anda Dalam Kondisi Sehat?</CFormText>
+                 <CFormText >Apakah Anda Dalam Kondisi Sehat?</CFormText>
                  <div>
-                 <CButton color="success" variant="ghost">Yes</CButton>
-                 <CButton color="danger" variant="ghost">No</CButton>
+                 <CButton color="success" variant="outline" className="mx-2" >Yes</CButton>
+                 <CButton color="danger" variant="outline" className="mx-2" >No</CButton>
                  </div>
                 </CCol>
                 <CCol md='4'>
-                 <CFormText className='px-3'>Kondisi yang dirasakan apabila Tidak Sehat</CFormText>
+                 <CFormText >Kondisi yang dirasakan apabila Tidak Sehat</CFormText>
                 <CFormInput 
                   type='text'
                   inputMode='numeric'
@@ -136,7 +138,7 @@ const Input = () => {
                 <span>(Silahkan lengkapi identitas Anda)</span>
                 <CRow>
                 <CCol md='5'>
-                 <CFormText className='px-3'>Tipe Pengiriman</CFormText>
+                 <CFormText >Tipe Pengiriman</CFormText>
                 <CFormInput 
                   type='text'
                   inputMode='numeric'
@@ -145,7 +147,7 @@ const Input = () => {
                  
                 </CCol>
                 <CCol md='5'>
-                 <CFormText className='px-3'>Jenis Kendaraan</CFormText>
+                 <CFormText >Jenis Kendaraan</CFormText>
                 <CFormInput 
                   type='text'
                   inputMode='numeric'
@@ -156,8 +158,8 @@ const Input = () => {
                 </CRow>
                 <hr/>
                 <CCol className="d-flex justify-content-center gap-3 mb-2">
-                  <CButton color="primary" variant="outline">Kembali</CButton>
-                  <CButton color="secondary" variant="outline">Selanjutnya</CButton>
+                  <CButton color="primary" variant="outline" className="mx-2">Kembali</CButton>
+                  <CButton color="secondary" variant="outline" className="mx-2">Selanjutnya</CButton>
                  </CCol>
                 </CCard>   
             </CRow>
@@ -169,51 +171,68 @@ const Input = () => {
                 <span>(Silahkan lengkapi identitas Anda)</span>
                 <CRow>
                 <CCol md='5'>
-                 <CFormText className='px-3'>Apakah Anda Membawa SIM?</CFormText>
-                <CFormInput 
-                  type='text'
-                  inputMode='numeric'
-                  placeholder='Insert DN Number'
-                  />
+                 <CFormText >Apakah Anda Membawa SIM?</CFormText>
+                 <div>
+                 <CButton color="success" variant="outline" className="mx-2">Ya</CButton>
+                 <CButton color="danger" variant="outline"  className="mx-2">Tidak</CButton>
+                 </div>
                  
                 </CCol>
                 <CCol md='5'>
-                 <CFormText className='px-3'>Berapa Jangka Waktu SIM Anda?</CFormText>
+                 <CFormText >Berapa Jangka Waktu SIM Anda?</CFormText>
                 <CFormInput 
                   type='text'
                   inputMode='numeric'
-                  placeholder='Insert DN Number'
+                  placeholder='Silahkan isi'
                   />
                  
                 </CCol>
              </CRow>
              <hr/>
               <CRow className='mb-2'>
-                <span className='fs-5 fw-bold'></span>
-                <span>(Silahkan lengkapi identitas Anda)</span>
                 <CRow>
                 <CCol md='5'>
-                 <CFormText className='px-3'>Apakah Anda Membawa STNK</CFormText>
-                <CFormInput 
-                  type='text'
-                  inputMode='numeric'
-                  placeholder='Insert DN Number'
-                  />
+                 <CFormText >Apakah Anda Membawa STNK</CFormText>
+                 <div>
+                    <CButton color="success" variant="outline" className="mx-2" onClick={() => setIsSTNKButtonDisabled(false)}>
+                      Ya
+                    </CButton>
+                    <CButton color="danger" variant="outline" className="mx-2" onClick={() => setIsSTNKButtonDisabled(true)}>
+                      Tidak
+                    </CButton>
+                  </div>
                  
                 </CCol>
                 <CCol md='3'>
-                 <CFormText className='px-3'>STNK Anda dalam kondisi pajak ?</CFormText>
+                 <CFormText >STNK Anda dalam kondisi pajak ?</CFormText>
                  <div>
-                 <CButton color="success" variant="ghost">Hidup</CButton>
-                 <CButton color="danger" variant="ghost">Mati</CButton>
-                 </div>
+                    <CButton 
+                      color="success" 
+                      variant="outline"
+                      onClick={() => setIsInputSTNKDisabled(false)}
+                      disabled={isSTNKButtonDisabled}
+                      className="mx-2"
+                    >
+                      Hidup
+                    </CButton>
+                    <CButton 
+                      color="danger" 
+                      variant="outline"
+                      onClick={() => setIsInputSTNKDisabled(true)}
+                      disabled={isSTNKButtonDisabled}
+                      className="mx-2"
+                    >
+                      Mati
+                    </CButton>
+                  </div>
                 </CCol>
                 <CCol md='4'>
-                 <CFormText className='px-3'>Kondisi yang dirasakan apabila Tidak Sehat</CFormText>
+                 <CFormText >Berapa lama Jangka Pajak STNK anda</CFormText>
                 <CFormInput 
                   type='text'
                   inputMode='numeric'
                   placeholder='Insert DN Number'
+                  disabled={isInputSTNKDisabled}
                   />
                  
                 </CCol>
@@ -221,32 +240,33 @@ const Input = () => {
                 </CRow>
                 <hr/>
                 <CRow className='mb-2'>
-                <span className='fs-5 fw-bold'>Identitas  Kendaraan</span>
-                <span>(Silahkan lengkapi identitas Anda)</span>
-                <CRow>
                 <CCol md='5'>
-                 <CFormText className='px-3'>Tipe Pengiriman</CFormText>
-                <CFormInput 
-                  type='text'
-                  inputMode='numeric'
-                  placeholder='Insert DN Number'
-                  />
+                 <CFormText >Apakah Plat No Polisi Anda Terpasang?</CFormText>
+                 <div>
+                    <CButton color="success" variant="outline" className="mx-2" onClick={() => setIsInputPlatDisabled(false)}>
+                      Ya
+                    </CButton>
+                    <CButton color="danger"variant="outline" className="mx-2" onClick={() => setIsInputPlatDisabled(true)}>
+                      Tidak
+                    </CButton>
+                  </div>
                  
                 </CCol>
                 <CCol md='5'>
-                 <CFormText className='px-3'>Jenis Kendaraan</CFormText>
+                 <CFormText >Berapakah Akhir Periode Plat No Polisi anda?</CFormText>
                 <CFormInput 
                   type='text'
                   inputMode='numeric'
-                  placeholder='Insert DN Number'
+                  placeholder='Silahkan isi'
+                  disabled={isInputPlatDisabled}
                   />
+                 
                 </CCol>
-                </CRow>
                 </CRow>
                 <hr/>
                 <CCol className="d-flex justify-content-center gap-3 mb-2">
-                  <CButton color="primary" variant="outline">Kembali</CButton>
-                  <CButton color="secondary" variant="outline">Selanjutnya</CButton>
+                  <CButton color="primary" variant="outline" className="mx-2">Kembali</CButton>
+                  <CButton color="secondary" variant="outline" className="mx-2">Selanjutnya</CButton>
                  </CCol>
                 </CCard>   
             </CRow>
@@ -258,7 +278,7 @@ const Input = () => {
                 <span>(Silahkan lengkapi identitas Anda)</span>
                 <CRow>
                 <CCol md='5'>
-                 <CFormText className='px-3'>Vendor Name</CFormText>
+                 <CFormText >Vendor Name</CFormText>
                 <CFormInput 
                   type='text'
                   inputMode='numeric'
@@ -267,7 +287,7 @@ const Input = () => {
                  
                 </CCol>
                 <CCol md='5'>
-                 <CFormText className='px-3'>Truck Station</CFormText>
+                 <CFormText >Truck Station</CFormText>
                 <CFormInput 
                   type='text'
                   inputMode='numeric'
@@ -282,7 +302,7 @@ const Input = () => {
                 <span>(Silahkan lengkapi identitas Anda)</span>
                 <CRow>
                 <CCol md='5'>
-                 <CFormText className='px-3'>Nama Driver</CFormText>
+                 <CFormText >Nama Driver</CFormText>
                 <CFormInput 
                   type='text'
                   inputMode='numeric'
@@ -291,14 +311,14 @@ const Input = () => {
                  
                 </CCol>
                 <CCol md='3'>
-                 <CFormText className='px-3'>Apakah Anda Dalam Kondisi Sehat?</CFormText>
+                 <CFormText >Apakah Anda Dalam Kondisi Sehat?</CFormText>
                  <div>
-                 <CButton color="success" variant="ghost">Yes</CButton>
-                 <CButton color="danger" variant="ghost">No</CButton>
+                 <CButton color="success" variant="outline">Yes</CButton>
+                 <CButton color="danger" variant="outline">No</CButton>
                  </div>
                 </CCol>
                 <CCol md='4'>
-                 <CFormText className='px-3'>Kondisi yang dirasakan apabila Tidak Sehat</CFormText>
+                 <CFormText >Kondisi yang dirasakan apabila Tidak Sehat</CFormText>
                 <CFormInput 
                   type='text'
                   inputMode='numeric'
@@ -314,7 +334,7 @@ const Input = () => {
                 <span>(Silahkan lengkapi identitas Anda)</span>
                 <CRow>
                 <CCol md='5'>
-                 <CFormText className='px-3'>Tipe Pengiriman</CFormText>
+                 <CFormText >Tipe Pengiriman</CFormText>
                 <CFormInput 
                   type='text'
                   inputMode='numeric'
@@ -323,7 +343,7 @@ const Input = () => {
                  
                 </CCol>
                 <CCol md='5'>
-                 <CFormText className='px-3'>Jenis Kendaraan</CFormText>
+                 <CFormText >Jenis Kendaraan</CFormText>
                 <CFormInput 
                   type='text'
                   inputMode='numeric'
