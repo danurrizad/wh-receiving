@@ -49,6 +49,7 @@ import Select from 'react-select';
 import { ColumnGroup } from 'primereact/columngroup'
 import Swal from 'sweetalert2'
 import { TimePicker } from 'rsuite'
+import CustomTableLoading from '../../components/LoadingTemplate'
 
 
 const VendorSetup = () => {
@@ -519,6 +520,8 @@ const VendorSetup = () => {
                 </CCol>
               </CRow>
               <DataTable
+                loading={loading}
+                loadingIcon={<CustomTableLoading/>}
                 className='p-datatable-gridlines p-datatable-sm custom-datatable text-nowrap'
                 removableSort
                 filters={filters}
@@ -535,7 +538,6 @@ const VendorSetup = () => {
                 dataKey="id"
                 onFilter={(e) => setFilters(e.filters)}
                 filterDisplay="row"
-                loading={loading}
               >
                 <Column className='' header="No" body={(rowData, { rowIndex }) => rowIndex + 1} />
                 <Column className='' field='Supplier.supplierCode' sortable header="Vendor Code" />

@@ -39,6 +39,7 @@ import { FilterMatchMode } from 'primereact/api'
 import { InputText } from 'primereact/inputtext'
 import Select  from 'react-select';
 import { useToast } from '../../App'
+import CustomTableLoading from '../../components/LoadingTemplate'
 
 const DNSetup = () => {
   const [loading, setLoading] = useState(true);
@@ -140,6 +141,8 @@ const DNSetup = () => {
       }
     } catch (error) {
       console.error(error)
+    } finally {
+      getDNbyDate(filterQuery.date)
     }
   }
 
@@ -301,6 +304,7 @@ const DNSetup = () => {
               <DataTable 
                 className='p-datatable-gridlines p-datatable-sm custom-datatable text-nowrap' 
                 loading={loading} 
+                loadingIcon={<CustomTableLoading/>}
                 emptyMessage={renderCustomEmptyMsg} 
                 filters={filterQuery}
                 value={dataDN} 

@@ -17,6 +17,7 @@ import { FaArrowUpRightFromSquare, FaCircleCheck, FaCircleExclamation, FaCircleX
 import Swal from 'sweetalert2'
 import { Row } from 'primereact/row';
 import { ColumnGroup } from 'primereact/columngroup';
+import CustomTableLoading from '../../components/LoadingTemplate';
 
 
 const Book = () => {
@@ -202,11 +203,39 @@ const Book = () => {
 
   const statusVendorBodyTemplate = (rowData) => {
     const status = rowData.deliveryNotes.status
-    const bgColor = status === 'delayed' ? "#F64242" : status === "on schedule" ? "#35A535" : "transparent"
+    const bgColor = 
+      status === "delayed" ? "#F64242" : 
+      status === "scheduled" ? "#6E9CFF" : 
+      status === "overdue" ? "#FBC550" : 
+      status === "on schedule" ? "#43AB43" : 
+      "transparent"
     return(
-      <div className='text-center' style={{ backgroundColor: bgColor, padding: "5px 10px", borderRadius: "5px", color: "white" }}>
-        {status.toUpperCase()}
-      </div>
+      <CTooltip 
+        content={ 
+          status === "delayed" ? "Vendor belum tiba dan melebihi jadwal" : 
+          status === "scheduled" ? "Vendor belum tiba" : 
+          status === "overdue" ? "Vendor telah tiba dengan melebihi jadwal" : 
+          status === "on scheduled" ? "Vendor telah tiba tepat waktu" : 
+          "COMPLETED"
+        } 
+        placement="top"
+      >
+        <button
+          className='text-center' 
+          style={{ 
+            backgroundColor: bgColor, 
+            width: "100%",
+            padding: "5px 10px",
+            fontWeight: "bold",
+            color: "white",
+            borderRadius: "8px", 
+            textTransform: "uppercase",
+            cursor: "pointer"
+          }}
+        >
+          {status.toUpperCase()}
+        </button>
+      </CTooltip>
     )
   }
 
@@ -459,6 +488,8 @@ const handleSubmitChangeQty = (rowIndex, rowData) => {
               </CRow>
               <CRow className='mt-3'>
                   <DataTable
+                    loading={loading}
+                    loadingIcon={<CustomTableLoading/>}
                     headerColumnGroup={headerGroup}
                     className='p-datatable-gridlines p-datatable-sm custom-datatable text-nowrap'
                     removableSort
@@ -477,7 +508,6 @@ const handleSubmitChangeQty = (rowIndex, rowData) => {
                     // dataKey="id"
                     // onFilter={(e) => setFilters(e.filters)}
                     filterDisplay="row"
-                    loading={loading}
                   >
                     <Column className='' header="No" body={(rowBody, {rowIndex})=>rowIndex+1}/>
                     <Column className='' field='deliveryNotes.dnNumber'  header="DN No"/>
@@ -526,6 +556,8 @@ const handleSubmitChangeQty = (rowIndex, rowData) => {
             </CRow>
           <CRow className='pt-3'>
             <DataTable
+              loading={loading}
+              loadingIcon={<CustomTableLoading/>}
               className='p-datatable-gridlines p-datatable-sm custom-datatable text-nowrap'
               removableSort
               // filters={filters}
