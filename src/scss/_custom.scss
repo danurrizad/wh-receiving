@@ -253,10 +253,10 @@ td input.p-inputtext.p-component {
   align-items: center;
 }
 
-.custom-table.p-datatable.p-component.p-datatable-responsive-scroll.p-datatable-gridlines.p-datatable-sm{
-  height: 100%;
-}
+// .custom-table.p-datatable.p-component.p-datatable-responsive-scroll.p-datatable-gridlines.p-datatable-sm{
+//   height: 100%;
+// }
 
-.p-datatable-wrapper{
-  height: 75%;
+.dashboard .p-datatable-wrapper, .dashboard .p-datatable-wrapper .p-datatable-table{
+  min-height: 220px;
 }

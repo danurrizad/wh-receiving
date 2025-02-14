@@ -120,9 +120,9 @@ const Dashboard = () => {
     })
   const [ formUpdate, setFormUpdate ] = useState({})
   const [cardData, setCardData] = useState({
-    delayed: 0,
     onSchedule: 0,
-    total: 0,
+    overdue: 0,
+    delayed: 0,
     remaining: 0,
   });
   const [ dataMaterialsByDNInquery, setDataMaterialsByDNInquery ] = useState([])
@@ -178,7 +178,31 @@ const Dashboard = () => {
   
   
 
-
+  const calculateSummary = (data) => {
+    // add options in vendor select
+    console.log("data:", data)
+    const dataUnique = data
+    ? Array.from(
+        new Map(
+          data
+            .filter(vendor => vendor.supplierName) // Skip missing names
+            .map(vendor => [
+              vendor.supplierName,
+              {
+                ...vendor
+              }
+            ])
+        ).values()
+      )
+    : []; // Return empty array if response.data is not valid
+    console.log("data unique vendor:", dataUnique)
+    setCardData({
+      onSchedule: dataUnique.filter((data)=>data.status === 'on schedule').length,
+      overdue: dataUnique.filter((data)=>data.status === 'overdue').length,
+      delayed: dataUnique.filter((data)=>data.status === 'delayed').length,
+      remaining: dataUnique.filter((data)=>data.status === 'scheduled').length,
+    })
+  }
 
   const GetDataArrivalDashboard = async (plantId) => {
     try {
@@ -204,28 +228,28 @@ const Dashboard = () => {
   //   GetDataArrivalDashboard();
   // }, []);
 
-  useEffect(() => {
-    const maxVisiblePages = 3 // Max number of pages to show
-    const halfVisible = Math.floor(maxVisiblePages / 2)
+  // useEffect(() => {
+  //   const maxVisiblePages = 3 // Max number of pages to show
+  //   const halfVisible = Math.floor(maxVisiblePages / 2)
 
-    let startPage = Math.max(1, currentPage - halfVisible)
-    let endPage = Math.min(totalPages, currentPage + halfVisible)
+  //   let startPage = Math.max(1, currentPage - halfVisible)
+  //   let endPage = Math.min(totalPages, currentPage + halfVisible)
 
-    // Adjust if there are not enough pages before or after
-    if (currentPage - startPage < halfVisible) {
-      startPage = Math.max(1, endPage - maxVisiblePages + 1)
-    }
-    if (endPage - currentPage < halfVisible) {
-      endPage = Math.min(totalPages, startPage + maxVisiblePages - 1)
-    }
+  //   // Adjust if there are not enough pages before or after
+  //   if (currentPage - startPage < halfVisible) {
+  //     startPage = Math.max(1, endPage - maxVisiblePages + 1)
+  //   }
+  //   if (endPage - currentPage < halfVisible) {
+  //     endPage = Math.min(totalPages, startPage + maxVisiblePages - 1)
+  //   }
 
-    const pages = []
-    for (let i = startPage; i <= endPage; i++) {
-      pages.push(i)
-    }
+  //   const pages = []
+  //   for (let i = startPage; i <= endPage; i++) {
+  //     pages.push(i)
+  //   }
 
-    setVisiblePages(pages)
-  }, [currentPage, totalPages])
+  //   setVisiblePages(pages)
+  // }, [currentPage, totalPages])
 
   const fetchChartReceivingData = async (status, vendorId, currentPage, limitPerPage) => {
     try {
@@ -252,7 +276,7 @@ const Dashboard = () => {
 
         setDataSchedules(filteredResponse); // Simpan data dari API ke state
         updateChartData(filteredData.length > 0 ? filteredData : filteredResponse, pagination.page, pagination.rows);
-    
+        calculateSummary(filteredResponse)
 
         // add options in vendor select
         const vendorOptions = filteredResponse
@@ -284,7 +308,7 @@ const Dashboard = () => {
   useEffect(() => {
     const intervalId = setInterval(() => {
       fetchChartReceivingData(selectedStatus, optionsSelectVendor.selected, currentPage, limitPerPage.code);
-      GetDataArrivalDashboard(queryFilter.plantId)
+      // GetDataArrivalDashboard(queryFilter.plantId)
     }, 10000);
   
     return () => clearInterval(intervalId); // Cleanup on unmount
@@ -294,9 +318,9 @@ const Dashboard = () => {
       fetchChartReceivingData(selectedStatus, optionsSelectVendor.selected, currentPage, limitPerPage.code);
   }, [queryFilter.plantId, optionsSelectVendor.selected, queryFilter.rangeDate, currentPage]);
 
-  useEffect(()=>{
-    GetDataArrivalDashboard(queryFilter.plantId)
-  }, [queryFilter.plantId])
+  // useEffect(()=>{
+  //   GetDataArrivalDashboard(queryFilter.plantId)
+  // }, [queryFilter.plantId])
 
  
 
@@ -695,7 +719,7 @@ const Dashboard = () => {
             </div>
           )}
          </CRow>
-          <CRow className='h-100'>
+          <CRow style={{ minHeight: "300px"}}>
             <CCard className='p-0 overflow-hidden h-100'>
               <CCardBody className="p-0">
                 <DataTable
@@ -714,7 +738,7 @@ const Dashboard = () => {
                   value={filteredData.length > 0 ? filteredData : dataSchedules} // Sync filter
                   first={pagination.page * pagination.rows}
                   filterDisplay="row"
-                  className="custom-table"
+                  className="custom-table dashboard"
                   emptyMessage={renderCustomEmptyMsg}
                   onPage={(e)=>{
                     console.log("e handlePageChange", e)
@@ -868,16 +892,6 @@ const Dashboard = () => {
             <CCardBody>
               <CRow>
                 <CCol sm={2} className='d-flex flex-column justify-content-between'>
-                  <CCard className="bg-transparent" style={{ border: "2px solid #F64242" }}>
-                    <CCardHeader className="text-muted small text-center" style={{ backgroundColor: "#F64242" }}>
-                      <h6 style={{ color: "white", fontSize: "12px" }}>DELAYED PLAN</h6>
-                    </CCardHeader>
-                    <CCardBody className="text-center ">
-                      <CCardText className="fs-3 fw-bold" style={{ color: "black" }}> 
-                        {cardData.delayed}
-                      </CCardText>
-                    </CCardBody>
-                  </CCard>
 
                   <CCard className=" bg-transparent" style={{ border: "2px solid #49C05F" }}>
                     <CCardHeader className="text-muted small text-center" style={{ backgroundColor: "#49C05F" }}>
@@ -890,12 +904,24 @@ const Dashboard = () => {
                     </CCardBody>
                   </CCard>
 
+                  <CCard className="bg-transparent" style={{ border: "2px solid #F64242" }}>
+                    <CCardHeader className="text-muted small text-center" style={{ backgroundColor: "#F64242" }}>
+                      <h6 style={{ color: "white", fontSize: "12px" }}>DELAYED PLAN</h6>
+                    </CCardHeader>
+                    <CCardBody className="text-center ">
+                      <CCardText className="fs-3 fw-bold" style={{ color: "black" }}> 
+                        {cardData.delayed}
+                      </CCardText>
+                    </CCardBody>
+                  </CCard>
+
+
                   <CCard className=" bg-transparent" style={{ border: "2px solid #FBC550" }}>
                     <CCardHeader className="text-muted small text-center" style={{ backgroundColor: "#FBC550" }}>
                       <h6 style={{ color: "white", fontSize: "12px" }}>OVERDUE ARRIVAL</h6>
                     </CCardHeader>
                     <CCardBody className="text-center">
-                      <CCardText className="fs-3 fw-bold"style={{ color: "black" }}>{cardData.total}</CCardText>
+                      <CCardText className="fs-3 fw-bold"style={{ color: "black" }}>{cardData.overdue}</CCardText>
                     </CCardBody>
                   </CCard>
 
