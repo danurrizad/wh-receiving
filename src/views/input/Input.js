@@ -30,6 +30,7 @@ const Input = () => {
   const [stateVendorArrived, setStateVendorArrived] = useState(false)
   const [selectedRows, setSelectedRows] = useState([])
   const [confirmedRemaining, setConfirmedRemaining] = useState(0)
+  const [disableInputDN, setDisableInputDN] = useState(false)
 
   const [selectedRit, setSelectedRit] = useState(0)
   const [formInput, setFormInput] = useState({
@@ -143,6 +144,7 @@ const Input = () => {
     setRemainQty({})
     setStateVendorArrived(false)
     setSelectedRows([])
+    setDisableInputDN(false)
   }
 
   const handleOnEnterInputDN = async(e) => {
@@ -404,6 +406,7 @@ const Input = () => {
             setFormInput({...formInput, rit: 0})
             setSelectedRows([])
             setConfirmedRemaining(0)
+            setDisableInputDN(true)
             // return response.data.message
             return "Material quantities received!"
           } catch (error) {
@@ -609,7 +612,7 @@ const Input = () => {
                           <CFormInput 
                             min={0} // Minimum value
                             max={99} // Maximum value (5 digits)
-                            disabled={formInput.rit !== 0}
+                            disabled={formInput.rit !== 0 || disableInputDN}
                             className=''
                             style={{
                               borderColor: "maroon"
@@ -705,37 +708,42 @@ const Input = () => {
               <CRow className='mt-4'>
                 <h5>Confirmed Remaining : {confirmedRemaining}</h5>
               </CRow>
-              <CRow className='mt-1'>
-                  
-                  {/* Table */}
-                  <DataTable 
-                    loading={loading}
-                    loadingIcon={<CustomTableLoading/>}
-                    className='p-datatable-gridlines p-datatable-sm custom-datatable text-nowrap' 
-                    size='small'  
-                    showGridlines 
-                    stripedRows 
-                    value={dataMaterialsByDN} 
-                    paginator 
-                    rows={10} 
-                    dataKey="materialNo" 
-                    emptyMessage={renderCustomEmptyMsg}
-                    selectionMode={formInput.rit ? "multiple" : undefined} 
-                    selection={selectedRows} 
-                    onSelectionChange={handleSelectRow}
-                    onRowSelect={onRowSelect}
-                  >
-                      <Column className='' field="" header="No" body={(rowData, { rowIndex }) => rowIndex + 1}/>
-                      <Column className='' field='materialNo' header="Material No"  />
-                      <Column className='' field='description' header="Material Description"  />
-                      <Column className='' field="address" header="Rack Address" />
-                      <Column className='' field="reqQuantity" header="Req. Qty"  />
-                      <Column className='' field="receivedQuantity" header="Act. Qty" body={receivedQuantityBodyTemplate} />
-                      <Column className='' field="uom" header="UoM" />
-                      <Column className='' field="remain" header="Remain" body={remainBodyTemplate}/>
-                      <Column className='' field="" header="Status Qty" body={statusBodyTemplate}/>
-                      {/* <Column className='' field="" header="Action" body={actionBodyTemplate} /> */}
-                  </DataTable>
+              <CRow className='mt-1 mb-2 px-2'>
+                <CCard className='p-0 overflow-hidden' >
+                  <CCardBody className="p-0">
+                    {/* Table */}
+                    <DataTable 
+                      loading={loading}
+                      loadingIcon={<CustomTableLoading/>}
+                      className='p-datatable-gridlines p-datatable-sm custom-datatable text-nowrap' 
+                      style={{minHeight: "140px"}}
+                      size='small'  
+                      showGridlines 
+                      stripedRows 
+                      value={dataMaterialsByDN} 
+                      paginator 
+                      rows={10} 
+                      dataKey="materialNo" 
+                      emptyMessage={renderCustomEmptyMsg}
+                      selectionMode={formInput.rit ? "multiple" : undefined} 
+                      selection={selectedRows} 
+                      onSelectionChange={handleSelectRow}
+                      onRowSelect={onRowSelect}
+                    >
+                        <Column className='' field="" header="No" body={(rowData, { rowIndex }) => rowIndex + 1}/>
+                        <Column className='' field='materialNo' header="Material No"  />
+                        <Column className='' field='description' header="Material Description"  />
+                        <Column className='' field="address" header="Rack Address" />
+                        <Column className='' field="reqQuantity" header="Req. Qty"  />
+                        <Column className='' field="receivedQuantity" header="Act. Qty" body={receivedQuantityBodyTemplate} />
+                        <Column className='' field="uom" header="UoM" />
+                        <Column className='' field="remain" header="Remain" body={remainBodyTemplate}/>
+                        <Column className='' field="" header="Status Qty" body={statusBodyTemplate}/>
+                        {/* <Column className='' field="" header="Action" body={actionBodyTemplate} /> */}
+                    </DataTable>
+
+                  </CCardBody>
+                </CCard>
               </CRow>
               <CRow className='d-flex justify-content-end'>
                 <CCol xs='auto'>

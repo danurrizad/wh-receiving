@@ -300,35 +300,39 @@ const DNSetup = () => {
                 </div>
               </CCol>
             </CRow>
-            <CRow className='mt-4'>
-              <DataTable 
-                className='p-datatable-gridlines p-datatable-sm custom-datatable text-nowrap' 
-                loading={loading} 
-                loadingIcon={<CustomTableLoading/>}
-                emptyMessage={renderCustomEmptyMsg} 
-                filters={filterQuery}
-                value={dataDN} 
-                removableSort
-                scrollable 
-                scrollHeight="500px" 
-                showGridlines  
-                stripedRows
-                paginator 
-                rows={10} 
-                rowsPerPageOptions={[10, 25, 50, 100]} 
-                tableStyle={{ minWidth: '50rem' }}
-              >
-                <Column field="no" header="No" body={(rowData, { rowIndex }) => rowIndex + 1}></Column>
-                <Column field="dnNumber" sortable header="DN No"></Column> 
-                <Column field="materialNo" sortable header="Material No"></Column>
-                <Column field="description" sortable header="Material Desc"></Column>
-                <Column field="addressRackName" sortable header="Rack Address"></Column>
-                <Column field="planningQuantity" sortable header="Req. Qty"></Column>
-                <Column field="uom" sortable header="UoM"></Column>
-                <Column field="arrivalPlanDate" sortable header="Arrival Date Plan"></Column>
-                <Column field="importBy" sortable header="Import By"></Column>
-                <Column field="importDate" sortable header="Import Date"></Column>
-            </DataTable>
+            <CRow className='mt-4 px-2'>
+              <CCard className='p-0 overflow-hidden h-100' >
+                <CCardBody className="p-0">
+                  <DataTable 
+                    className='p-datatable-gridlines p-datatable-sm custom-datatable text-nowrap' style={{minHeight: "140px"}}
+                    loading={loading} 
+                    loadingIcon={<CustomTableLoading/>}
+                    emptyMessage={renderCustomEmptyMsg} 
+                    filters={filterQuery}
+                    value={dataDN} 
+                    removableSort
+                    scrollable 
+                    scrollHeight="500px" 
+                    showGridlines  
+                    stripedRows
+                    paginator 
+                    rows={10} 
+                    rowsPerPageOptions={[10, 25, 50, 100]} 
+                    tableStyle={{ minWidth: '50rem' }}
+                  >
+                    <Column field="no" header="No" body={(rowData, { rowIndex }) => rowIndex + 1}></Column>
+                    <Column field="dnNumber" sortable header="DN No"></Column> 
+                    <Column field="materialNo" sortable header="Material No"></Column>
+                    <Column field="description" sortable header="Material Desc"></Column>
+                    <Column field="addressRackName" sortable header="Rack Address"></Column>
+                    <Column field="planningQuantity" sortable header="Req. Qty"></Column>
+                    <Column field="uom" sortable header="UoM"></Column>
+                    <Column field="arrivalPlanDate" sortable header="Arrival Date Plan"></Column>
+                    <Column field="importBy" sortable header="Import By"></Column>
+                    <Column field="importDate" sortable header="Import Date"></Column>
+                  </DataTable>
+                </CCardBody>
+              </CCard>
 
 
             </CRow>

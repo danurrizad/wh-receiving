@@ -481,50 +481,55 @@ const handleSubmitChangeQty = (rowIndex, rowData) => {
                   </CCol>
                   <CCol sm='auto' className=''>
                       <CFormText>Filter by Date</CFormText>
-                      <DateRangePicker showOneCalendar placeholder='All time' position='start' value={queryFilter.rangeDate} onChange={handleChangeRangeDate} />
+                      <DateRangePicker format="yyyy-MM-dd" character=' – ' showOneCalendar placeholder='All time' position='start' value={queryFilter.rangeDate} onChange={handleChangeRangeDate} />
                       {/* <DateRangePicker showOneCalendar placeholder='All time' position='start' value={queryFilter.rangeDate} onChange={(e)=>console.log(e)} /> */}
                   </CCol>
                 </CCol>
               </CRow>
-              <CRow className='mt-3'>
-                  <DataTable
-                    loading={loading}
-                    loadingIcon={<CustomTableLoading/>}
-                    headerColumnGroup={headerGroup}
-                    className='p-datatable-gridlines p-datatable-sm custom-datatable text-nowrap'
-                    removableSort
-                    globalFilterFields={['deliveryNotes.dnNumber', 'deliveryNotes.supplierName', 'deliveryNotes.truckStation', '']}
-                    filters={queryFilter}
-                    size='small'
-                    emptyMessage={renderCustomEmptyMsg}
-                    scrollable
-                    scrollHeight="500px"
-                    showGridlines
-                    stripedRows
-                    paginator
-                    rows={10}
-                    rowsPerPageOptions={[10, 25, 50, 100]}
-                    value={dataDNInquery}
-                    // dataKey="id"
-                    // onFilter={(e) => setFilters(e.filters)}
-                    filterDisplay="row"
-                  >
-                    <Column className='' header="No" body={(rowBody, {rowIndex})=>rowIndex+1}/>
-                    <Column className='' field='deliveryNotes.dnNumber'  header="DN No"/>
-                    <Column className='' field='deliveryNotes.supplierName'  header="Vendor Name" />
-                    <Column className='' field='deliveryNotes.truckStation'  header="Truck Station" />
-                    <Column className='' field='deliveryNotes.rit'  header="Rit" />
-                    <Column className='' field='deliveryNotes.arrivalPlanDate'  header="Plan Date" />
-                    <Column className='' field='deliveryNotes.arrivalPlanTime'  header="Plan Time" body={plantTimeBodyTemplate} />
-                    <Column className='' field='deliveryNotes.arrivalActualDate'  header="Arv. Date" />
-                    <Column className='' field='deliveryNotes.arrivalActualTime'  header="Arv. Time" />
-                    {/* <Column className='' field='deliveryNotes.departureActualDate'  header="Departure Date" /> */}
-                    <Column className='' field='deliveryNotes.departureActualTime'  header="Dpt. Time" />
-                    <Column className='' field='deliveryNotes.status'  header="Status" body={statusVendorBodyTemplate} />
-                    <Column className='' field='deliveryNotes.delayTime'  header="Delay Time" />
-                    <Column className='' field=''  header="Materials" body={materialsBodyTemplate} />
-                
-                  </DataTable>
+              <CRow className='mt-3 px-3'>
+                <CCard className='p-0 overflow-hidden' >
+                  <CCardBody className="p-0">
+                    <DataTable
+                      loading={loading}
+                      loadingIcon={<CustomTableLoading/>}
+                      headerColumnGroup={headerGroup}
+                      className='p-datatable-gridlines p-datatable-sm custom-datatable text-nowrap'
+                      style={{ minHeight: "200px"}}
+                      removableSort
+                      globalFilterFields={['deliveryNotes.dnNumber', 'deliveryNotes.supplierName', 'deliveryNotes.truckStation', '']}
+                      filters={queryFilter}
+                      size='small'
+                      emptyMessage={renderCustomEmptyMsg}
+                      scrollable
+                      scrollHeight="500px"
+                      showGridlines
+                      stripedRows
+                      paginator
+                      rows={10}
+                      rowsPerPageOptions={[10, 25, 50, 100]}
+                      value={dataDNInquery}
+                      // dataKey="id"
+                      // onFilter={(e) => setFilters(e.filters)}
+                      filterDisplay="row"
+                    >
+                      <Column className='' header="No" body={(rowBody, {rowIndex})=>rowIndex+1}/>
+                      <Column className='' field='deliveryNotes.dnNumber'  header="DN No"/>
+                      <Column className='' field='deliveryNotes.supplierName'  header="Vendor Name" />
+                      <Column className='' field='deliveryNotes.truckStation'  header="Truck Station" />
+                      <Column className='' field='deliveryNotes.rit'  header="Rit" />
+                      <Column className='' field='deliveryNotes.arrivalPlanDate'  header="Plan Date" />
+                      <Column className='' field='deliveryNotes.arrivalPlanTime'  header="Plan Time" body={plantTimeBodyTemplate} />
+                      <Column className='' field='deliveryNotes.arrivalActualDate'  header="Arv. Date" />
+                      <Column className='' field='deliveryNotes.arrivalActualTime'  header="Arv. Time" />
+                      {/* <Column className='' field='deliveryNotes.departureActualDate'  header="Departure Date" /> */}
+                      <Column className='' field='deliveryNotes.departureActualTime'  header="Dpt. Time" />
+                      <Column className='' field='deliveryNotes.status'  header="Status" body={statusVendorBodyTemplate} />
+                      <Column className='' field='deliveryNotes.delayTime'  header="Delay Time" />
+                      <Column className='' field=''  header="Materials" body={materialsBodyTemplate} />
+                  
+                    </DataTable>
+                  </CCardBody>
+                </CCard>
               </CRow>
             </CCardBody>
           </CCard>

@@ -519,37 +519,44 @@ const VendorSetup = () => {
                   />
                 </CCol>
               </CRow>
-              <DataTable
-                loading={loading}
-                loadingIcon={<CustomTableLoading/>}
-                className='p-datatable-gridlines p-datatable-sm custom-datatable text-nowrap'
-                removableSort
-                filters={filters}
-                size='small'
-                emptyMessage={renderCustomEmptyMsg}
-                scrollable
-                scrollHeight="500px"
-                showGridlines
-                stripedRows
-                paginator
-                rows={10}
-                rowsPerPageOptions={[10, 25, 50, 100]}
-                value={dataSchedule}
-                dataKey="id"
-                onFilter={(e) => setFilters(e.filters)}
-                filterDisplay="row"
-              >
-                <Column className='' header="No" body={(rowData, { rowIndex }) => rowIndex + 1} />
-                <Column className='' field='Supplier.supplierCode' sortable header="Vendor Code" />
-                <Column className='' field='Supplier.SupplierName' filterField='Supplier.SupplierName' sortable header="Vendor Name" />
-                <Column className='' field="schedule" filterField='schedule' sortable header="Day" body={(rowData) => getDays(rowData.schedule)} />
-                <Column className='' field="arrival" sortable header="Arrival Time" dataType="date" body={(rowData) => formatTime(rowData.arrival)} />
-                <Column className='' field="departure" sortable header="Departure Time" dataType="date" body={(rowData) => formatTime(rowData.departure)} />
-                <Column className='' field="rit" sortable header="Rit" dataType="number" />
-                <Column className='' field="Plant.PlantName" sortable header="Plant" />
-                <Column className='' field="truckStation" sortable header="Truck Station" />
-                <Column className='' header="Action" body={actionBodyTemplate} />
-              </DataTable>
+              <CRow className='px-3'>
+                <CCard className='p-0 overflow-hidden' >
+                  <CCardBody className="p-0">
+                    <DataTable
+                      loading={loading}
+                      loadingIcon={<CustomTableLoading/>}
+                      className='p-datatable-gridlines p-datatable-sm custom-datatable text-nowrap'
+                      style={{ minHeight: "140px"}}
+                      removableSort
+                      filters={filters}
+                      size='small'
+                      emptyMessage={renderCustomEmptyMsg}
+                      scrollable
+                      scrollHeight="500px"
+                      showGridlines
+                      stripedRows
+                      paginator
+                      rows={10}
+                      rowsPerPageOptions={[10, 25, 50, 100]}
+                      value={dataSchedule}
+                      dataKey="id"
+                      onFilter={(e) => setFilters(e.filters)}
+                      filterDisplay="row"
+                    >
+                      <Column className='' header="No" body={(rowData, { rowIndex }) => rowIndex + 1} />
+                      <Column className='' field='Supplier.supplierCode' sortable header="Vendor Code" />
+                      <Column className='' field='Supplier.SupplierName' filterField='Supplier.SupplierName' sortable header="Vendor Name" />
+                      <Column className='' field="schedule" filterField='schedule' sortable header="Day" body={(rowData) => getDays(rowData.schedule)} />
+                      <Column className='' field="arrival" sortable header="Arrival Time" dataType="date" body={(rowData) => formatTime(rowData.arrival)} />
+                      <Column className='' field="departure" sortable header="Departure Time" dataType="date" body={(rowData) => formatTime(rowData.departure)} />
+                      <Column className='' field="rit" sortable header="Rit" dataType="number" />
+                      <Column className='' field="Plant.PlantName" sortable header="Plant" />
+                      <Column className='' field="truckStation" sortable header="Truck Station" />
+                      <Column className='' header="Action" body={actionBodyTemplate} />
+                    </DataTable>
+                  </CCardBody>
+                </CCard>
+              </CRow>
                   
 
 
