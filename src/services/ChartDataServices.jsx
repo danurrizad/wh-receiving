@@ -8,7 +8,7 @@ const useChartData = ({dataChartSchedules, handleClickOpenMaterials}) => {
  
     const setChartData  = () => {
         // console.log("Current Items Data:", dataChartSchedules); // Debugging awal
-        const labelsVendor = dataChartSchedules?.map((data) => data.supplierName);
+        const labelsVendor = dataChartSchedules?.map((data) => data.vendorName);
         // console.log("dataChartSchedules :", dataChartSchedules)
 
         const data = {
@@ -34,7 +34,7 @@ const useChartData = ({dataChartSchedules, handleClickOpenMaterials}) => {
 
                         return {
                             x: [arrivalHour + arrivalMinute, departureHour + departureMinute + 0.25],
-                            y: data.supplierName,
+                            y: data.vendorName,
                         };
                     }),
                     backgroundColor: dataChartSchedules.map((data) =>
@@ -54,26 +54,26 @@ const useChartData = ({dataChartSchedules, handleClickOpenMaterials}) => {
                     borderSkipped: false,
                     label: "Arrival Plan",
                     data: dataChartSchedules.map((data) => {
-                        const planHour = Array.isArray(data.arrivalPlanTime)
-                            ? parseInt(data.arrivalPlanTime[0].split(":")[0], 10)
-                            : !Array.isArray(data.arrivalPlanTime) ? parseInt(data.arrivalPlanTime.split(":")[0], 10)
+                        const planHour = data.arrivalPlanTime
+                            ? parseInt(data.arrivalPlanTime.split(":")[0], 10)
+                            // : !data.arrivalPlanTime ? parseInt(data.arrivalPlanTime.split(":")[0], 10)
                             : 0;
-                        const planMinute = Array.isArray(data.arrivalPlanTime)
-                            ? parseInt(data.arrivalPlanTime[0].split(":")[1], 10) / 60
-                            : !Array.isArray(data.arrivalPlanTime) ? parseInt(data.arrivalPlanTime.split(":")[1], 10) / 60
+                        const planMinute = data.arrivalPlanTime
+                            ? parseInt(data.arrivalPlanTime.split(":")[1], 10) / 60
+                            // : !data.arrivalPlanTime ? parseInt(data.arrivalPlanTime.split(":")[1], 10) / 60
                             : 0;
-                        const departHour = Array.isArray(data.departurePlanTime)
-                            ? parseInt(data.departurePlanTime[0].split(":")[0], 10)
-                            : !Array.isArray(data.departurePlanTime) ? parseInt(data.departurePlanTime.split(":")[0], 10)
+                        const departHour = data.departurePlanTime
+                            ? parseInt(data.departurePlanTime.split(":")[0], 10)
+                            // : !data.departurePlanTime ? parseInt(data.departurePlanTime.split(":")[0], 10)
                             : 0;
-                        const departMinute = Array.isArray(data.departurePlanTime)
-                            ? parseInt(data.departurePlanTime[0].split(":")[1], 10) / 60
-                            : !Array.isArray(data.departurePlanTime) ? parseInt(data.departurePlanTime.split(":")[1], 10) / 60
+                        const departMinute = data.departurePlanTime
+                            ? parseInt(data.departurePlanTime.split(":")[1], 10) / 60
+                            // : !data.departurePlanTime ? parseInt(data.departurePlanTime.split(":")[1], 10) / 60
                             : 0;
 
                         return {
                             x: [planHour + planMinute, departHour + departMinute],
-                            y: data.supplierName,
+                            y: data.vendorName,
                         };
                     }),
                     backgroundColor: dataChartSchedules.map((data)=>
@@ -151,7 +151,8 @@ const useChartData = ({dataChartSchedules, handleClickOpenMaterials}) => {
 
                             if (context.dataset.label === "Arrival On Schedule") {
                                 return `Arrival Date: ${schedule.arrivalActualDate} 
-                                        Arrival Time: ${schedule.arrivalActualTime}`;
+                                        Arrival Time: ${schedule.arrivalActualTime}`
+                                        // Departure Time: ${schedule.departureActualTime}
                             } else {
                                 return `Plan Date: ${schedule.arrivalPlanDate} 
                                         Schedule Time: ${schedule.arrivalPlanTime} - ${schedule.departurePlanTime}`;

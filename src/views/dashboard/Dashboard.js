@@ -130,6 +130,8 @@ const Dashboard = () => {
   const [queryFilter, setQueryFilter] = useState({
     plantId: "",
     rangeDate: [
+      // new Date("2025-02-14"),
+      // new Date("2025-02-15"),
       new Date(new Date().setHours(0, 0, 0, 1)),  // Today at 00:00
       new Date(new Date().setHours(23, 59, 59, 999))  // Today at 23:59
     ],
@@ -149,6 +151,22 @@ const Dashboard = () => {
       _filters['global'].value = null;
       setQueryFilter(_filters);
       setOptionsSelectVendor({...optionsSelectVendor, selected: e !== null ? value : ""});
+    }
+};
+
+  const onChangeFilterStatus = (e) => {
+    if(e !== null){
+      const value = e.value;
+      let _filters = { ...queryFilter };
+  
+      _filters['global'].value = value;
+      setQueryFilter(_filters);
+      setSelectedStatus(e.value)
+    } else{
+      let _filters = { ...queryFilter };
+      _filters['global'].value = null;
+      setQueryFilter(_filters);
+      setSelectedStatus("")
     }
 };
  
@@ -180,14 +198,14 @@ const Dashboard = () => {
 
   const calculateSummary = (data) => {
     // add options in vendor select
-    console.log("data:", data)
+    console.log("dataInCalculateSUmmary:", data)
     const dataUnique = data
     ? Array.from(
         new Map(
           data
-            .filter(vendor => vendor.supplierName) // Skip missing names
+            .filter(vendor => vendor.vendorName) // Skip missing names
             .map(vendor => [
-              vendor.supplierName,
+              vendor.vendorName,
               {
                 ...vendor
               }
@@ -224,35 +242,10 @@ const Dashboard = () => {
     }
   };
   
-  // useEffect(() => {
-  //   GetDataArrivalDashboard();
-  // }, []);
-
-  // useEffect(() => {
-  //   const maxVisiblePages = 3 // Max number of pages to show
-  //   const halfVisible = Math.floor(maxVisiblePages / 2)
-
-  //   let startPage = Math.max(1, currentPage - halfVisible)
-  //   let endPage = Math.min(totalPages, currentPage + halfVisible)
-
-  //   // Adjust if there are not enough pages before or after
-  //   if (currentPage - startPage < halfVisible) {
-  //     startPage = Math.max(1, endPage - maxVisiblePages + 1)
-  //   }
-  //   if (endPage - currentPage < halfVisible) {
-  //     endPage = Math.min(totalPages, startPage + maxVisiblePages - 1)
-  //   }
-
-  //   const pages = []
-  //   for (let i = startPage; i <= endPage; i++) {
-  //     pages.push(i)
-  //   }
-
-  //   setVisiblePages(pages)
-  // }, [currentPage, totalPages])
 
   const fetchChartReceivingData = async (status, vendorId, currentPage, limitPerPage) => {
     try {
+      // setLoading(true)
       const [fromDate, fromMonth, fromYear] = queryFilter.rangeDate[0].toLocaleDateString('en-GB').split("/").map(Number)
       const [toDate, toMonth, toYear] = queryFilter.rangeDate[1].toLocaleDateString('en-GB').split("/").map(Number)
 
@@ -261,18 +254,18 @@ const Dashboard = () => {
 
       const response = await getChartReceiving(
         queryFilter.plantId, 
-        status !== null ? status?.value : "", // status kosong
+        // status !== null ? status?.value : "", // status kosong
+        "",
         vendorId,
         formattedFrom, 
         formattedTo,
         currentPage,
         limitPerPage
       );
-      // console.log("response fetchChartReceiving :", response)
       if (response) {
-        console.log("Data Chart Receiving:", response.data);
+        // console.log("Data Chart Receiving:", response.data);
         const allResponse = response.data
-        const filteredResponse = response.data.filter((data)=>data.arrivalPlanTime[0] !== '00:00')
+        const filteredResponse = response.data.filter((data)=>data.status !== 'no schedule')
 
         setDataSchedules(filteredResponse); // Simpan data dari API ke state
         updateChartData(filteredData.length > 0 ? filteredData : filteredResponse, pagination.page, pagination.rows);
@@ -283,12 +276,12 @@ const Dashboard = () => {
         ? Array.from(
             new Map(
               filteredResponse
-                .filter(vendor => vendor.supplierName) // Skip missing names
+                .filter(vendor => vendor.vendorName) // Skip missing names
                 .map(vendor => [
-                  vendor.supplierName,
+                  vendor.vendorName,
                   {
-                    label: vendor.supplierName,
-                    value: vendor.supplierName,
+                    label: vendor.vendorName,
+                    value: vendor.vendorName,
                   }
                 ])
             ).values()
@@ -300,6 +293,8 @@ const Dashboard = () => {
     } catch (error) {
       console.error("Error fetching chart data:", error);
       
+    } finally{
+      // setLoading(false)
     }
   };
   
@@ -315,16 +310,15 @@ const Dashboard = () => {
   }, [selectedStatus, optionsSelectVendor.selected, currentPage, limitPerPage, queryFilter, pagination]); 
 
   useEffect(() => {
-      fetchChartReceivingData(selectedStatus, optionsSelectVendor.selected, currentPage, limitPerPage.code);
-  }, [queryFilter.plantId, optionsSelectVendor.selected, queryFilter.rangeDate, currentPage]);
+    async function fetchFirstLoad() {
+      setLoading(true)
+      await fetchChartReceivingData(selectedStatus, optionsSelectVendor.selected, currentPage, limitPerPage.code);
+      setLoading(false)
+    } 
 
-  // useEffect(()=>{
-  //   GetDataArrivalDashboard(queryFilter.plantId)
-  // }, [queryFilter.plantId])
+    fetchFirstLoad()
 
- 
-
-  
+  }, [queryFilter.plantId, optionsSelectVendor.selected, queryFilter.rangeDate, currentPage]);  
 
   const handleClickOpenMaterials = (data) => {
     setShowModalInput({...showModalInput, state: true})
@@ -337,7 +331,7 @@ const Dashboard = () => {
 
     setFormUpdate({
       dnNumber: dataVendor.dnNumber,
-      vendorName: dataVendor.supplierName,
+      vendorName: dataVendor.vendorName,
       rit: dataVendor.rit,
       incomingIds: dataMaterials.map((data)=>data.incomingId),
       receivedQuantities: dataMaterials.map((data)=>data.receivedQuantity),
@@ -354,21 +348,17 @@ const Dashboard = () => {
     schedule: true,
     receiving: true
   })
-
-  const handleFilterSchedule = async (selectedOption) => {
-    setSelectedStatus(selectedOption); // Update state
-    fetchChartReceivingData(selectedOption, optionsSelectVendor.selected, 1, limitPerPage.code)
-  };
   
-  const plantTimeBodyTemplate = (rowData) => {
-    const timeFrom = Array.isArray(rowData.arrivalPlanTime) ? rowData.arrivalPlanTime[0] : rowData.arrivalPlanTime
-    const timeTo = Array.isArray(rowData.departurePlanTime) ? rowData.departurePlanTime[0] : rowData.departurePlanTime
-    return(
+  const planTimeBodyTemplate = (rowData) => {
+    const timeFrom = rowData.arrivalPlanTime !== null ? rowData.arrivalPlanTime : "";
+    const timeTo = rowData.departurePlanTime !== null ? rowData.departurePlanTime : "";
+    return (
       <div>
         {timeFrom} - {timeTo}
       </div>
-    )
-  }
+    );
+  };
+  
 
   const remainBodyTemplate = (rowBody, {rowIndex}) => {
     const colorText = formUpdate.remains[rowIndex] < 0 ? "red" : "black" 
@@ -386,6 +376,7 @@ const Dashboard = () => {
       status === "scheduled" ? "#6E9CFF" : 
       status === "overdue" ? "#FBC550" : 
       status === "on schedule" ? "#43AB43" : 
+      status === "no schedule" ? "gray" : 
       "transparent"
     return(
       <CTooltip 
@@ -394,7 +385,8 @@ const Dashboard = () => {
           status === "scheduled" ? "Vendor belum tiba" : 
           status === "overdue" ? "Vendor telah tiba dengan melebihi jadwal" : 
           status === "on scheduled" ? "Vendor telah tiba tepat waktu" : 
-          "COMPLETED"
+          status === "no schedule" ? "Tidak ada jadwal" : 
+          ""
         } 
         placement="top"
         >
@@ -402,10 +394,10 @@ const Dashboard = () => {
             className='text-center' 
             style={{ 
               backgroundColor: bgColor, 
+              color: status === "overdue" ? "black" : "white",
               width: "100%",
               padding: "5px 10px",
               fontWeight: "bold",
-              color: "white",
               borderRadius: "8px", 
               textTransform: "uppercase",
               cursor: "pointer"
@@ -546,9 +538,31 @@ const Dashboard = () => {
             setPagination({ page: event.page, rows: event.rows });
             updateChartData(filteredData.length > 0 ? filteredData : dataSchedules, event.page, event.rows);
           };
+
+          useEffect(()=>{
+            const interval = setInterval(()=>{
+              const totalPage = Math.ceil(dataSchedules.length / pagination.rows)
+              // console.log(pagination)
+              // console.log("totalPage:", totalPage)
+              console.log(queryFilter)
+              if(queryFilter.plantId === "" && filterQuery.global.value === null){
+                if(pagination.page >= totalPage-1){
+                  setPagination({ ...pagination, page: 0})
+                  updateChartData(filteredData.length > 0 ? filteredData : dataSchedules, 0, pagination.rows);
+                } else{
+                  setPagination({ ...pagination, page: pagination.page + 1})
+                  updateChartData(filteredData.length > 0 ? filteredData : dataSchedules, pagination.page+1, pagination.rows);
+                }
+              }
+            }, 2000)
+
+            return () => clearInterval(interval);
+          }, [pagination])
           
           const handleFilter = (event) => {
+            console.log("EVENT:", event)
             if (event.filters) {
+              console.log("EVENT FILTERS: ", event.filters)
               const filtered = dataSchedules.filter((item) => {
                 return Object.keys(event.filters).every((key) => {
                   if (!event.filters[key].value) return true; // No filter applied
@@ -662,13 +676,14 @@ const Dashboard = () => {
                 <div>
                   <CFormText >Filter by Status</CFormText>
                   <Select
-                    onChange={handleFilterSchedule}
+                    onChange={onChangeFilterStatus}
+                    // onChange={(e)=>console.log(groupedOptions)}
                     placeholder="All" // Default placeholder
                     isClearable
+                    isSearchable={false}
                     styles={ selectStatusStyles}
-                    value={selectedStatus} // Default ke ""
+                    value={groupedOptions.flatMap((group) => group.options).find(option => option.value === selectedStatus) || ""}
                     options={groupedOptions}
-                    // formatGroupLabel={formatGroupLabel}
                   />
                 </div>
               </CCol>
@@ -699,6 +714,7 @@ const Dashboard = () => {
                 <div>
                   <CFormText>Filter by Date</CFormText>
                   <DateRangePicker 
+                    format='yyyy-MM-dd' character=" – "
                     showOneCalendar 
                     placeholder='All time' 
                     position='start' 
@@ -726,33 +742,35 @@ const Dashboard = () => {
                   loading={loading}
                   loadingIcon={<CustomTableLoading/>}
                   removableSort
-                  globalFilterFields={['dnNumber', 'supplierName', 'truckStation']}
+                  globalFilterFields={['dnNumber', 'vendorName', 'vendorCode', 'truckStation', 'status']}
                   filters={queryFilter}
                   showGridlines 
                   size="small"
                   paginator
                   rows={pagination.rows}
-                  // rowsPerPageOptions={[15, 25, 50, 100]}
                   tableStyle={{ minWidth: '50rem', height: "100%" }}
-                  // value={getPaginatedData}
                   value={filteredData.length > 0 ? filteredData : dataSchedules} // Sync filter
                   first={pagination.page * pagination.rows}
                   filterDisplay="row"
                   className="custom-table dashboard"
                   emptyMessage={renderCustomEmptyMsg}
                   onPage={(e)=>{
-                    console.log("e handlePageChange", e)
+                    // console.log("e handlePageChange", e)
                     handlePageChange(e)
                   }} // Track pagination
-                  onFilter={handleFilter} // Track filtering
+                  onFilter={(e)=>{
+                    console.log(e)
+                    handleFilter(e)
+                  }} // Track filtering
                 >
                   <Column className='' header="No" body={(rowBody, { rowIndex }) => rowIndex + 1}></Column>
-                  <Column className='' field='dnNumber'  header="DN No"></Column>
-                  <Column className='' field='supplierName'  header="Vendor Name" ></Column>
+                  {/* <Column className='' field='dnNumber'  header="DN No"></Column> */}
+                  <Column className='' field='vendorCode'  header="Vendor Code"></Column>
+                  <Column className='' field='vendorName'  header="Vendor Name" ></Column>
                   <Column className='' field='truckStation'  header="Truck Station" ></Column>
                   <Column className='' field='rit'  header="Rit" ></Column>
                   <Column className='' field='arrivalPlanDate'  header="Plan Date" ></Column>
-                  <Column className='' field='arrivalPlanTime'  header="Plan Time" body={plantTimeBodyTemplate} ></Column>
+                  <Column className='' field='arrivalPlanTime'  header="Plan Time" body={planTimeBodyTemplate} ></Column>
                   <Column className='' field='arrivalActualDate'  header="Arriv. Date" ></Column>
                   <Column className='' field='arrivalActualTime'  header="Arriv. Time" ></Column>
                   {/* <Column className='' field='deliveryNotes.departureActualDate'  header="Departure Date" /> */}
@@ -904,6 +922,15 @@ const Dashboard = () => {
                     </CCardBody>
                   </CCard>
 
+                  <CCard className=" bg-transparent" style={{ border: "2px solid #FBC550" }}>
+                    <CCardHeader className="text-muted small text-center" style={{ backgroundColor: "#FBC550" }}>
+                      <h6 style={{ color: "black", fontSize: "12px" }}>OVERDUE ARRIVAL</h6>
+                    </CCardHeader>
+                    <CCardBody className="text-center">
+                      <CCardText className="fs-3 fw-bold"style={{ color: "black" }}>{cardData.overdue}</CCardText>
+                    </CCardBody>
+                  </CCard>
+
                   <CCard className="bg-transparent" style={{ border: "2px solid #F64242" }}>
                     <CCardHeader className="text-muted small text-center" style={{ backgroundColor: "#F64242" }}>
                       <h6 style={{ color: "white", fontSize: "12px" }}>DELAYED PLAN</h6>
@@ -912,16 +939,6 @@ const Dashboard = () => {
                       <CCardText className="fs-3 fw-bold" style={{ color: "black" }}> 
                         {cardData.delayed}
                       </CCardText>
-                    </CCardBody>
-                  </CCard>
-
-
-                  <CCard className=" bg-transparent" style={{ border: "2px solid #FBC550" }}>
-                    <CCardHeader className="text-muted small text-center" style={{ backgroundColor: "#FBC550" }}>
-                      <h6 style={{ color: "white", fontSize: "12px" }}>OVERDUE ARRIVAL</h6>
-                    </CCardHeader>
-                    <CCardBody className="text-center">
-                      <CCardText className="fs-3 fw-bold"style={{ color: "black" }}>{cardData.overdue}</CCardText>
                     </CCardBody>
                   </CCard>
 
@@ -966,7 +983,7 @@ const Dashboard = () => {
                         
                         <CTooltip content="Kedatangan terlambat" placement="top">
                           <button style={{ backgroundColor: "transparent"}}>
-                            <h6><CBadge style={{width: "160px", border: "2px solid #FBC550", backgroundColor: "#FBC550"}}>OVERDUE ARRIVAL</CBadge> </h6>
+                            <h6><CBadge style={{width: "160px", border: "2px solid #FBC550", backgroundColor: "#FBC550", color: "black"}}>OVERDUE ARRIVAL</CBadge> </h6>
                           </button>
                         </CTooltip>
                       </CCol>
