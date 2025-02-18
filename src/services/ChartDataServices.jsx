@@ -5,6 +5,11 @@ import useDashboardReceivingService from '../services/DashboardService'
 const useChartData = ({dataChartSchedules, handleClickOpenMaterials}) => {
     const [selectedVendor, setSelectedVendor] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
+
+    const now = new Date();
+    const currentHour = now.getHours();
+    const currentMinute = now.getMinutes() / 60;
+    const currentTimeX = currentHour + currentMinute; // Convert to x-axis format
  
     const setChartData  = () => {
         // console.log("Current Items Data:", dataChartSchedules); // Debugging awal
@@ -169,6 +174,20 @@ const useChartData = ({dataChartSchedules, handleClickOpenMaterials}) => {
                     text: "SCHEDULE VENDOR WAREHOUSE",
                     color: "black",
                 },
+                annotation: {
+                    annotations: [{
+                        type: 'line',
+                        mode: 'vertical',
+                        scaleID: 'x',
+                        value: currentTimeX,
+                        borderColor: 'gray',
+                        borderWidth: 1,
+                        label: {
+                            enabled: true,
+                            content: 'Vertical Line'
+                        }
+                    }]
+                }
             },
             onClick: (event, chartElements, chart) => {
                 const points = chart.getElementsAtEventForMode(event, "nearest", { intersect: true }, false);

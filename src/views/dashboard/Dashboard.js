@@ -72,6 +72,7 @@ import { Bar } from 'react-chartjs-2';
 import CIcon from '@coreui/icons-react'
 import { useToast } from '../../App'
 import CustomTableLoading from '../../components/LoadingTemplate'
+import annotationPlugin from "chartjs-plugin-annotation";
 
 
 ChartJS.register(
@@ -80,7 +81,8 @@ ChartJS.register(
   BarElement,
   Title,
   Tooltip,
-  Legend
+  Legend,
+  annotationPlugin
 );
 
 
@@ -199,26 +201,26 @@ const Dashboard = () => {
   const calculateSummary = (data) => {
     // add options in vendor select
     console.log("dataInCalculateSUmmary:", data)
-    const dataUnique = data
-    ? Array.from(
-        new Map(
-          data
-            .filter(vendor => vendor.vendorName) // Skip missing names
-            .map(vendor => [
-              vendor.vendorName,
-              {
-                ...vendor
-              }
-            ])
-        ).values()
-      )
-    : []; // Return empty array if response.data is not valid
-    console.log("data unique vendor:", dataUnique)
+    // const dataUnique = data
+    // ? Array.from(
+    //     new Map(
+    //       data
+    //         .filter(vendor => vendor.vendorName) // Skip missing names
+    //         .map(vendor => [
+    //           vendor.vendorName,
+    //           {
+    //             ...vendor
+    //           }
+    //         ])
+    //     ).values()
+    //   )
+    // : []; // Return empty array if response.data is not valid
+    // console.log("data unique vendor:", dataUnique)
     setCardData({
-      onSchedule: dataUnique.filter((data)=>data.status === 'on schedule').length,
-      overdue: dataUnique.filter((data)=>data.status === 'overdue').length,
-      delayed: dataUnique.filter((data)=>data.status === 'delayed').length,
-      remaining: dataUnique.filter((data)=>data.status === 'scheduled').length,
+      onSchedule: data.filter((data)=>data.status === 'on schedule').length,
+      overdue: data.filter((data)=>data.status === 'overdue').length,
+      delayed: data.filter((data)=>data.status === 'delayed').length,
+      remaining: data.filter((data)=>data.status === 'scheduled').length,
     })
   }
 
@@ -263,7 +265,7 @@ const Dashboard = () => {
         limitPerPage
       );
       if (response) {
-        // console.log("Data Chart Receiving:", response.data);
+        console.log("Data Chart Receiving:", response.data);
         const allResponse = response.data
         const filteredResponse = response.data.filter((data)=>data.status !== 'no schedule')
 
@@ -408,6 +410,18 @@ const Dashboard = () => {
         </CTooltip>
     )
   }
+
+  const statusMaterialBodyTemplate = (rowBody) => {
+    const complete = rowBody.statusMaterial.split(" / ")[0]
+    const total = rowBody.statusMaterial.split(" / ")[1]
+    const color = complete !== total ? "red" : "black"
+    return(
+      <div>
+        {rowBody.statusMaterial !== '0 / 0' ? <span style={{color: color}}>{complete}<span style={{color: "black"}}> / {total}</span></span> : ""}
+      </div>
+    )
+  }
+
    const materialsBodyTemplate = (rowBody) => {
       return(
         <div className='d-flex align-items-center justify-content-center'>
@@ -767,6 +781,7 @@ const Dashboard = () => {
                   {/* <Column className='' field='dnNumber'  header="DN No"></Column> */}
                   <Column className='' field='vendorCode'  header="Vendor Code"></Column>
                   <Column className='' field='vendorName'  header="Vendor Name" ></Column>
+                  <Column className='' field='statusMaterial'  header="Status Received" body={statusMaterialBodyTemplate}></Column>
                   <Column className='' field='truckStation'  header="Truck Station" ></Column>
                   <Column className='' field='rit'  header="Rit" ></Column>
                   <Column className='' field='arrivalPlanDate'  header="Plan Date" ></Column>
@@ -775,7 +790,7 @@ const Dashboard = () => {
                   <Column className='' field='arrivalActualTime'  header="Arriv. Time" ></Column>
                   {/* <Column className='' field='deliveryNotes.departureActualDate'  header="Departure Date" /> */}
                   <Column className='' field='departureActualTime'  header="Dept. Time" ></Column>
-                  <Column className='' field='status'  header="Status" body={statusVendorBodyTemplate} ></Column>
+                  <Column className='' field='status'  header="Status Arrival" body={statusVendorBodyTemplate} ></Column>
                   {/* <Column className='' field=''  header="Materials" body={materialsBodyTemplate} ></Column> */}
               
                 </DataTable>
@@ -975,17 +990,18 @@ const Dashboard = () => {
                           </button>
                         </CTooltip>
 
+                        <CTooltip content="Kedatangan terlambat" placement="top">
+                          <button style={{ backgroundColor: "transparent"}}>
+                            <h6><CBadge style={{width: "160px", border: "2px solid #FBC550", backgroundColor: "#FBC550", color: "black"}}>OVERDUE ARRIVAL</CBadge> </h6>
+                          </button>
+                        </CTooltip>
+                        
                         <CTooltip content="Kedatangan tepat waktu" placement="top">
                           <button style={{ backgroundColor: "transparent"}}>
                             <h6><CBadge style={{width: "160px", border: "2px solid #49C05F", backgroundColor: "#49C05F"}}>ON SCHEDULE ARRIVAL</CBadge></h6>
                           </button>
                         </CTooltip>
                         
-                        <CTooltip content="Kedatangan terlambat" placement="top">
-                          <button style={{ backgroundColor: "transparent"}}>
-                            <h6><CBadge style={{width: "160px", border: "2px solid #FBC550", backgroundColor: "#FBC550", color: "black"}}>OVERDUE ARRIVAL</CBadge> </h6>
-                          </button>
-                        </CTooltip>
                       </CCol>
                     </CRow>
                     <hr style={{ border: "1px solid #D3D4D4"}}></hr>
