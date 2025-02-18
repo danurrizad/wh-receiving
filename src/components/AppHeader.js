@@ -101,7 +101,7 @@ const AppHeader = () => {
                 { imgProfile ? <CImage src={imgProfile}/> : <CIcon icon={icon.cilUser} />}
               </div>
             </CNavLink>
-            <CNavLink className="d-flex flex-column justify-content-center h-100" style={{ textDecoration: 'non' }}>
+            <CNavLink className="d-flex flex-column justify-content-center h-100" style={{ textDecoration: 'none' }}>
               <span style={{ fontSize: '', marginTop: '0px'}}>{name}</span>
               <span style={{ fontSize: '10px', marginTop: '0px' }}>{roleName.toUpperCase()}</span>
             </CNavLink>
