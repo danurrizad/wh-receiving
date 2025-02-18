@@ -1,6 +1,7 @@
 import React, { Suspense } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { CContainer, CSpinner } from '@coreui/react'
+import CustomTableLoading from './LoadingTemplate'
 
 // routes config
 import routes from '../routes'
@@ -8,7 +9,12 @@ import routes from '../routes'
 const AppContent = () => {
   return (
     <CContainer className="px-4" fluid>
-      <Suspense fallback={<CSpinner color="primary" />}>
+      <Suspense 
+        fallback={
+        <div style={{ height: "100vh"}}>
+          <CustomTableLoading />
+        </div>
+        }>
         <Routes>
           {routes.map((route, idx) => {
             return (

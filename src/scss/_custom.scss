@@ -158,15 +158,19 @@ td input.p-inputtext.p-component {
   z-index: 10000 !important;
 }
 
-.p-component-overlay {
-  background-color: #ffffff;
-  transition-duration: 0.2s;
-  border: 1px solid gray;
-}
-
-.p-datatable .p-datatable-loading-overlay{
+.p-datatable-thead{
+  position: relative;
   z-index: 10;
 }
+// .p-component-overlay {
+//   background-color: #ffffff;
+//   transition-duration: 0.2s;
+//   border: 1px solid gray;
+// }
+
+// .p-datatable .p-datatable-loading-overlay{
+//   z-index: 10;
+// }
 
 .btn-toggle{
   background-color: white;
@@ -259,4 +263,9 @@ td input.p-inputtext.p-component {
 
 .dashboard .p-datatable-wrapper, .dashboard .p-datatable-wrapper .p-datatable-table{
   min-height: 220px;
+}
+
+
+.select__menu{
+  z-index: 20 !important;
 }
