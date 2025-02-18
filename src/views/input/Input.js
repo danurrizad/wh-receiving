@@ -29,7 +29,7 @@ const Input = () => {
   const [dataMaterialsByDN, setDataMaterialsByDN] = useState([])
   const [stateVendorArrived, setStateVendorArrived] = useState(false)
   const [selectedRows, setSelectedRows] = useState([])
-  const [confirmedRemaining, setConfirmedRemaining] = useState(0)
+  const [confirmedRemaining, setConfirmedRemaining] = useState('0/0')
   const [disableInputDN, setDisableInputDN] = useState(false)
 
   const [selectedRit, setSelectedRit] = useState(0)
@@ -202,9 +202,9 @@ const Input = () => {
         
         if(responseStateArrived){
           setSelectedRit(1)
-          setConfirmedRemaining(0)
+          setConfirmedRemaining(`${responseDN.length}/${responseDN.length}`)
         } else{
-          setConfirmedRemaining(responseDN.length)
+          setConfirmedRemaining(`0/${responseDN.length}`)
         }
       }else{
         addToast("Invalid DN Number!", 'danger', 'error')
@@ -586,8 +586,8 @@ const Input = () => {
 
   useEffect(()=>{
     if(!stateVendorArrived){
-      const remaining = dataMaterialsByDN.length - selectedRows.length
-      setConfirmedRemaining(remaining)
+      // const remaining = dataMaterialsByDN.length - selectedRows.length
+      setConfirmedRemaining(`${selectedRows.length}/${dataMaterialsByDN.length}`)
     }
   }, [selectedRows])
 
