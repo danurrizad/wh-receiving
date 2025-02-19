@@ -227,7 +227,7 @@ const Book = () => {
             width: "100%",
             padding: "5px 10px",
             fontWeight: "bold",
-            color: "white",
+            color: status === "overdue" ? "black" : "white",
             borderRadius: "8px", 
             textTransform: "uppercase",
             cursor: "pointer"
@@ -500,7 +500,7 @@ const handleSubmitChangeQty = (rowIndex, rowData) => {
                       filters={queryFilter}
                       size='small'
                       emptyMessage={renderCustomEmptyMsg}
-                      scrollable
+                      // scrollable
                       scrollHeight="500px"
                       showGridlines
                       stripedRows
@@ -524,7 +524,7 @@ const handleSubmitChangeQty = (rowIndex, rowData) => {
                       {/* <Column className='' field='deliveryNotes.departureActualDate'  header="Departure Date" /> */}
                       <Column className='' field='deliveryNotes.departureActualTime'  header="Dpt. Time" />
                       <Column className='' field='deliveryNotes.status'  header="Status" body={statusVendorBodyTemplate} />
-                      <Column className='' field='deliveryNotes.delayTime'  header="Delay Time" />
+                      <Column className='' field='deliveryNotes.delayTime'  header="Delay Time" style={{ textTransform: "lowercase"}} />
                       <Column className='' field=''  header="Materials" body={materialsBodyTemplate} />
                   
                     </DataTable>
