@@ -1,13 +1,9 @@
 import React, { useState, useEffect,useRef } from 'react'
-import { dataSchedulesDummy, dataReceivingDummy,dataDummy } from '../../utils/DummyData'
-import  colorStyles from '../../utils/StyleReactSelect'
 import '../../scss/_tabels.scss'
 import Select from 'react-select'
 import Flatpickr from 'react-flatpickr'
 import 'flatpickr/dist/flatpickr.css'
-import Pagination from '../../components/Pagination'
 import { DatePicker, DateRangePicker, Input } from 'rsuite';
-import 'primeicons/primeicons.css'
 import { IconField } from 'primereact/iconfield'
 import { InputIcon } from 'primereact/inputicon'
 import { InputText } from 'primereact/inputtext'
@@ -21,7 +17,7 @@ import 'primeicons/primeicons.css';
 import { FilterMatchMode, FilterOperator } from 'primereact/api';
 import useReceivingDataService from '../../services/ReceivingDataServices'
 import { cilChart,cilCog} from '@coreui/icons';
-import { FaAnglesLeft, FaAnglesRight, FaArrowUpRightFromSquare, FaChevronLeft, FaChevronRight, FaCircleCheck, FaCircleExclamation, FaCircleXmark, FaInbox } from 'react-icons/fa6';
+import { FaAnglesLeft, FaAnglesRight, FaArrowUpRightFromSquare, FaChevronLeft, FaChevronRight, FaCircleCheck, FaCircleExclamation, FaCircleInfo, FaCircleXmark, FaInbox } from 'react-icons/fa6';
 import {
   CAvatar,
   CModal ,
@@ -58,31 +54,41 @@ import {
 } from '@coreui/icons'
 import useDashboardReceivingService from '../../services/DashboardService'
 import useChartData from '../../services/ChartDataServices'
+import usePieChartDataService from '../../services/PieChartDataService.jsx'
 import useMasterDataService from '../../services/MasterDataService'
 import {
   Chart as ChartJS,
+  ArcElement,
   CategoryScale,
   LinearScale,
   BarElement,
   Title,
   Tooltip,
   Legend,
+  PointElement ,
+  LineElement
 } from 'chart.js';
-import { Bar } from 'react-chartjs-2';
+import ChartDataLabels from "chartjs-plugin-datalabels";
+import annotationPlugin from "chartjs-plugin-annotation";
+import { Bar, Pie } from 'react-chartjs-2';
 import CIcon from '@coreui/icons-react'
 import { useToast } from '../../App'
 import CustomTableLoading from '../../components/LoadingTemplate'
-import annotationPlugin from "chartjs-plugin-annotation";
+import useBarChartDataService from './../../services/BarChartDataService';
 
 
 ChartJS.register(
   CategoryScale,
+  ArcElement,
   LinearScale,
   BarElement,
+  PointElement,
+  LineElement,
   Title,
   Tooltip,
   Legend,
-  annotationPlugin
+  annotationPlugin,
+  ChartDataLabels
 );
 
 
@@ -342,7 +348,9 @@ const Dashboard = () => {
     })
   }
 
-  const { setChartData, getChartOption, selectedVendor, isModalOpen, setIsModalOpen } = useChartData({ dataChartSchedules, handleClickOpenMaterials });
+  const { setChartData, getChartOption } = useChartData({ dataChartSchedules, handleClickOpenMaterials });
+  const { setPieChartData, getPieChartOption } = usePieChartDataService({ dataChartSchedules });
+  const { setBarChartData, getBarChartOptions } = useBarChartDataService({ dataChartSchedules });
 
   
 
@@ -558,8 +566,8 @@ const Dashboard = () => {
               const totalPage = Math.ceil(dataSchedules.length / pagination.rows)
               // console.log(pagination)
               // console.log("totalPage:", totalPage)
-              console.log(queryFilter)
-              if(queryFilter.plantId === "" && filterQuery.global.value === null){
+              // console.log(queryFilter)
+              if(queryFilter.plantId === "" && queryFilter.global.value === null){
                 if(pagination.page >= totalPage-1){
                   setPagination({ ...pagination, page: 0})
                   updateChartData(filteredData.length > 0 ? filteredData : dataSchedules, 0, pagination.rows);
@@ -568,10 +576,10 @@ const Dashboard = () => {
                   updateChartData(filteredData.length > 0 ? filteredData : dataSchedules, pagination.page+1, pagination.rows);
                 }
               }
-            }, 2000)
+            }, 24000)
 
             return () => clearInterval(interval);
-          }, [pagination])
+          }, [pagination, queryFilter.plantId])
           
           const handleFilter = (event) => {
             console.log("EVENT:", event)
@@ -794,73 +802,12 @@ const Dashboard = () => {
                   {/* <Column className='' field=''  header="Materials" body={materialsBodyTemplate} ></Column> */}
               
                 </DataTable>
-                {/* <CCol className="d-flex justify-content-center py-3" style={{ position: "relative" }}>
-                  <CPagination aria-label="Page navigation">
-                    <CPaginationItem
-                      disabled={currentPage === 1}
-                      onClick={() => setCurrentPage(1)}
-                    >
-                      <FaAnglesLeft/>
-                    </CPaginationItem>
-                    <CPaginationItem
-                      disabled={currentPage === 1}
-                      onClick={() => setCurrentPage(currentPage - 1)}
-                    >
-                      <FaChevronLeft/>
-                    </CPaginationItem>
-
-                    {visiblePages.map((page) => (
-                      <CPaginationItem
-                        key={page}
-                        active={currentPage === page}
-                        onClick={() => {
-                          console.log("page:", page)
-                          setCurrentPage(page)
-                        }}
-                      >
-                        {page}
-                      </CPaginationItem>
-                    ))}
-
-                    <CPaginationItem
-                      disabled={currentPage === totalPages || totalPages === 0}
-                      onClick={() => {
-                        console.log("currentPage in pagination:", currentPage)
-                        setCurrentPage(currentPage + 1)
-                      }}
-                    >
-                      <FaChevronRight/>
-                    </CPaginationItem>
-                    <CPaginationItem
-                      disabled={currentPage === totalPages || totalPages === 0}
-                      onClick={() => setCurrentPage(totalPages)}
-                    >
-                      <FaAnglesRight/>
-                    </CPaginationItem>
-                  </CPagination>
-               
-                  <div style={{ position: "absolute", right: "30%"}}>
-                    <Dropdown 
-                      value={limitPerPage} 
-                      onChange={(e) => {
-                        fetchChartReceivingData(selectedStatus, 1, e.value.code)
-                        setLimitPerPage(e.value)
-                      }} 
-                      options={[
-                        {name: 10, code: 10},
-                        {name: 25, code: 25},
-                        {name: 50, code: 50},
-                      ]} 
-                      optionLabel="name" 
-                      // placeholder="Select a City" 
-                      className="w-full md:w-14rem" 
-                    />
-                  </div>
-                </CCol> */}
               </CCardBody>
-
             </CCard>
-            </CRow>
+          </CRow>
+
+
+          {/* -------------------------------------------MODAL----------------------------------------------------------- */}
             <CModal 
               visible={showModalInput.state}
               onClose={() => setShowModalInput({state: false, enableSubmit: false})}
@@ -910,12 +857,10 @@ const Dashboard = () => {
                 <CRow  className='mt-1 px-2'></CRow>
               </CModalBody>
             </CModal>
-       </CCardBody>   
+          </CCardBody>   
        </CCard>
-
-
-        </CRow>
-          {/* <div ref={vendorScheduleRef}></div> */}
+      </CRow>
+        
         {isVisible && (
         <CRow ref={vendorScheduleRef} className='mb-3 mt-5 '>
           <CCard  className='px-0 ' style={{maxHeight: `${showCard.schedule ? "2000px" : "50px"}`, overflow: "hidden", transitionDuration: '500ms', border: "1px solid #6482AD"}}>
@@ -1010,6 +955,7 @@ const Dashboard = () => {
                         <Bar 
                           options={getChartOption()} 
                           data={setChartData()} 
+                          height={600}
                         />
                       </div>
                     </CRow>
@@ -1022,6 +968,7 @@ const Dashboard = () => {
   </CRow>
         
   )}
+
 
   {/* Modal List Materials */}
 

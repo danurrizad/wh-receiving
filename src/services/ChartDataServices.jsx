@@ -1,10 +1,5 @@
-import { useState,useEffect} from 'react';
-import { CModal, CModalHeader, CModalBody, CModalFooter, CButton } from '@coreui/react';
-import useDashboardReceivingService from '../services/DashboardService'
 
 const useChartData = ({dataChartSchedules, handleClickOpenMaterials}) => {
-    const [selectedVendor, setSelectedVendor] = useState(null);
-    const [isModalOpen, setIsModalOpen] = useState(false);
 
     const now = new Date();
     const currentHour = now.getHours();
@@ -147,6 +142,9 @@ const useChartData = ({dataChartSchedules, handleClickOpenMaterials}) => {
             },
             responsive: true,
             plugins: {
+                datalabels: {
+                    display: false
+                  },
                 tooltip: {
                     backgroundColor: "rgba(84, 70, 70, 0.7)",
                     callbacks: {
@@ -210,9 +208,6 @@ const useChartData = ({dataChartSchedules, handleClickOpenMaterials}) => {
     return {
         setChartData,
         getChartOption,
-        // selectedVendor,
-        // isModalOpen,
-        // setIsModalOpen
     }
 }
 export default useChartData
