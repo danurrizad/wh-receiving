@@ -134,6 +134,8 @@ const Dashboard = () => {
     remaining: 0,
   });
   const [ dataMaterialsByDNInquery, setDataMaterialsByDNInquery ] = useState([])
+  const [ dataDN, setDataDN ] = useState([])
+  const [ optionsSelectDN, setOptionsSelectDN ] = useState({})
  
   const [queryFilter, setQueryFilter] = useState({
     plantId: "",
@@ -331,21 +333,38 @@ const Dashboard = () => {
   const handleClickOpenMaterials = (data) => {
     setShowModalInput({...showModalInput, state: true})
     
-    const dataVendor = data?.deliveryNotes ? data?.deliveryNotes : data
-    const dataMaterials = data?.deliveryNotes?.Materials ? data?.deliveryNotes?.Materials : data.Materials
+    const dataDN = data?.deliveryNotes
     // console.log("data vendor:", dataVendor)
-    // console.log("data material:", dataMaterials)
-    setDataMaterialsByDNInquery(dataMaterials)
+    console.log("data:", data)
+    // console.log("data DN [0]:", dataDN[0].Materials)
+    const optionsDN = data.deliveryNotes.map((dn)=>{
+      return{
+        label: dn.dnNumber,
+        value: dn.dnNumber
+      }
+    })
+    setOptionsSelectDN({...optionsSelectDN, list: optionsDN, selected: optionsDN[0]?.value})
+    setDataDN(dataDN)
+    setDataMaterialsByDNInquery(dataDN.length !== 0 ? dataDN[0].Materials : [])
 
     setFormUpdate({
-      dnNumber: dataVendor.dnNumber,
-      vendorName: dataVendor.vendorName,
-      rit: dataVendor.rit,
-      incomingIds: dataMaterials.map((data)=>data.incomingId),
-      receivedQuantities: dataMaterials.map((data)=>data.receivedQuantity),
-      statuses: dataMaterials.map((data)=>data.status),
-      remains: dataMaterials.map((data)=>data.remain)
+      dnNumber: optionsDN[0]?.value,
+      totalDN: dataDN.length,
+      vendorName: data.vendorName,
+      rit: data.rit,
+      // incomingIds: dataMaterials.map((data)=>data.incomingId),
+      // receivedQuantities: dataMaterials.map((data)=>data.receivedQuantity),
+      // statuses: dataMaterials.map((data)=>data.status),
+      // remains: dataMaterials.map((data)=>data.remain)
     })
+  }
+
+
+  const handleChangeOptionsDN = (e) => {
+    const matchesDN = dataDN.find((data)=>data.dnNumber === e.value)
+    console.log("matchesDN:", matchesDN)
+    setDataMaterialsByDNInquery(matchesDN.Materials)
+    setOptionsSelectDN({...optionsSelectDN, selected: e.value})
   }
 
   const { setChartData, getChartOption } = useChartData({ dataChartSchedules, handleClickOpenMaterials });
@@ -371,10 +390,10 @@ const Dashboard = () => {
   
 
   const remainBodyTemplate = (rowBody, {rowIndex}) => {
-    const colorText = formUpdate.remains[rowIndex] < 0 ? "red" : "black" 
+    const colorText = rowBody.remain < 0 ? "red" : "black" 
     return(
       <p style={{color: colorText}}>
-        {formUpdate.remains[rowIndex]}
+        {rowBody.remain}
       </p>
     )
   }
@@ -819,13 +838,22 @@ const Dashboard = () => {
               </CModalHeader>
               <CModalBody> 
                 <CRow>
-                  <CCol sm='3'>
-                    <CFormText>DN NO</CFormText>  
-                    <CFormLabel>{formUpdate.dnNumber}</CFormLabel>
-                  </CCol>
                   <CCol>
                     <CFormText>VENDOR NAME</CFormText>  
                     <CFormLabel>{formUpdate.vendorName}</CFormLabel>
+                  </CCol>
+                  <CCol sm='3'>
+                    <CFormText>TOTAL DN</CFormText>  
+                    <CFormLabel>{formUpdate.totalDN}</CFormLabel>
+                  </CCol>
+                  <CCol sm='3'>
+                    <CFormText>DN NO</CFormText>  
+                    <Select 
+                      options={optionsSelectDN.list} 
+                      onChange={handleChangeOptionsDN} 
+                      value={optionsSelectDN?.list?.find((opt)=>opt.value === optionsSelectDN.selected)}
+                    />
+                    {/* <CFormLabel>{formUpdate.dnNumber}</CFormLabel> */}
                   </CCol>
                 </CRow>
                 <CRow className='pt-1'>
