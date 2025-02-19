@@ -405,7 +405,7 @@ const Input = () => {
             await getMaterialByDN(formBody.dnNumber)
             setFormInput({...formInput, rit: 0})
             setSelectedRows([])
-            setConfirmedRemaining(0)
+            setConfirmedRemaining('0 / 0')
             setDisableInputDN(true)
             // return response.data.message
             return "Material quantities received!"
@@ -750,7 +750,7 @@ const Input = () => {
                   { stateVendorArrived ? <CButton style={{ backgroundColor: "#758694"}} className='text-white' onClick={handleClearInputDN}>Clear</CButton> 
                       : 
                   // <CButton disabled={formInput.rit === 0 || qtyEachMaterials?.qty?.filter((data)=>data===null).length > 0} style={{ backgroundColor: "#5B913B"}} className='text-white' onClick={handleSubmitMaterials}>Submit</CButton>
-                  <CButton disabled={formInput.rit === 0 || confirmedRemaining !== 0} style={{ backgroundColor: "#5B913B"}} className='text-white' onClick={handleSubmitMaterials}>Submit</CButton>
+                  <CButton disabled={formInput.rit === 0 || confirmedRemaining === '0 / 0' || dataMaterialsByDN.length !== selectedRows.length} style={{ backgroundColor: "#5B913B"}} className='text-white' onClick={handleSubmitMaterials}>Submit</CButton>
                         }
                 </CCol>
               </CRow>
