@@ -91,21 +91,11 @@ ChartJS.register(
 
 const Summary = () => {
   const [loading, setLoading] = useState(false)
-  const { setPieChartData, getPieChartOption } = usePieChartDataService({  });
+  const [dataPieChart, setDataPieChart] = useState([])
+  const { setPieChartData, getPieChartOption } = usePieChartDataService({ dataPieChart });
   const { setBarChartData, getBarChartOptions } = useBarChartDataService({  });
 
-    // const [dateState, setDateState] = useState(new Date())
-  
-    // const t = new Date()
-    // const c = t.getHours() - 12
-    // useEffect(() => {
-    //   const interval = setInterval(() => {
-    //     setDateState(new Date())
-    //   }, 1000)
-
-    // }, [])
-  
-    const weekday = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+  const weekday = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
     const monthsName = ["January","February","March","April","May","June","July","August","September","October","November","December"];
     const [filterDate, setFilterDate] = useState(new Date())
     const [filterMonth, setFilterMonth] = useState(new Date())
@@ -116,6 +106,37 @@ const Summary = () => {
     const month = now.getMonth(); // 0-based index (0 = January, 11 = December)
 
     const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+  const { getChartReceiving } = useDashboardReceivingService()
+
+  const fetchChartReceiving = async() => {
+    try {
+        const fromDate = new Date(filterDate.setHours(0, 0, 1)).toLocaleDateString('en-CA')
+        const endDate = new Date(filterDate.setHours(23, 59, 59)).toLocaleDateString('en-CA')
+        console.log("from :", fromDate)
+        console.log("end :", endDate)
+        const response = await getChartReceiving(
+            "",
+            "",
+            "",
+            new Date(filterDate.setHours(0, 0, 1)).toLocaleDateString('en-CA'),
+            new Date(filterDate.setHours(23, 59, 59)).toLocaleDateString('en-CA'),
+            "",
+            ""
+        )
+        console.log("Response: ", response)
+        setDataPieChart(response.summaryMaterial)
+    } catch (error) {
+        
+    }
+  }
+
+  useEffect(()=>{
+    fetchChartReceiving()
+  }, [filterDate])
+
+  
+    
 
   const renderCustomEmptyMsg = () => {
     return(
@@ -143,10 +164,21 @@ return (
                                 <CCol className="d-flex align-items-end">
                                     <h1>{weekday[filterDate.getDay()]} </h1>
                                 </CCol>
-                                <CCol className='d-flex flex-column align-items-end justify-content-end'>
+                                <CCol className='d-flex align-items-end justify-content-end gap-2'>
+                                    <div className="h-100">
+                                        <CFormText>Filter by Plant</CFormText>
+                                        <Select className='flex-shrink-0' style={{ width: "130px"}}/>
+                                    </div>
                                     <div>
                                         <CFormText>Filter by Date</CFormText>
-                                        <DatePicker format='yyyy-MM-dd'  placeholder="Select date" value={filterDate} onChange={(e)=>setFilterDate(e !== null ? e : new Date())}/>
+                                        <DatePicker 
+                                            style={{ width: "130px"}} 
+                                            format='yyyy-MM-dd'  
+                                            placeholder="Select date" 
+                                            value={filterDate} 
+                                            onChange={(e)=>setFilterDate(e !== null ? e : new Date())}
+                                            placement='left'
+                                        />
                                     </div>
                                 </CCol>
                             </CRow>
@@ -156,7 +188,7 @@ return (
             </CRow>
 
             {/* Time Bar Progress */}
-            {/* <CRow className='mb-3'>
+            <CRow className='mb-3'>
                 <CCol>
                     <CCard className='p-0'>
                         <CCardBody className='p-0 px-4'>
@@ -164,7 +196,7 @@ return (
                         </CCardBody>
                     </CCard>
                 </CCol>
-            </CRow> */}
+            </CRow>
             { loading ? <CustomTableLoading/> : (
                 <CRow className='d-flex align-items-between'>
                     <CCol sm='8'>
@@ -173,7 +205,7 @@ return (
                         <Pie 
                             options={getPieChartOption()} 
                             data={setPieChartData()} 
-                            height={550}
+                            height={500}
                             />
                         </CCardBody>
                     </CCard>
@@ -185,7 +217,7 @@ return (
                             <h6>COMPLETED</h6>
                         </CCardHeader>
                         <CCardBody className='d-flex align-items-end gap-2'>
-                            <h2>40</h2>
+                            <h2>{dataPieChart.completed}</h2>
                             <h4 className='mb-1'>Materials</h4>
                         </CCardBody>
                         </CCard>
@@ -196,7 +228,7 @@ return (
                             <h6>NOT COMPLETED</h6>
                         </CCardHeader>
                         <CCardBody className='d-flex align-items-end gap-2'>
-                            <h2>12</h2>
+                            <h2>{dataPieChart.notCompleted}</h2>
                             <h4 className='mb-1'>Materials</h4>
                         </CCardBody>
                         </CCard>
@@ -207,7 +239,7 @@ return (
                             <h6>NOT DELIVERED</h6>
                         </CCardHeader>
                         <CCardBody className='d-flex align-items-end gap-2'>
-                            <h2>4</h2>
+                            <h2>{dataPieChart.notDelivered}</h2>
                             <h4 className='mb-1'>Materials</h4>
                         </CCardBody>
                         </CCard>
@@ -218,7 +250,7 @@ return (
                             <h6>TOTAL</h6>
                         </CCardHeader>
                         <CCardBody className='d-flex align-items-end gap-2'>
-                            <h2>56</h2>
+                            <h2>{dataPieChart.total}</h2>
                             <h4 className='mb-1'>Materials</h4>
                         </CCardBody>
                         </CCard>

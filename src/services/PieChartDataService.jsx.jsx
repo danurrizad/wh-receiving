@@ -1,5 +1,6 @@
 
-const usePieChartDataService = ({dataChartSchedules}) => {
+const usePieChartDataService = ({dataPieChart}) => {
+  console.log("service chart:", dataPieChart)
     const setPieChartData = () => {
         const data = {
             labels: [
@@ -9,7 +10,11 @@ const usePieChartDataService = ({dataChartSchedules}) => {
             ],
             datasets: [{
               label: 'Material Received',
-              data: [40, 12, 4],
+              data: [
+                Number(dataPieChart?.completed), 
+                Number(dataPieChart?.notCompleted), 
+                Number(dataPieChart?.notDelivered)
+              ],
               backgroundColor: [
                   '#00DB42',
                   '#FFD43B',

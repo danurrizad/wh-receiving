@@ -20,7 +20,7 @@ const StackedTimeProgressBar = () => {
       const start = new Date();
       start.setHours(7, 0, 0, 0); // Start time: 07:00
       const end = new Date();
-      end.setHours(18, 0, 0, 0); // End time: 18:00
+      end.setHours(16, 0, 0, 0); // End time: 18:00
 
       if (now < start) {
         setProgress(0);
@@ -52,7 +52,7 @@ const StackedTimeProgressBar = () => {
       {
         label: "Remaining Time",
         data: [100], // Full 100% bar (gray)
-        backgroundColor: "#E0E0E0", // Gray color
+        backgroundColor: "gray", // Gray color
         borderRadius: 5, // Rounded edges
         stack: "stack1", // Stack group
       },
@@ -80,10 +80,10 @@ const StackedTimeProgressBar = () => {
       legend: { display: false }, // Hide legend
       datalabels: {
         color: "white", // Black text color
-        font: { size: 14, weight: "bold" },
+        font: { size: 24, weight: "bold" },
         anchor: "center",
         align: "center",
-        formatter: () => currentTime, // Show current time inside progress bar
+        formatter: () => `Time : ${currentTime}`, // Show current time inside progress bar
       },
     },
   };
