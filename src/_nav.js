@@ -46,6 +46,12 @@ const useNavigation = () => {
     },
     {
       component: CNavItem,
+      name: 'Materials Summary',
+      to: '/summary',
+      icon: <CIcon icon={icon.cilChartPie} customClassName="nav-icon" />,
+    },
+    {
+      component: CNavItem,
       name: 'Maps Truck Station',
       to: '/dashboard/map-truck',
       icon: <CIcon icon={icon.cilMap} customClassName="nav-icon" />,
@@ -64,13 +70,13 @@ const useNavigation = () => {
           component: CNavItem,
           name: 'Input Receiving',
           to: '/input',
-          icon: <CIcon icon={icon.cilStar} customClassName="nav-icon" />,
+          icon: <CIcon icon={icon.cilMinus} customClassName="nav-icon" />,
         },
         {
           component: CNavItem,
           name: 'Inquiry Receiving',
           to: '/inquiry',
-          icon: <CIcon icon={icon.cilStar} customClassName="nav-icon" />,
+          icon: <CIcon icon={icon.cilMinus} customClassName="nav-icon" />,
         },
       ],
     },
@@ -95,13 +101,13 @@ const useNavigation = () => {
       component: CNavItem,
       name: 'Vendor Setup',
       to: '/setup/vendor',
-      icon: <CIcon icon={icon.cilStar} size="xl" customClassName="nav-icon" />,
+      icon: <CIcon icon={icon.cilMinus} size="xl" customClassName="nav-icon" />,
       },  
      {   
       component: CNavItem,
       name: 'DN Setup',
       to: '/setup/dn',
-      icon: <CIcon icon={icon.cilStar} size="xl" customClassName="nav-icon" />,
+      icon: <CIcon icon={icon.cilMinus} size="xl" customClassName="nav-icon" />,
      }
      ]
     },
@@ -124,13 +130,13 @@ const useNavigation = () => {
           component: CNavItem,
           name: 'Input Requirement',
           to: '/vendor/input/requirement',
-          icon: <CIcon icon={icon.cilStar} size="xl" customClassName="nav-icon" />,
+          icon: <CIcon icon={icon.cilMinus} size="xl" customClassName="nav-icon" />,
          },
          {   
           component: CNavItem,
           name: 'Inquery Requirement',
           to: '/vendor/inquery/requirement',
-          icon: <CIcon icon={icon.cilStar} size="xl" customClassName="nav-icon" />,
+          icon: <CIcon icon={icon.cilMinus} size="xl" customClassName="nav-icon" />,
          }
       ]
       },  
@@ -138,7 +144,7 @@ const useNavigation = () => {
       component: CNavItem,
       name: 'Track Record',
       to: '/vendor/track-record',
-      icon: <CIcon icon={icon.cilStar} size="xl" customClassName="nav-icon" />,
+      icon: <CIcon icon={icon.cilMinus} size="xl" customClassName="nav-icon" />,
      }
      ]
     },

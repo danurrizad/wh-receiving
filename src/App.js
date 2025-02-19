@@ -8,6 +8,8 @@ import 'primereact/resources/themes/nano/theme.css'
 // import "primereact/resources/themes/lara-light-indigo/theme.css";
 import 'primeicons/primeicons.css'
 import 'primereact/resources/primereact.min.css'
+import CustomTableLoading from './components/LoadingTemplate'
+import LoadingTWIIS from './components/LoadingTWIIS'
 
 // Containers
 const DefaultLayout = React.lazy(() => import('./layout/DefaultLayout'))
@@ -92,8 +94,8 @@ const App = () => {
         </CToaster>
         <Suspense
           fallback={
-            <div className="pt-3 text-center">
-              <CSpinner color="primary" variant="grow" />
+            <div className="pt-3 text-center" style={{ height: "100vh"}}>
+              <LoadingTWIIS/>
             </div>
           }
         >
