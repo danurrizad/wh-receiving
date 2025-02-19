@@ -114,7 +114,7 @@ const Book = () => {
         const formattedTo = `${toYear}-${toMonth}-${toDate}`
         
         const response = await getDNInqueryData(idPlant, formattedFrom, formattedTo) 
-        // console.log("response :", response.data.data)
+        console.log("response :", response)
         setDataDNInquery(response.data.data)
       }else{
         const response = await getDNInqueryData(idPlant, "", "") 
@@ -137,12 +137,12 @@ const Book = () => {
   const handleClickOpenMaterials = (data) => {
     setShowModalInput({...showModalInput, state: true})
     // console.log("data vendor:", data.deliveryNotes)
-    console.log("data material:", data.deliveryNotes.Materials)
+    console.log("data material:", data.Materials)
     // console.log("data material viewOnly:", data.deliveryNotes.Materials.map((data)=>Boolean(data.viewOnly)))
     
-    const dataVendor = data.deliveryNotes
-    const dataMaterials = data.deliveryNotes.Materials
-    setDataMaterialsByDNInquery(data.deliveryNotes.Materials)
+    const dataVendor = data
+    const dataMaterials = data.Materials
+    setDataMaterialsByDNInquery(data.Materials)
     setIsViewOnly(dataMaterials.map((data)=>Boolean(data.viewOnly)))
 
     setFormUpdate({
@@ -192,8 +192,8 @@ const Book = () => {
   }
 
   const plantTimeBodyTemplate = (rowData) => {
-    const timeFrom = rowData.deliveryNotes.arrivalPlanTime
-    const timeTo = rowData.deliveryNotes.departurePlanTime
+    const timeFrom = rowData.arrivalPlanTime
+    const timeTo = rowData.departurePlanTime
     return(
       <div>
         {timeFrom} - {timeTo}
@@ -202,7 +202,7 @@ const Book = () => {
   }
 
   const statusVendorBodyTemplate = (rowData) => {
-    const status = rowData.deliveryNotes.status
+    const status = rowData.status
     const bgColor = 
       status === "delayed" ? "#F64242" : 
       status === "scheduled" ? "#6E9CFF" : 
@@ -233,7 +233,7 @@ const Book = () => {
             cursor: "pointer"
           }}
         >
-          {status.toUpperCase()}
+          {status}
         </button>
       </CTooltip>
     )
@@ -496,7 +496,7 @@ const handleSubmitChangeQty = (rowIndex, rowData) => {
                       className='p-datatable-gridlines p-datatable-sm custom-datatable text-nowrap'
                       style={{ minHeight: "200px"}}
                       removableSort
-                      globalFilterFields={['deliveryNotes.dnNumber', 'deliveryNotes.supplierName', 'deliveryNotes.truckStation', '']}
+                      globalFilterFields={['dnNumber', 'supplierName', 'truckStation', '']}
                       filters={queryFilter}
                       size='small'
                       emptyMessage={renderCustomEmptyMsg}
@@ -513,18 +513,18 @@ const handleSubmitChangeQty = (rowIndex, rowData) => {
                       filterDisplay="row"
                     >
                       <Column className='' header="No" body={(rowBody, {rowIndex})=>rowIndex+1}/>
-                      <Column className='' field='deliveryNotes.dnNumber'  header="DN No"/>
-                      <Column className='' field='deliveryNotes.supplierName'  header="Vendor Name" />
-                      <Column className='' field='deliveryNotes.truckStation'  header="Truck Station" />
-                      <Column className='' field='deliveryNotes.rit'  header="Rit" />
-                      <Column className='' field='deliveryNotes.arrivalPlanDate'  header="Plan Date" />
-                      <Column className='' field='deliveryNotes.arrivalPlanTime'  header="Plan Time" body={plantTimeBodyTemplate} />
-                      <Column className='' field='deliveryNotes.arrivalActualDate'  header="Arv. Date" />
-                      <Column className='' field='deliveryNotes.arrivalActualTime'  header="Arv. Time" />
+                      <Column className='' field='dnNumber'  header="DN No"/>
+                      <Column className='' field='supplierName'  header="Vendor Name" />
+                      <Column className='' field='truckStation'  header="Truck Station" />
+                      <Column className='' field='rit'  header="Rit" />
+                      <Column className='' field='arrivalPlanDate'  header="Plan Date" />
+                      <Column className='' field='arrivalPlanTime'  header="Plan Time" body={plantTimeBodyTemplate} />
+                      <Column className='' field='arrivalActualDate'  header="Arv. Date" />
+                      <Column className='' field='arrivalActualTime'  header="Arv. Time" />
                       {/* <Column className='' field='deliveryNotes.departureActualDate'  header="Departure Date" /> */}
-                      <Column className='' field='deliveryNotes.departureActualTime'  header="Dpt. Time" />
-                      <Column className='' field='deliveryNotes.status'  header="Status" body={statusVendorBodyTemplate} />
-                      <Column className='' field='deliveryNotes.delayTime'  header="Delay Time" style={{ textTransform: "lowercase"}} />
+                      <Column className='' field='departureActualTime'  header="Dpt. Time" />
+                      <Column className='' field='status'  header="Status" body={statusVendorBodyTemplate} />
+                      <Column className='' field='delayTime'  header="Delay Time" style={{ textTransform: "lowercase"}} />
                       <Column className='' field=''  header="Materials" body={materialsBodyTemplate} />
                   
                     </DataTable>
