@@ -168,8 +168,9 @@ const Book = () => {
             <Column header="Plan" colSpan={2} align='center' />
             <Column header="Arrival" colSpan={2} align='center' />
             <Column header="Departure" sortable field='deliveryNotes.departureActualTime' rowSpan={2} />
-            <Column header="Status" sortable field='deliveryNotes.status' rowSpan={2} />
+            <Column header="Status Arrival" sortable field='deliveryNotes.status' rowSpan={2} />
             <Column header="Delay Time" sortable field='deliveryNotes.delayTime' rowSpan={2} />
+            <Column header="Status Received" sortable rowSpan={2} />
             <Column header="Materials" rowSpan={2} />
         </Row>
         <Row>
@@ -381,6 +382,15 @@ const handleSubmitChangeQty = (rowIndex, rowData) => {
       )
     }
 
+    const statusReceivedBodyTemplate = (rowData) => {
+      const completedReceive = rowData.Materials.filter((data)=>data.status === 'completed')
+      return(
+        <div>
+          <span style={{color: completedReceive.length !== rowData.Materials.length ? "red" : "black"}}>{completedReceive.length}</span> / <span>{rowData.Materials.length}</span>
+        </div>
+      )
+    }
+
     const renderCustomEmptyMsg = () => {
         return(
           <div className='w-100 d-flex flex-column align-items-center justify-content-center py-3' style={{ color: "black", opacity: "50%"}}>
@@ -398,7 +408,7 @@ const handleSubmitChangeQty = (rowIndex, rowData) => {
           //   updatedTime: time
           // })
     
-          console.log("----------------------SUBMIT LOG---------------------", )
+          // console.log("----------------------SUBMIT LOG---------------------", )
           const dnNumber = formUpdate.dnNumber
           const warehouseId = formUpdate.warehouseId
           const filteredQty = formUpdate.receivedQuantities.filter((data,index)=>Number(data) !== Number(dataMaterialsByDNInquery[index].receivedQuantity))
@@ -407,9 +417,9 @@ const handleSubmitChangeQty = (rowIndex, rowData) => {
             incomingIds: formUpdate.incomingIds.filter((data,index)=>Number(formUpdate.receivedQuantities[index]) !== Number(dataMaterialsByDNInquery[index].receivedQuantity) && Number(data)),
             quantities: filteredQty.map(Number),
           }
-          console.log("formBody to submit :", formBody)
-          console.log("dnNumber :", dnNumber)
-          console.log("warehouseId :", warehouseId)
+          // console.log("formBody to submit :", formBody)
+          // console.log("dnNumber :", dnNumber)
+          // console.log("warehouseId :", warehouseId)
     
           Swal.fire({
             title: "Save confirmation",
@@ -523,8 +533,9 @@ const handleSubmitChangeQty = (rowIndex, rowData) => {
                       <Column className='' field='arrivalActualTime'  header="Arv. Time" />
                       {/* <Column className='' field='deliveryNotes.departureActualDate'  header="Departure Date" /> */}
                       <Column className='' field='departureActualTime'  header="Dpt. Time" />
-                      <Column className='' field='status'  header="Status" body={statusVendorBodyTemplate} />
+                      <Column className='' field='status'  header="Status Arrival" body={statusVendorBodyTemplate} />
                       <Column className='' field='delayTime'  header="Delay Time" style={{ textTransform: "lowercase"}} />
+                      <Column className='' field=''  header="Status Received" body={statusReceivedBodyTemplate} />
                       <Column className='' field=''  header="Materials" body={materialsBodyTemplate} />
                   
                     </DataTable>
