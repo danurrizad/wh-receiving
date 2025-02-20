@@ -94,48 +94,78 @@ const Summary = () => {
   const [dataPieChart, setDataPieChart] = useState([])
   const { setPieChartData, getPieChartOption } = usePieChartDataService({ dataPieChart });
   const { setBarChartData, getBarChartOptions } = useBarChartDataService({  });
+  const { getChartReceiving } = useDashboardReceivingService()
+  const { getMasterData } = useMasterDataService()
 
   const weekday = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
-    const monthsName = ["January","February","March","April","May","June","July","August","September","October","November","December"];
-    const [filterDate, setFilterDate] = useState(new Date())
-    const [filterMonth, setFilterMonth] = useState(new Date())
-    
+  const monthsName = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+  const [filterDate, setFilterDate] = useState(new Date())
+  const [filterMonth, setFilterMonth] = useState(new Date())
+  const [optionsSelectPlant, setOptionsSelectPlant] = useState({
+    list: [],
+    selected: ""
+  })
 
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = now.getMonth(); // 0-based index (0 = January, 11 = December)
+  const [timeState, setTimeState] = useState(new Date())
+  const t = new Date()
+  const c = t.getHours() - 12
+//   useEffect(() => {
+//     setInterval(() => {
+//       setTimeState(new Date())
+//     }, 1000)
+//   }, [])
 
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
 
-  const { getChartReceiving } = useDashboardReceivingService()
 
-  const fetchChartReceiving = async() => {
+  const fetchChartReceiving = async(plantId) => {
     try {
-        const fromDate = new Date(filterDate.setHours(0, 0, 1)).toLocaleDateString('en-CA')
-        const endDate = new Date(filterDate.setHours(23, 59, 59)).toLocaleDateString('en-CA')
-        console.log("from :", fromDate)
-        console.log("end :", endDate)
+        setLoading(true)
         const response = await getChartReceiving(
+            plantId,
             "",
             "",
-            "",
-            new Date(filterDate.setHours(0, 0, 1)).toLocaleDateString('en-CA'),
-            new Date(filterDate.setHours(23, 59, 59)).toLocaleDateString('en-CA'),
+            filterDate.toLocaleDateString('en-CA'),
+            filterDate.toLocaleDateString('en-CA'),
             "",
             ""
         )
         console.log("Response: ", response)
         setDataPieChart(response.summaryMaterial)
     } catch (error) {
-        
+        console.error(error)
+    } finally{
+        setLoading(false)
     }
   }
 
   useEffect(()=>{
-    fetchChartReceiving()
-  }, [filterDate])
+    fetchChartReceiving(optionsSelectPlant.selected)
+  }, [filterDate, optionsSelectPlant.selected])
 
-  
+
+  const fetchPlant = async() => {
+    try {
+        const response = await getMasterData('plant-public')
+        console.log(response.data)
+        const optionsPlant = response.data.map((data)=>{
+            return{
+                label: data.plantName,
+                value: data.id
+            }
+        })
+        setOptionsSelectPlant({ ...optionsSelectPlant, list: optionsPlant})
+    } catch (error) {
+        console.error(error)
+    }
+  }
+
+  useEffect(()=>{
+    fetchPlant()
+  }, [])
     
 
   const renderCustomEmptyMsg = () => {
@@ -161,13 +191,46 @@ return (
                     <CCard>
                         <CCardBody>
                             <CRow>
-                                <CCol className="d-flex align-items-end">
+                                <CCol>
                                     <h1>{weekday[filterDate.getDay()]} </h1>
                                 </CCol>
+                                <CCol className='d-flex align-items-center justify-content-center gap-1'>
+                                    <CCard className='px-2'>
+                                        <h1>
+                                            {timeState.toLocaleString('en-US', {
+                                                hour: '2-digit',
+                                                hourCycle: 'h24'
+                                            })}
+                                        </h1>
+                                    </CCard>
+                                    <h1>:</h1>
+                                    <CCard className='px-2'>
+                                        <h1>
+                                            {timeState.toLocaleString('en-US', {
+                                                hour: '2-digit',
+                                                minute: '2-digit',
+                                                hourCycle: 'h24'
+                                            }).split(":")[1]}
+                                        </h1>
+                                    </CCard>
+                                </CCol>
                                 <CCol className='d-flex align-items-end justify-content-end gap-2'>
-                                    <div className="h-100">
+                                    <div className="h-100 w-50">
                                         <CFormText>Filter by Plant</CFormText>
-                                        <Select className='flex-shrink-0' style={{ width: "130px"}}/>
+                                        <Select 
+                                            options={optionsSelectPlant.list}
+                                            value={optionsSelectPlant.list.find((opt)=>opt.value === optionsSelectPlant.selected)}
+                                            onChange={(e)=>{
+                                                setOptionsSelectPlant({...optionsSelectPlant, selected: e !== null ? e.value : ""})
+                                            }}
+                                            isClearable
+                                            styles={{
+                                                control: provided => ({
+                                                    ...provided,
+                                                    minHeight: "42px"
+                                                })
+                                            }}
+                                        />
                                     </div>
                                     <div>
                                         <CFormText>Filter by Date</CFormText>
@@ -177,7 +240,7 @@ return (
                                             placeholder="Select date" 
                                             value={filterDate} 
                                             onChange={(e)=>setFilterDate(e !== null ? e : new Date())}
-                                            placement='left'
+                                            placement='bottomEnd'
                                         />
                                     </div>
                                 </CCol>
@@ -187,16 +250,6 @@ return (
                 </CCol>
             </CRow>
 
-            {/* Time Bar Progress */}
-            <CRow className='mb-3'>
-                <CCol>
-                    <CCard className='p-0'>
-                        <CCardBody className='p-0 px-4'>
-                            <TimeProgressBar/>
-                        </CCardBody>
-                    </CCard>
-                </CCol>
-            </CRow>
             { loading ? <CustomTableLoading/> : (
                 <CRow className='d-flex align-items-between'>
                     <CCol sm='8'>
@@ -205,7 +258,7 @@ return (
                         <Pie 
                             options={getPieChartOption()} 
                             data={setPieChartData()} 
-                            height={500}
+                            height={550}
                             />
                         </CCardBody>
                     </CCard>
@@ -281,7 +334,7 @@ return (
                                     <div>
                                         <CFormText>Filter by Month</CFormText>
                                         <DatePicker 
-                                            showOneCalendar
+                                            showonecalendar='true'
                                             format='MM-yyyy'  
                                             placeholder="Select month" 
                                             value={filterMonth} 

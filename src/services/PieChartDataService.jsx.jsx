@@ -1,6 +1,6 @@
 
 const usePieChartDataService = ({dataPieChart}) => {
-  console.log("service chart:", dataPieChart)
+  console.log("length:", dataPieChart)
     const setPieChartData = () => {
         const data = {
             labels: [
@@ -11,13 +11,13 @@ const usePieChartDataService = ({dataPieChart}) => {
             datasets: [{
               label: 'Material Received',
               data: [
-                Number(dataPieChart?.completed), 
-                Number(dataPieChart?.notCompleted), 
-                Number(dataPieChart?.notDelivered)
+                dataPieChart ? dataPieChart.completed : 0, 
+                dataPieChart ? dataPieChart.notCompleted : 0, 
+                dataPieChart ? dataPieChart.notDelivered : 0
               ],
               backgroundColor: [
-                  '#00DB42',
-                  '#FFD43B',
+                '#00DB42',
+                '#FFD43B',
                 '#FF0000',
               ],
               hoverOffset: 4
