@@ -10,6 +10,15 @@ const useAuthDataService = () => {
         throw new Error(message + error.message)
       }
 
+    const login = async (username, password) => {
+      try {
+        const response = await axiosInstance.post('/login', { username, password })
+        return response
+      } catch (error) {
+        handleError(error, 'Error during login:')
+      }
+    }
+
     const logout = async () => {
         try {
           const response = await axiosInstance.delete('/logout')
@@ -20,7 +29,8 @@ const useAuthDataService = () => {
       }
 
     return{
-        logout
+      login,
+      logout
     }
 }
 

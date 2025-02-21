@@ -5,10 +5,12 @@ import { CNavGroup, CNavItem, CNavTitle } from '@coreui/react'
 import useAuthDataService from './services/AuthDataServices'
 import Swal from 'sweetalert2'
 import withReactContent from 'sweetalert2-react-content'
+import { useNavigate } from 'react-router-dom'
 
 
 const useNavigation = () => {
   const { logout } = useAuthDataService()
+  const navigate = useNavigate()
   const MySwal = withReactContent(Swal)
 
   const handleLogout = async () => {
@@ -25,8 +27,8 @@ const useNavigation = () => {
       })
       if (result.isConfirmed) {
         await logout()
-        // navigate('/login')
-        window.location.assign('https://twiis-toyota.web.app/#/login')
+        navigate('/login')
+        // window.location.assign('https://twiis-toyota.web.app/#/login')
       }
     } catch (error) {
       console.error(error)

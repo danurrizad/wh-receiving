@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import {
   CButton,
@@ -9,56 +9,96 @@ import {
   CContainer,
   CForm,
   CFormInput,
-  CImage,
   CInputGroup,
   CInputGroupText,
   CRow,
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
-import { cilLockLocked, cilUser } from '@coreui/icons'
-import ImageBG from '../../../assets/images/bg-login.jpg'
-// import { Player } from '@lottiefiles/react-lottie-player';
-// import Lottie from 'lottie-react'
-// import animationData from '../../../assets/lottie/lottie-login.json'
-// import lottieAnimation from '../../../assets/lottie/lottie-login.json'
-import LogoTWIIS from 'src/assets/images/logo-twiis.png';
-// import { useToast } from '../../../App'
-import { useToast } from './../../../App';
+import { cilLockLocked, cilUser, cibCircleci } from '@coreui/icons'
+import { useNavigate } from 'react-router-dom'
+import Swal from 'sweetalert2'
+import withReactContent from 'sweetalert2-react-content'
+import useAuthDataService from '../../../services/AuthDataServices'
+// import logo from '../../../assets/brand/TWIIS-NEW.png'
+// import LogoTWIIS
+import background from '../../../assets/images/bgwh.png'
+import LogoTWIIS  from 'src/assets/images/logo-twiis-2.png';
+
+const MySwal = withReactContent(Swal)
 
 const Login = () => {
-  const addToast = useToast()
+  const [username, setUsername] = useState('')
+  const [password, setPassword] = useState('')
+  const [msg, setMsg] = useState('')
 
-  // const defaultOptions = {
-  //   loop: true,
-  //   autoplay: true, 
-  //   animationData: animationData,
-  //   rendererSettings: {
-  //     preserveAspectRatio: 'xMidYMid slice'
-  //   }
-  // };
-  // console.log('defaultOptions :', defaultOptions)
+  const navigate = useNavigate()
+  const { login } = useAuthDataService()
 
-  const handleTestToast = () => {
-    addToast('This is a toast message!', 'success', 'success')
+  useEffect(() => {
+    if (msg) {
+      MySwal.fire({
+        icon: 'error',
+        title: 'Oops...',
+        text: msg,
+      })
+      setMsg('')
+    }
+  }, [msg])
+
+  const Auth = async (e) => {
+    e.preventDefault()
+
+    if (!username || !password) {
+      setMsg('Username dan password harus diisi')
+      return
+    }
+
+    if (password.length < 6) {
+      setMsg('Password harus lebih dari 6 karakter')
+      return
+    }
+
+    try {
+      await login(username, password)
+      navigate('/dashboard')
+    } catch (error) {
+      if (error.response) {
+        setMsg(error.response.data.msg)
+      } else {
+        console.error('Error:', error.message)
+      }
+    }
   }
 
   return (
-    <div className="bg-body-tertiary min-vh-100 d-flex flex-row align-items-center">
+  <div
+  className="bg-body-tertiary min-vh-100 d-flex flex-row align-items-center"
+  style={{
+    backgroundImage: `url(${background})`, // Menggunakan gambar impor
+    backgroundSize: 'cover', // Agar gambar menyesuaikan dengan ukuran viewport
+    backgroundPosition: 'center', // Posisi gambar di tengah
+    backgroundRepeat: 'no-repeat', // Mencegah pengulangan gambar
+    }}
+  >
       <CContainer>
-        <CImage style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', opacity: '55%'}} src={ImageBG}/>
         <CRow className="justify-content-center">
-          <CCol md={8}>
+          <CCol md={6}>
             <CCardGroup>
               <CCard className="p-4">
                 <CCardBody>
-                  <CForm>
+                  <CForm onSubmit={Auth}>
                     <h1>Login</h1>
                     <p className="text-body-secondary">Sign In to your account</p>
                     <CInputGroup className="mb-3">
                       <CInputGroupText>
                         <CIcon icon={cilUser} />
                       </CInputGroupText>
-                      <CFormInput placeholder="Username" autoComplete="username" />
+                      <CFormInput
+                        placeholder="Username"
+                        autoComplete="username"
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value)}
+                      />
                     </CInputGroup>
                     <CInputGroup className="mb-4">
                       <CInputGroupText>
@@ -68,28 +108,29 @@ const Login = () => {
                         type="password"
                         placeholder="Password"
                         autoComplete="current-password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
                       />
                     </CInputGroup>
                     <CRow>
                       <CCol xs={6}>
-                        <CButton onClick={handleTestToast} color="primary" className="px-4">
+                        <CButton color="primary" className="px-4" type="submit">
                           Login
-                        </CButton>
-                      </CCol>
-                      <CCol xs={6} className="text-right">
-                        <CButton color="link" className="px-0">
-                          Forgot password?
                         </CButton>
                       </CCol>
                     </CRow>
                   </CForm>
                 </CCardBody>
               </CCard>
-              <CCard color='info' className="text-white py- p-0" style={{ width: '44%' }}>
-                <CCardBody className="text-cente">
-                  <CImage src={LogoTWIIS}/>
-                  {/* <Lottie animationData={animationData} width={1000} loop={true} /> */}
+              <CCard className="text-white bg-white py-5  px-1" style={{ width: '%' }}>
+                <CCardBody className="text-center">
+                  <img src={LogoTWIIS} alt="Logo" className="sidebar-brand-full" height={80} />
 
+                  <label style={{ color: 'black' }} className="fw-bold fs-5">
+                    Toyota Warehouse Integrated Inventory System
+                  </label>
+
+                 
                 </CCardBody>
               </CCard>
             </CCardGroup>

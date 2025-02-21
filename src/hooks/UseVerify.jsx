@@ -34,8 +34,8 @@ const useVerify = () => {
     } catch (error) {
       console.error('Error refreshing token:', error)
       addToast("Token expired", 'danger', 'error')
-      // navigate('/login')
-      window.location.assign('https://twiis-toyota.web.app/#/login')
+      navigate('/login')
+      // window.location.assign('https://twiis-toyota.web.app/#/login')
     }
   }
 
@@ -58,8 +58,8 @@ const useVerify = () => {
           setImgProfile(decoded.img)
         } catch (error) {
           console.error('Error refreshing token in interceptor:', error)
-          // navigate('/login')
-         window.location.assign('https://twiis-toyota.web.app/#/login')
+          navigate('/login')
+        //  window.location.assign('https://twiis-toyota.web.app/#/login')
         }
       } else {
         config.headers.Authorization = `Bearer ${token}`
