@@ -46,7 +46,7 @@ const useNavigation = () => {
     },
     {
       component: CNavItem,
-      name: 'Materials Summary',
+      name: 'Summary',
       to: '/summary',
       icon: <CIcon icon={icon.cilChartPie} customClassName="nav-icon" />,
     },
