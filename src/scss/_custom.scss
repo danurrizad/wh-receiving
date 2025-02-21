@@ -269,3 +269,15 @@ td input.p-inputtext.p-component {
 .select__menu{
   z-index: 20 !important;
 }
+
+.breadcrumb-item + .breadcrumb-item::before{
+  content: "——";
+}
+
+.breadcrumb-item.active{
+  color: white !important
+}
+
+.breadcrumb-item.active span{
+  background-color: rgb(62, 98, 147);
+}
