@@ -135,7 +135,7 @@ const useNavigation = () => {
          {   
           component: CNavItem,
           name: 'Inquery Requirement',
-          to: '/vendor/inquery/requirement',
+          to: '/vendor/inquiry/requirement',
           icon: <CIcon icon={icon.cilMinus} size="xl" customClassName="nav-icon" />,
          }
       ]
