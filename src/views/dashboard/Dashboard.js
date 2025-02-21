@@ -832,7 +832,7 @@ const Dashboard = () => {
                     <Column field='description'  header="Material Description" />
                     <Column field='address'  header="Rack Address" />
                     <Column field="reqQuantity" header="Req. Qty" body={(data) => <div className="text-center">{data.reqQuantity}</div>} />
-                    <Column field="receivedQuantity" header="Act. Qty" body={(data) => <div className="text-center">{data.receivedQuantity}</div>} />
+                    <Column field="actQuantity" header="Act. Qty" body={(data) => <div className="text-center">{data.actQuantity}</div>} />
                     <Column field="remain" header="Remain" body={remainBodyTemplate} align="center" />
                     <Column   field='status'  header="Status" body={statusQtyBodyTemplate} />
                   </DataTable>
