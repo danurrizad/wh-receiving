@@ -50,7 +50,8 @@ const DNSetup = () => {
   const [optionsWarehouse, setOptionsWarehouse] = useState({})
   const [filterQuery, setFilterQuery] = useState({
     // date: new Date('2024-01-16'),
-    date: new Date(),
+    date: "",
+    dateArrival: new Date(),
     global: { value: null, matchMode: FilterMatchMode.CONTAINS },
   })
   const [globalFilterValue, setGlobalFilterValue] = useState('');
@@ -83,13 +84,14 @@ const DNSetup = () => {
     getOptionsWarehouse()
   }, [])
 
-  const getDNbyDate = async(importedDate) => {
+  const getDNbyDate = async(importedDate, dateArrival) => {
     try {
       setLoading(true)
-      console.log("Imported Date :", importedDate)
+      // console.log("Imported Date :", importedDate)
       const dateFormat = importedDate !== null && importedDate !== "" ? importedDate.toLocaleDateString('en-CA') : importedDate
-      console.log("dateFormat :", dateFormat)
-      const response = await getDNByDateData(dateFormat)
+      const arrivalDateFormat = dateArrival !== null && dateArrival !== "" ? dateArrival.toLocaleDateString('en-CA') : dateArrival
+      // console.log("dateFormat :", dateFormat)
+      const response = await getDNByDateData(dateFormat, arrivalDateFormat)
       // console.log(response.data)
       setDataDN(response.data.data)
 
@@ -102,8 +104,8 @@ const DNSetup = () => {
   }
 
   useEffect(()=>{
-    getDNbyDate(filterQuery.date)
-  }, [filterQuery.date])
+    getDNbyDate(filterQuery.date, filterQuery.dateArrival)
+  }, [filterQuery.date, filterQuery.dateArrival])
 
   const onGlobalFilterChange = (e) => {
     const value = e;
@@ -120,7 +122,7 @@ const DNSetup = () => {
     try {
       const response = await uploadMasterData(`upload-delivery-note/${warehouseId}`, bodyForm)
       console.log("RESPONSE RESPONSE :", response)
-      console.log("importDate :", uploadData.importDate)
+      // console.log("importDate :", uploadData.importDate)
       setModalUpload(false)
 
       if(response.data.errors){
@@ -289,8 +291,20 @@ const DNSetup = () => {
                   <Input value={globalFilterValue} onChange={onGlobalFilterChange} placeholder='Keyword search'/>
                 </div>
                 <div>
+                  <CFormText>Filter by Arrival Date Plan</CFormText>
+                  <DatePicker 
+                    format='yyyy-MM-dd'
+                    value={filterQuery.dateArrival ? filterQuery.dateArrival : null} 
+                    placeholder="All time"
+                    onChange={(e)=>{
+                      console.log(e)
+                      setFilterQuery({ ...filterQuery, dateArrival: e !== null ? e : ""})
+                    }} />
+                </div>
+                <div>
                   <CFormText>Filter by Import Date</CFormText>
                   <DatePicker 
+                    format='yyyy-MM-dd'
                     value={filterQuery.date ? filterQuery.date : null} 
                     placeholder="All time"
                     onChange={(e)=>{
