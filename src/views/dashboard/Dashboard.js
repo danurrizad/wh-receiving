@@ -112,11 +112,12 @@ const Dashboard = () => {
   const [dataChartSchedules, setDataChartSchedules] = useState(dataSchedules.slice(1, 10)); // Synchronized chart data
 
   const [pagination, setPagination] = useState({ page: 0, rows: 12 });
+  const totalPage = Math.ceil(dataSchedules.length / pagination.rows)
   const [filteredData, setFilteredData] = useState([]);
 
   const [isVisible, setIsVisible] = useState(true); // State to control visibility
 
-   const [totalPages, setTotalPages] = useState(1);
+  //  const [totalPages, setTotalPages] = useState(1);
    const [currentPage, setCurrentPage] = useState(1);
    const [limitPerPage, setLimitPerPage] = useState({name: 12, code: 12})
    const [isFilterVisible, setIsFilterVisible] = useState(false);
@@ -202,28 +203,7 @@ const Dashboard = () => {
     fetchPlants();
   }, []);
 
-
-  
-  
-
   const calculateSummary = (data) => {
-    // add options in vendor select
-    console.log("dataInCalculateSUmmary:", data)
-    // const dataUnique = data
-    // ? Array.from(
-    //     new Map(
-    //       data
-    //         .filter(vendor => vendor.vendorName) // Skip missing names
-    //         .map(vendor => [
-    //           vendor.vendorName,
-    //           {
-    //             ...vendor
-    //           }
-    //         ])
-    //     ).values()
-    //   )
-    // : []; // Return empty array if response.data is not valid
-    // console.log("data unique vendor:", dataUnique)
     setCardData({
       onSchedule: data.filter((data)=>data.status === 'on schedule').length,
       overdue: data.filter((data)=>data.status === 'overdue').length,
@@ -231,26 +211,6 @@ const Dashboard = () => {
       remaining: data.filter((data)=>data.status === 'scheduled').length,
     })
   }
-
-  const GetDataArrivalDashboard = async (plantId) => {
-    try {
-      // console.log("Fetching Arrival Data for Plant ID:", plantId || "All Plants");
-  
-      const response = await getCardStatusArrival(
-        plantId || "", // Jika "All" dipilih, kirim string kosong
-        "",
-        "",
-        queryFilter.rangeDate[0].toISOString().split('T')[0], // Format YYYY-MM-DD
-        queryFilter.rangeDate[1].toISOString().split('T')[0]  // Format YYYY-MM-DD
-      );
-  
-      if (response && response.data) {
-        setCardData(response.data.data);
-      }
-    } catch (error) {
-      console.error("Error fetching arrival monitoring data:", error);
-    }
-  };
   
 
   const fetchChartReceivingData = async (status, vendorId, currentPage, limitPerPage) => {
@@ -273,7 +233,7 @@ const Dashboard = () => {
         limitPerPage
       );
       if (response) {
-        console.log("Data Chart Receiving:", response.data);
+        // console.log("Data Chart Receiving:", response.data);
         const allResponse = response.data
         const filteredResponse = response.data.filter((data)=>data.status !== 'no schedule')
 
@@ -312,8 +272,8 @@ const Dashboard = () => {
   // auto fetch in every 10 seconds
   useEffect(() => {
     const intervalId = setInterval(() => {
+      // addToast("10 detik")
       fetchChartReceivingData(selectedStatus, optionsSelectVendor.selected, currentPage, limitPerPage.code);
-      // GetDataArrivalDashboard(queryFilter.plantId)
     }, 10000);
   
     return () => clearInterval(intervalId); // Cleanup on unmount
@@ -334,9 +294,7 @@ const Dashboard = () => {
     setShowModalInput({...showModalInput, state: true})
     
     const dataDN = data?.deliveryNotes
-    // console.log("data vendor:", dataVendor)
-    console.log("data:", data)
-    // console.log("data DN [0]:", dataDN[0].Materials)
+    // console.log("data:", data)
     const optionsDN = data.deliveryNotes.map((dn)=>{
       return{
         label: dn.dnNumber,
@@ -582,10 +540,7 @@ const Dashboard = () => {
 
           useEffect(()=>{
             const interval = setInterval(()=>{
-              const totalPage = Math.ceil(dataSchedules.length / pagination.rows)
-              // console.log(pagination)
-              // console.log("totalPage:", totalPage)
-              // console.log(queryFilter)
+              // addToast("2 detik")
               if(queryFilter.plantId === "" && queryFilter.global.value === null){
                 if(pagination.page >= totalPage-1){
                   setPagination({ ...pagination, page: 0})
@@ -598,7 +553,7 @@ const Dashboard = () => {
             }, 24000)
 
             return () => clearInterval(interval);
-          }, [pagination, queryFilter.plantId])
+          }, [selectedStatus, optionsSelectVendor.selected, currentPage, limitPerPage, queryFilter, pagination, totalPage])
           
           const handleFilter = (event) => {
             console.log("EVENT:", event)
