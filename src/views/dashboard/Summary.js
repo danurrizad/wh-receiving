@@ -91,6 +91,7 @@ ChartJS.register(
 
 const Summary = () => {
   const [loading, setLoading] = useState(false)
+  const addToast = useToast()
   const [dataPieChart, setDataPieChart] = useState([])
   const [dataBarChart, setDataBarChart] = useState([])
   const [dataTableHistory, setDataTableHistory] = useState([])
@@ -132,7 +133,6 @@ const Summary = () => {
 
   const fetchPieChartReceiving = async(plantId) => {
     try {
-        setLoading(true)
         const response = await getChartReceiving(
             plantId,
             "",
@@ -146,15 +146,27 @@ const Summary = () => {
         setDataPieChart(response.summaryMaterial)
     } catch (error) {
         console.error(error)
-    } finally{
-        setLoading(false)
-    }
+        setDataPieChart([])
+    } 
   }
 
   useEffect(()=>{
-    fetchPieChartReceiving(optionsSelectPlant.selectedPie)
+    const fetchFirstLoad = async() => {
+        setLoading(true)
+        await fetchPieChartReceiving(optionsSelectPlant.selectedPie)
+        setLoading(false)
+    }
+
+    fetchFirstLoad()
   }, [filterDate, optionsSelectPlant.selectedPie])
 
+   useEffect(() => {
+      const intervalId = setInterval(() => {
+        fetchPieChartReceiving(optionsSelectPlant.selectedPie)
+      }, 10000);
+    
+      return () => clearInterval(intervalId); // Cleanup on unmount
+    }, [optionsSelectPlant.selectedPie, filterDate]); 
 
   const fetchPlant = async() => {
     try {
@@ -299,7 +311,7 @@ return (
                             <h6>COMPLETED</h6>
                         </CCardHeader>
                         <CCardBody className='d-flex align-items-end gap-2 w-100'>
-                            <h2>{dataPieChart.completed}</h2>
+                            <h2>{dataPieChart.length !== 0 ? dataPieChart.completed : 0}</h2>
                             <h4 className='mb-1'>Materials</h4>
                             <div className='d-flex justify-content-end w-100'>
                                 <FaBoxesPacking style={{ fontSize:"50px"}}/>
@@ -313,7 +325,7 @@ return (
                             <h6>NOT COMPLETED</h6>
                         </CCardHeader>
                         <CCardBody className='d-flex align-items-end gap-2'>
-                            <h2>{dataPieChart.notCompleted}</h2>
+                            <h2>{dataPieChart.length !== 0 ? dataPieChart.notCompleted : 0}</h2>
                             <h4 className='mb-1'>Materials</h4>
                             <div className='d-flex justify-content-end w-100'>
                                 <FaBoxesPacking style={{ fontSize:"50px"}}/>
@@ -327,7 +339,7 @@ return (
                             <h6>NOT DELIVERED</h6>
                         </CCardHeader>
                         <CCardBody className='d-flex align-items-end gap-2'>
-                            <h2>{dataPieChart.notDelivered}</h2>
+                            <h2>{dataPieChart.length !== 0 ? dataPieChart.notDelivered : 0}</h2>
                             <h4 className='mb-1'>Materials</h4>
                             <div className='d-flex justify-content-end w-100'>
                                 <FaBoxesPacking style={{ fontSize:"50px"}}/>
@@ -341,7 +353,7 @@ return (
                             <h6>TOTAL</h6>
                         </CCardHeader>
                         <CCardBody className='d-flex align-items-end gap-2'>
-                            <h2>{dataPieChart.total}</h2>
+                            <h2>{dataPieChart.length !== 0 ? dataPieChart.total : 0}</h2>
                             <h4 className='mb-1'>Materials</h4>
                             <div className='d-flex justify-content-end w-100'>
                                 <FaBoxesPacking style={{ fontSize:"50px"}}/>
@@ -449,6 +461,7 @@ return (
                             loading={loading}
                             loadingIcon={CustomTableLoading}
                             value={dataTableHistory}
+                            paginator rows={10} rowsPerPageOptions={[10, 25, 50, 100]}
                         >
                             <Column header='No' body={(rowBody, { rowIndex }) => rowIndex + 1}/>
                             <Column field='supplierCode' header='Vendor Code'/>

@@ -242,7 +242,6 @@ const useBarChartDataService = ({dataBarChart}) => {
 
     const getBarChartOptions = () => {
         const data = setBarChartData()
-        console.log("data:", data)
         const config = {
             type: 'scatter',
             maintainAspectRatio: false,

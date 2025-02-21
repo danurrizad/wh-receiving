@@ -39,10 +39,17 @@ const usePieChartDataService = ({dataPieChart}) => {
                 datalabels: {
                     color: "black", // Text color
                     formatter: (value, context) => {
-                      const dataset = context.chart.data.datasets[0].data;
+                      // console.log("context: ", context.chart.data.datasets[0])
+                      const dataset = context.chart.data.datasets[0].data[0] !== undefined ? context.chart.data.datasets[0].data : [0, 0, 0];
+                      // console.log("dataset: ", dataset)
                       const total = dataset.reduce((acc, val) => acc + val, 0);
+                      // console.log("total: ", total)
                       const percentage = ((value / total) * 100).toFixed(1) + "%"; // Format percentage
-                      return percentage;
+                      if(percentage !== `NaN%`){
+                        return percentage;
+                      }else{
+                        return 'Data not found!'
+                      }
                     },
                     font: {
                       weight: "bold",
