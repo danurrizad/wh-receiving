@@ -28,9 +28,9 @@ const useReceivingDataService = () => {
         }
     }
 
-    const getDNByDateData = async(importDate) => {
+    const getDNByDateData = async(importDate, arrivalDate) => {
         try {
-            const response = await axiosJWT.get(`/delivery-note-date?importDate=${importDate}`, {
+            const response = await axiosJWT.get(`/delivery-note-date?importDate=${importDate}&arrivalDate=${arrivalDate}`, {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
