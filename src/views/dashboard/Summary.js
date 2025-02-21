@@ -61,7 +61,7 @@ import {
   Title,
   Tooltip,
   Legend,
-  PointElement ,
+  PointElement,
   LineElement
 } from 'chart.js';
 import ChartDataLabels from "chartjs-plugin-datalabels";
@@ -429,14 +429,14 @@ return (
                     <CCard>
                         <CCardBody>
                             <div className=''>
-                                <Bar
+                                <Line
                                     data={setLineChartRedData()}
                                     options={getLineChartRedOptions()}
                                     height={150}
                                 />
                             </div>
                             <div className='' style={{ paddingLeft: "15px"}}>
-                                <Bar
+                                <Line
                                     data={setLineChartYellowData()}
                                     options={getLineChartYellowOptions()}
                                     height={150}
