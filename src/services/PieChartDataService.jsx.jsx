@@ -1,6 +1,5 @@
 
 const usePieChartDataService = ({dataPieChart}) => {
-  console.log("length:", dataPieChart)
     const setPieChartData = () => {
         const data = {
             labels: [

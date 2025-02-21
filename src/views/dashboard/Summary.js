@@ -13,7 +13,7 @@ import 'primeicons/primeicons.css';
 import { FilterMatchMode, FilterOperator } from 'primereact/api';
 import useReceivingDataService from '../../services/ReceivingDataServices.jsx'
 import { cilChart,cilCog} from '@coreui/icons';
-import { FaAnglesLeft, FaAnglesRight, FaArrowUpRightFromSquare, FaChevronLeft, FaChevronRight, FaCircleCheck, FaCircleExclamation, FaCircleInfo, FaCircleRight, FaCircleXmark, FaInbox } from 'react-icons/fa6';
+import { FaAnglesLeft, FaAnglesRight, FaArrowUpRightFromSquare, FaBoxesPacking, FaChevronLeft, FaChevronRight, FaCircleCheck, FaCircleExclamation, FaCircleInfo, FaCircleRight, FaCircleXmark, FaInbox } from 'react-icons/fa6';
 import {
   CAvatar,
   CModal ,
@@ -92,9 +92,11 @@ ChartJS.register(
 const Summary = () => {
   const [loading, setLoading] = useState(false)
   const [dataPieChart, setDataPieChart] = useState([])
+  const [dataBarChart, setDataBarChart] = useState([])
+  const [dataTableHistory, setDataTableHistory] = useState([])
   const { setPieChartData, getPieChartOption } = usePieChartDataService({ dataPieChart });
-  const { setBarChartData, getBarChartOptions } = useBarChartDataService({  });
-  const { getChartReceiving } = useDashboardReceivingService()
+  const { setBarChartData, getBarChartOptions, setLineChartYellowData, getLineChartYellowOptions, setLineChartRedData, getLineChartRedOptions } = useBarChartDataService({ dataBarChart });
+  const { getChartReceiving, getChartHistoryReceiving } = useDashboardReceivingService()
   const { getMasterData } = useMasterDataService()
 
   const weekday = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
@@ -103,25 +105,32 @@ const Summary = () => {
   const [filterMonth, setFilterMonth] = useState(new Date())
   const [optionsSelectPlant, setOptionsSelectPlant] = useState({
     list: [],
-    selected: ""
+    selectedPie: "",
+    selectedBar: "",
   })
 
   const [timeState, setTimeState] = useState(new Date())
   const t = new Date()
   const c = t.getHours() - 12
-//   useEffect(() => {
-//     setInterval(() => {
-//       setTimeState(new Date())
-//     }, 1000)
-//   }, [])
+  useEffect(() => {
+    setInterval(() => {
+      setTimeState(new Date())
+    }, 1000)
+  }, [])
 
   const now = new Date();
   const year = now.getFullYear();
   const month = now.getMonth();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
 
+  const getStartAndEndDate = (date) => {
+    const startDate = new Date(date.getFullYear(), date.getMonth(), 1);
+    const endDate = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+    return { startDate, endDate };
+}
 
-  const fetchChartReceiving = async(plantId) => {
+
+  const fetchPieChartReceiving = async(plantId) => {
     try {
         setLoading(true)
         const response = await getChartReceiving(
@@ -133,7 +142,7 @@ const Summary = () => {
             "",
             ""
         )
-        console.log("Response: ", response)
+        // console.log("Response: ", response)
         setDataPieChart(response.summaryMaterial)
     } catch (error) {
         console.error(error)
@@ -143,14 +152,13 @@ const Summary = () => {
   }
 
   useEffect(()=>{
-    fetchChartReceiving(optionsSelectPlant.selected)
-  }, [filterDate, optionsSelectPlant.selected])
+    fetchPieChartReceiving(optionsSelectPlant.selectedPie)
+  }, [filterDate, optionsSelectPlant.selectedPie])
 
 
   const fetchPlant = async() => {
     try {
         const response = await getMasterData('plant-public')
-        console.log(response.data)
         const optionsPlant = response.data.map((data)=>{
             return{
                 label: data.plantName,
@@ -168,6 +176,26 @@ const Summary = () => {
   }, [])
     
 
+  const fetchHistoryChartReceiving = async(plantId, year, month) => {
+    try {
+        const response = await getChartHistoryReceiving(plantId, year, month)
+        console.log("response history chart:", response)
+        setDataBarChart(response.data.data.byDate)
+        setDataTableHistory(response.data.data.bySupplier)
+    } catch (error) {
+        console.error(error)
+        setDataBarChart([])
+    }
+  } 
+
+  useEffect(()=>{
+    fetchHistoryChartReceiving(
+        optionsSelectPlant.selectedBar, 
+        filterMonth.toLocaleDateString('en-CA').split("-")[0], 
+        filterMonth.toLocaleDateString('en-CA').split("-")[1]
+    )
+}, [filterMonth, optionsSelectPlant.selectedBar])
+  
   const renderCustomEmptyMsg = () => {
     return(
     <div className='w-100 d-flex h-100 flex-column align-items-center justify-content-center py-3' style={{ color: "black", opacity: "50%"}}>
@@ -181,7 +209,7 @@ return (
   <CContainer fluid>
   {/*--------------------------------------------------------------------PIE CHART-------------------------------------------------------------------------------  */}
     <CRow className='mb-3'>
-      <CCard className='px-0 mb-3' style={{  border: "1px solid #6482AD" }}>
+      <CCard className='px-0 mb-3' style={{  border: "1px solid #6482AD", minHeight: "400px", overflow: "hidden" }}>
         <CCardHeader className='text-center' style={{ backgroundColor: "#6482AD", color: "white"}}>
           <CCardTitle className='fs-4'>DAILY MATERIALS RECEIVED</CCardTitle>
         </CCardHeader>
@@ -219,10 +247,11 @@ return (
                                         <CFormText>Filter by Plant</CFormText>
                                         <Select 
                                             options={optionsSelectPlant.list}
-                                            value={optionsSelectPlant.list.find((opt)=>opt.value === optionsSelectPlant.selected)}
+                                            value={optionsSelectPlant.list.find((opt)=>opt.value === optionsSelectPlant.selectedPie)}
                                             onChange={(e)=>{
-                                                setOptionsSelectPlant({...optionsSelectPlant, selected: e !== null ? e.value : ""})
+                                                setOptionsSelectPlant({...optionsSelectPlant, selectedPie: e !== null ? e.value : ""})
                                             }}
+                                            placeholder="All plant"
                                             isClearable
                                             styles={{
                                                 control: provided => ({
@@ -269,9 +298,12 @@ return (
                             <FaCircleCheck className='flex-grow-0' style={{ color: "#00DB42", fontSize: "30px" }}/>
                             <h6>COMPLETED</h6>
                         </CCardHeader>
-                        <CCardBody className='d-flex align-items-end gap-2'>
+                        <CCardBody className='d-flex align-items-end gap-2 w-100'>
                             <h2>{dataPieChart.completed}</h2>
                             <h4 className='mb-1'>Materials</h4>
+                            <div className='d-flex justify-content-end w-100'>
+                                <FaBoxesPacking style={{ fontSize:"50px"}}/>
+                            </div>
                         </CCardBody>
                         </CCard>
 
@@ -283,6 +315,9 @@ return (
                         <CCardBody className='d-flex align-items-end gap-2'>
                             <h2>{dataPieChart.notCompleted}</h2>
                             <h4 className='mb-1'>Materials</h4>
+                            <div className='d-flex justify-content-end w-100'>
+                                <FaBoxesPacking style={{ fontSize:"50px"}}/>
+                            </div>
                         </CCardBody>
                         </CCard>
 
@@ -294,6 +329,9 @@ return (
                         <CCardBody className='d-flex align-items-end gap-2'>
                             <h2>{dataPieChart.notDelivered}</h2>
                             <h4 className='mb-1'>Materials</h4>
+                            <div className='d-flex justify-content-end w-100'>
+                                <FaBoxesPacking style={{ fontSize:"50px"}}/>
+                            </div>
                         </CCardBody>
                         </CCard>
 
@@ -305,6 +343,9 @@ return (
                         <CCardBody className='d-flex align-items-end gap-2'>
                             <h2>{dataPieChart.total}</h2>
                             <h4 className='mb-1'>Materials</h4>
+                            <div className='d-flex justify-content-end w-100'>
+                                <FaBoxesPacking style={{ fontSize:"50px"}}/>
+                            </div>
                         </CCardBody>
                         </CCard>
                     </CCol>
@@ -317,7 +358,7 @@ return (
     {/* -------------------------------------------------------------------VERTICAL BAR CHART--------------------------------------------- */}
 
     <CRow className='mb-3 mt-5 '>
-      <CCard className='px-0' style={{  border: "1px solid #6482AD" }}>
+      <CCard className='px-0' style={{  border: "1px solid #6482AD", minHeight: "400px", overflow: "hidden" }}>
         <CCardHeader className='text-center' style={{ backgroundColor: "#6482AD", color: "white" }}>
           <CCardTitle className='fs-4'>MONTHLY MATERIALS RECEIVED</CCardTitle>
         </CCardHeader>
@@ -330,15 +371,38 @@ return (
                                 <CCol className="d-flex align-items-end">
                                     <h1>{monthsName[filterMonth.getMonth()]} </h1>
                                 </CCol>
-                                <CCol className='d-flex flex-column align-items-end justify-content-end'>
+                                <CCol className='d-flex align-items-end justify-content-end gap-2'>
+                                    <div className="h-100" style={{ width: "33%"}}>
+                                        <CFormText>Filter by Plant</CFormText>
+                                        <Select 
+                                            options={optionsSelectPlant.list}
+                                            value={optionsSelectPlant.list.find((opt)=>opt.value === optionsSelectPlant.selectedBar)}
+                                            onChange={(e)=>{
+                                                setOptionsSelectPlant({...optionsSelectPlant, selectedBar: e !== null ? e.value : ""})
+                                            }}
+                                            placeholder="All plant"
+                                            isClearable
+                                            styles={{
+                                                control: provided => ({
+                                                    ...provided,
+                                                    minHeight: "42px"
+                                                })
+                                            }}
+                                        />
+                                    </div>
                                     <div>
                                         <CFormText>Filter by Month</CFormText>
                                         <DatePicker 
+                                            style={{ width: "130px"}} 
                                             showonecalendar='true'
-                                            format='MM-yyyy'  
+                                            placement='bottomEnd'
+                                            format='yyyy-MM'  
                                             placeholder="Select month" 
                                             value={filterMonth} 
-                                            onChange={(e)=>setFilterMonth(e !== null ? e : new Date(year, month, 1))}
+                                            onChange={(e)=>{
+                                                console.log(e)
+                                                setFilterMonth(e !== null ? e : new Date(year, month, 1))
+                                            }}
                                         />
                                     </div>
                                 </CCol>
@@ -352,11 +416,27 @@ return (
                     <CCol sm='12'>
                     <CCard>
                         <CCardBody>
-                        <Bar
-                            data={setBarChartData()}
-                            options={getBarChartOptions()}
-                            height={540}
-                        />
+                            <div className=''>
+                                <Bar
+                                    data={setLineChartRedData()}
+                                    options={getLineChartRedOptions()}
+                                    height={150}
+                                />
+                            </div>
+                            <div className='' style={{ paddingLeft: "15px"}}>
+                                <Bar
+                                    data={setLineChartYellowData()}
+                                    options={getLineChartYellowOptions()}
+                                    height={150}
+                                />
+                            </div>
+                            <div className=''>
+                                <Bar
+                                    data={setBarChartData()}
+                                    options={getBarChartOptions()}
+                                    height={300}
+                                />
+                            </div>
                         </CCardBody>
                     </CCard>
                     </CCol>
@@ -368,9 +448,12 @@ return (
                             emptyMessage={renderCustomEmptyMsg}
                             loading={loading}
                             loadingIcon={CustomTableLoading}
+                            value={dataTableHistory}
                         >
-                            <Column header='Vendor Name'/>
-                            <Column header='Delayed Material'/>
+                            <Column header='No' body={(rowBody, { rowIndex }) => rowIndex + 1}/>
+                            <Column field='supplierCode' header='Vendor Code'/>
+                            <Column field='supplierName' header='Vendor Name'/>
+                            <Column field='notDeliveredCount' header='Delayed Material'/>
                         </DataTable>
                         </CCardBody>
                     </CCard>
