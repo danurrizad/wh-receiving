@@ -222,7 +222,7 @@ const VendorSetup = () => {
           // Deklarasikan worksheet hanya sekali
           const worksheet = xlsx.utils.json_to_sheet(mappedData)
           const workbook = xlsx.utils.book_new()
-          xlsx.utils.book_append_sheet(workbook, worksheet, 'material')
+          xlsx.utils.book_append_sheet(workbook, worksheet, 'Vendor Setup')
     
           // Tulis workbook ke dalam buffer array
           const excelBuffer = xlsx.write(workbook, {
@@ -231,7 +231,7 @@ const VendorSetup = () => {
           })
     
           // Panggil fungsi untuk menyimpan file Excel
-          saveAsExcelFile(excelBuffer, 'master_data_material')
+          saveAsExcelFile(excelBuffer, 'vendor_setup')
         })
       }
       const handleDateChange = (selectedDate) => {
@@ -311,15 +311,6 @@ const VendorSetup = () => {
 
       const formatTime = (dateStr) => {
         return dateStr.split("T")[1].slice(0, 5); 
-
-        const date = new Date(dateStr);
-        // return date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-
-        return date.toLocaleTimeString('id-ID', { 
-          hour: '2-digit', 
-          minute: '2-digit', 
-          timeZone: 'Asia/Jakarta'
-        });
       };
 
   

@@ -188,7 +188,7 @@ const DNSetup = () => {
       // Deklarasikan worksheet hanya sekali
       const worksheet = xlsx.utils.json_to_sheet(mappedData)
       const workbook = xlsx.utils.book_new()
-      xlsx.utils.book_append_sheet(workbook, worksheet, 'material')
+      xlsx.utils.book_append_sheet(workbook, worksheet, 'Delivery Notes Setup')
 
       // Tulis workbook ke dalam buffer array
       const excelBuffer = xlsx.write(workbook, {
@@ -197,7 +197,7 @@ const DNSetup = () => {
       })
 
       // Panggil fungsi untuk menyimpan file Excel
-      saveAsExcelFile(excelBuffer, 'master_data_material')
+      saveAsExcelFile(excelBuffer, 'dn_setup')
     })
   }
   const handleDateChange = (selectedDate) => {
