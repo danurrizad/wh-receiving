@@ -107,6 +107,11 @@ const Input = () => {
         await getMaterialByDN(inputValue)
       }
     }
+
+    if(inputValue.length === 0){
+      console.log("hereeee")
+      handleClearInputDN()
+    }
   }
 
 
