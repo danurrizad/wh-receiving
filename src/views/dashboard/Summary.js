@@ -288,11 +288,14 @@ return (
                     <CCol sm='8'>
                     <CCard>
                         <CCardBody>
-                        <Pie 
-                            options={getPieChartOption()} 
-                            data={setPieChartData()} 
-                            height={550}
-                            />
+                            <div >
+                                <Pie
+                                    // className='p-5' style={{ background: "pink"}} 
+                                    options={getPieChartOption()} 
+                                    data={setPieChartData()} 
+                                    height={550}
+                                    />
+                            </div>
                         </CCardBody>
                     </CCard>
                     </CCol>

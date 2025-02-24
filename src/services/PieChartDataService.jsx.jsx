@@ -29,6 +29,9 @@ const usePieChartDataService = ({dataPieChart}) => {
         const data = setPieChartData()
         const config = {
             type: 'pie',
+            layout: {
+              padding: 20
+            },
             maintainAspectRatio: false,
             data: data,
             plugins: {
@@ -40,28 +43,18 @@ const usePieChartDataService = ({dataPieChart}) => {
                     color: "black", // Text color
                     // anchor: 'middle',
                     anchor: data.datasets[0].data[0] === undefined ? 'start' : 'middle',
-                    // anchor: (value, context) => {
-                    //   const dataset = context.chart.data.datasets[0].data[0] !== undefined ? context.chart.data.datasets[0].data : [0, 0, 0];
-                    //   const total = dataset.reduce((acc, val) => acc + val, 0);
-                    //   const percentage = ((value / total) * 100).toFixed(1) + "%";
-                    //   if(percentage !== 'NaN%'){
-                    //     return 'middle'
-                    //   }else{
-                    //     return 'start'
-                    //   }
-                    // },
                     align: 'bottom',
                     formatter: (value, context) => {
                       const dataset = context.chart.data.datasets[0].data[0] !== undefined ? context.chart.data.datasets[0].data : [0, 0, 0];
                       const total = dataset.reduce((acc, val) => acc + val, 0);
                       const percentage = ((value / total) * 100).toFixed(1) + "%"; // Format percentage
                       if(percentage !== `NaN%`){
-                        // if(percentage === '0.0%'){
-                        //   return ''
-                        // }else{
-                        //   return percentage;
-                        // }
-                        return percentage;
+                        if(percentage === '0.0%'){
+                          return ''
+                        }else{
+                          return percentage;
+                        }
+                        // return percentage;
                       }else{
                         return 'Data not found!'
                       }
