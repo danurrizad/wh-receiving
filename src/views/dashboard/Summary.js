@@ -219,23 +219,23 @@ return (
         <CCardBody className='px-4'>
             <CRow className='mb-3'>
                 <CCol>
-                    <CCard>
-                        <CCardBody>
+                    {/* <CCard>
+                        <CCardBody> */}
                             <CRow>
                                 <CCol>
                                     <h1>{weekday[filterDate.getDay()]} </h1>
                                 </CCol>
                                 <CCol className='d-flex align-items-center justify-content-center gap-1'>
-                                    <CCard className='px-2'>
+                                    {/* <CCard className='px-2'> */}
                                         <h1>
                                             {timeState.toLocaleString('en-US', {
                                                 hour: '2-digit',
                                                 hourCycle: 'h24'
                                             })}
                                         </h1>
-                                    </CCard>
+                                    {/* </CCard> */}
                                     <h1>:</h1>
-                                    <CCard className='px-2'>
+                                    {/* <CCard className='px-2'> */}
                                         <h1>
                                             {timeState.toLocaleString('en-US', {
                                                 hour: '2-digit',
@@ -243,7 +243,7 @@ return (
                                                 hourCycle: 'h24'
                                             }).split(":")[1]}
                                         </h1>
-                                    </CCard>
+                                    {/* </CCard> */}
                                 </CCol>
                                 <CCol className='d-flex align-items-end justify-content-end gap-2'>
                                     <div className="h-100 w-50">
@@ -278,8 +278,8 @@ return (
                                     </div>
                                 </CCol>
                             </CRow>
-                        </CCardBody>
-                    </CCard>
+                        {/* </CCardBody>
+                    </CCard> */}
                 </CCol>
             </CRow>
 
@@ -372,8 +372,8 @@ return (
         <CCardBody>
         <CRow className='mb-3'>
                 <CCol>
-                    <CCard>
-                        <CCardBody>
+                    {/* <CCard>
+                        <CCardBody> */}
                             <CRow>
                                 <CCol className="d-flex align-items-end">
                                     <h1>{monthsName[filterMonth.getMonth()]} </h1>
@@ -415,8 +415,8 @@ return (
                                     </div>
                                 </CCol>
                             </CRow>
-                        </CCardBody>
-                    </CCard>
+                        {/* </CCardBody>
+                    </CCard> */}
                 </CCol>
             </CRow>
             { loading ? <CustomTableLoading/> : (
@@ -431,7 +431,7 @@ return (
                                     height={150}
                                 />
                             </div>
-                            <div className='' style={{ paddingLeft: "15px"}}>
+                            <div className='' style={{ paddingLeft: "px"}}>
                                 <Line
                                     data={setLineChartYellowData()}
                                     options={getLineChartYellowOptions()}

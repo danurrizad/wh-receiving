@@ -39,7 +39,7 @@ const useBarChartDataService = ({dataBarChart}) => {
                 },
                 {
                     type: 'line',
-                    label: 'Rec. Qty (NOT COMPLETED)',
+                    label: 'Rec. Materials (NOT COMPLETED)',
                     data: dates.map((date)=>{
                         const matchesDate = dataBarChart.find((data)=>data.incomingDate.split("-")[2] === date)
                         if(matchesDate){
@@ -77,7 +77,10 @@ const useBarChartDataService = ({dataBarChart}) => {
                     }
                 },
                 y: {
-                    beginAtZero: true
+                    beginAtZero: true,
+                    afterFit: function(scaleInstance) {
+                        scaleInstance.width = 30; // Set fixed width for Y-axis labels
+                      }
                 },
             },
             interaction: {
@@ -127,7 +130,7 @@ const useBarChartDataService = ({dataBarChart}) => {
                   },
                 {
                     type: 'line',
-                    label: 'Rec. Qty (NOT DELIVERED)',
+                    label: 'Rec. Materials (NOT DELIVERED)',
                     data: dates.map((date)=>{
                         const matchesDate = dataBarChart.find((data)=>data.incomingDate.split("-")[2] === date)
                         if(matchesDate){
@@ -165,7 +168,10 @@ const useBarChartDataService = ({dataBarChart}) => {
                     }
                 },
                 y: {
-                    beginAtZero: true
+                    beginAtZero: true,
+                    afterFit: function(scaleInstance) {
+                        scaleInstance.width = 30; // Set fixed width for Y-axis labels
+                      }
                 },
             },
             interaction: {
@@ -206,9 +212,16 @@ const useBarChartDataService = ({dataBarChart}) => {
         const data = {
             labels: dates,
             datasets: [
+                {
+                    type: 'line',
+                    label: '',
+                    data: 0,
+                    borderColor: 'transparent',
+                    backgroundColor: 'transparent'
+                  },
             {
               type: 'bar',
-              label: 'Req. Qty',
+              label: 'Req. Materials',
               data: dates.map((date)=>{
                 const matchesDate = dataBarChart.find((data)=>data.incomingDate.split("-")[2] === date)
                 if(matchesDate){
@@ -223,7 +236,7 @@ const useBarChartDataService = ({dataBarChart}) => {
             },
             {
                 type: 'bar',
-                label: 'Rec. Qty (COMPLETED)',
+                label: 'Rec. Materials (COMPLETED)',
                 // data: dataBarChart.map((data)=>data.completedCount),
                 data: dates.map((date)=>{
                     const matchesDate = dataBarChart.find((data)=>data.incomingDate.split("-")[2] === date)
@@ -252,7 +265,10 @@ const useBarChartDataService = ({dataBarChart}) => {
             scales: {
                 y: {
                     beginAtZero: true,
-                    stacked: true
+                    stacked: true,
+                    afterFit: function(scaleInstance) {
+                        scaleInstance.width = 30; // Set fixed width for Y-axis labels
+                      }
                 },
                 x: {
                     stacked: true,

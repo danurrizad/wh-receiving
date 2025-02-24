@@ -24,6 +24,7 @@ import {
 } from '@coreui/icons'
 import LogoTWIIS2 from 'src/assets/images/logo-twiis-2.png'
 import useVerify from '../hooks/UseVerify'
+import { FaCode } from 'react-icons/fa6'
 
 
 
@@ -64,10 +65,14 @@ const AppHeader = () => {
         <CHeaderNav style={{ position: 'fixed', top: "10px", left: "50px"}}>
           <CImage className="" src={LogoTWIIS2} height={52} />
         </CHeaderNav>
-        <CHeaderNav style={{ position: "fixed", left: "50%", transform: "translateX(-50%)"}}>
-          <h3 style={{ color:'rgb(72, 120, 187)'}}>
-            UNDER DEVELOPMENT
-            </h3>
+        <CHeaderNav style={{ position: "absolute", left: "300px"}}>
+         <div className='d-flex align-items-center gap-2'>
+            <FaCode style={{ color:'rgb(72, 120, 187)', width: "40px"}}/>
+            <h3 style={{ color:'rgb(72, 120, 187)'}}>
+              UNDER DEVELOPMENT
+              </h3>
+            <FaCode style={{ color:'rgb(72, 120, 187)', width: "40px"}}/>
+         </div>
         </CHeaderNav>
         <CHeaderNav className="ms-auto">
           <CNavItem>
