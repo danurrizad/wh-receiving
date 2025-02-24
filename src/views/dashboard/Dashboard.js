@@ -397,8 +397,8 @@ const Dashboard = () => {
   }
 
   const statusMaterialBodyTemplate = (rowBody) => {
-    const complete = rowBody.statusMaterial.split(" / ")[0]
-    const total = rowBody.statusMaterial.split(" / ")[1]
+    const complete = rowBody.statusMaterial?.split(" / ")[0] || "0"
+    const total = rowBody.statusMaterial?.split(" / ")[1] || "0"
     const color = complete !== total ? "red" : "black"
     return(
       <div>
@@ -538,22 +538,22 @@ const Dashboard = () => {
             updateChartData(filteredData.length > 0 ? filteredData : dataSchedules, event.page, event.rows);
           };
 
-          useEffect(()=>{
-            const interval = setInterval(()=>{
-              // addToast("2 detik")
-              if(queryFilter.plantId === "" && queryFilter.global.value === null){
-                if(pagination.page >= totalPage-1){
-                  setPagination({ ...pagination, page: 0})
-                  updateChartData(filteredData.length > 0 ? filteredData : dataSchedules, 0, pagination.rows);
-                } else{
-                  setPagination({ ...pagination, page: pagination.page + 1})
-                  updateChartData(filteredData.length > 0 ? filteredData : dataSchedules, pagination.page+1, pagination.rows);
-                }
-              }
-            }, 24000)
+          // useEffect(()=>{
+          //   const interval = setInterval(()=>{
+          //     // addToast("2 detik")
+          //     if(queryFilter.plantId === "" && queryFilter.global.value === null){
+          //       if(pagination.page >= totalPage-1){
+          //         setPagination({ ...pagination, page: 0})
+          //         updateChartData(filteredData.length > 0 ? filteredData : dataSchedules, 0, pagination.rows);
+          //       } else{
+          //         setPagination({ ...pagination, page: pagination.page + 1})
+          //         updateChartData(filteredData.length > 0 ? filteredData : dataSchedules, pagination.page+1, pagination.rows);
+          //       }
+          //     }
+          //   }, 24000)
 
-            return () => clearInterval(interval);
-          }, [selectedStatus, optionsSelectVendor.selected, currentPage, limitPerPage, queryFilter, pagination, totalPage])
+          //   return () => clearInterval(interval);
+          // }, [selectedStatus, optionsSelectVendor.selected, currentPage, limitPerPage, queryFilter, pagination, totalPage])
           
           const handleFilter = (event) => {
             console.log("EVENT:", event)
