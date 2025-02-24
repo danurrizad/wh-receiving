@@ -203,8 +203,8 @@ const Book = () => {
           status === "delayed" ? "Vendor belum tiba dan melebihi jadwal" : 
           status === "scheduled" ? "Vendor belum tiba" : 
           status === "overdue" ? "Vendor telah tiba dengan melebihi jadwal" : 
-          status === "on scheduled" ? "Vendor telah tiba tepat waktu" : 
-          "COMPLETED"
+          status === "on schedule" ? "Vendor telah tiba tepat waktu" : 
+          ""
         } 
         placement="top"
       >
