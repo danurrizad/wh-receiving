@@ -262,10 +262,10 @@ const Dashboard = () => {
       }
     } catch (error) {
       console.error("Error fetching chart data:", error);
-      
-    } finally{
-      // setLoading(false)
-    }
+      setDataSchedules([])
+      updateChartData([])
+      calculateSummary([])
+    } 
   };
   
 
@@ -716,13 +716,15 @@ const Dashboard = () => {
                     position='start' 
                     value={queryFilter.rangeDate} 
                     onChange={(e)=>{
-                      console.log(e)
                       setCurrentPage(1)
                       setQueryFilter({ 
                         ...queryFilter, 
-                        rangeDate: [
+                        rangeDate: e !== null ? [
                           new Date(e[0].setHours(0, 0, 0, 1)), 
                           new Date(e[1].setHours(23, 59, 59, 59))
+                        ] : [
+                          new Date(), 
+                          new Date()
                         ]
                       })
                     }}/>
@@ -751,11 +753,10 @@ const Dashboard = () => {
                   className="custom-table dashboard"
                   emptyMessage={renderCustomEmptyMsg}
                   onPage={(e)=>{
-                    // console.log("e handlePageChange", e)
                     handlePageChange(e)
-                  }} // Track pagination
+                  }}
                   onFilter={(e)=>{
-                    console.log(e)
+                    console.log("e onfilter:", e)
                     handleFilter(e)
                   }} // Track filtering
                 >
