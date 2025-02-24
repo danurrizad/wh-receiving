@@ -4,7 +4,8 @@ const useBarChartDataService = ({dataBarChart}) => {
         const now = new Date();
         const year = now.getFullYear();
         const month = now.getMonth(); // 0-based index (0 = January, 11 = December)
-      
+        const monthName = new Intl.DateTimeFormat('en-US', { month: 'long' }).format(now);
+
         const daysInMonth = new Date(year, month + 1, 0).getDate();
       
         const dates = [];
@@ -18,12 +19,12 @@ const useBarChartDataService = ({dataBarChart}) => {
             colors.push(dayOfWeek === 0 || dayOfWeek === 6 ? "red" : "black");
         }
     
-        return { dates, colors };
+        return { dates, colors, monthName, year };
     };
 
       
 
-    const { dates, colors } = getAllDatesOfThisMonth()
+    const { dates, colors, monthName, year } = getAllDatesOfThisMonth()
 
     const setLineChartYellowData = () => {
         const data = {
@@ -79,6 +80,10 @@ const useBarChartDataService = ({dataBarChart}) => {
                     beginAtZero: true
                 },
             },
+            interaction: {
+                intersect: false,
+                mode: 'index',
+              },
             plugins: {
                 legend: {
                     position: 'top',
@@ -95,6 +100,14 @@ const useBarChartDataService = ({dataBarChart}) => {
                         size: 12
                     }
                   },
+                tooltip: {
+                    callbacks: {
+                        title: function(tooltipItems) {
+                            const day = tooltipItems[0].label.padStart(2, "0"); // Ensure "01", "02", etc.
+                            return `${day} ${monthName} ${year}`; // Format: "01 February 2025"
+                        }
+                    }
+                }
             }
         };
 
@@ -155,6 +168,10 @@ const useBarChartDataService = ({dataBarChart}) => {
                     beginAtZero: true
                 },
             },
+            interaction: {
+                intersect: false,
+                mode: 'index',
+              },
             plugins: {
                 legend: {
                     position: 'top',
@@ -171,6 +188,14 @@ const useBarChartDataService = ({dataBarChart}) => {
                         size: 12
                     }
                   },
+                tooltip: {
+                    callbacks: {
+                        title: function(tooltipItems) {
+                            const day = tooltipItems[0].label.padStart(2, "0"); // Ensure "01", "02", etc.
+                            return `${day} ${monthName} ${year}`; // Format: "01 February 2025"
+                        }
+                    }
+                }
             }
         };
         return config
@@ -239,6 +264,10 @@ const useBarChartDataService = ({dataBarChart}) => {
                     }
                 }
             },
+            interaction: {
+                intersect: false,
+                mode: 'index',
+              },
             plugins: {
                 datalabels: {
                     display: function(context) {
@@ -254,7 +283,16 @@ const useBarChartDataService = ({dataBarChart}) => {
                 legend: {
                     position: 'top',
                     align: 'start', 
-                }
+                },
+                tooltip: {
+                    callbacks: {
+                    title: function(tooltipItems) {
+                        // tooltipItems[0] contains the hovered item
+                        const day = tooltipItems[0].label.padStart(2, "0"); // Ensure "01", "02", etc.
+                        return `${day} ${monthName} ${year}`; // Format: "01 February 2025"
+                        }
+                    }
+                  }
             }
         };
 
