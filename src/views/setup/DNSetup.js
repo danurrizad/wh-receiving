@@ -109,9 +109,7 @@ const DNSetup = () => {
       setLoading(true)
       const dateFormat = importedDate !== null && importedDate !== "" ? importedDate.toLocaleDateString('en-CA') : importedDate
       const arrivalDateFormat = dateArrival !== null && dateArrival !== "" ? dateArrival.toLocaleDateString('en-CA') : dateArrival
-      // console.log("dateFormat :", dateFormat)
       const response = await getDNByDateData(dateFormat, arrivalDateFormat)
-      console.log(response)
       setDataDN(response.data.data)
 
     } catch (error) {
@@ -141,7 +139,6 @@ const onColumnToggle = (event) => {
   let orderedSelectedColumns = columns.filter((col) =>
     selectedColumns.some((sCol) => sCol.field === col.field),
   )
-
   setVisibleColumns(orderedSelectedColumns)
 }
 
@@ -163,12 +160,8 @@ const header = () => (
   const uploadDN = async(warehouseId, bodyForm) => {
     try {
       const response = await uploadMasterData(`upload-delivery-note/${warehouseId}`, bodyForm)
-      console.log("RESPONSE RESPONSE :", response)
-      // console.log("importDate :", uploadData.importDate)
       setModalUpload(false)
-
       if(response.data.errors){
-        // Cek apakah terdapat banyak errors
         response.data.errors.map((errs)=>{
           addToast(errs.error, 'danger', 'error')
         })
@@ -193,18 +186,11 @@ const header = () => (
   const handleUploadFileDN = async(file, importDate) => {
     try {
       setLoadingImport(true)
-      // console.log("file :", file)
-      // console.log("date :", importDate)
       
       const formData = new FormData()
       formData.append('file', file)
       formData.append('importDate', importDate)
-      // console.log("formData :", formData)
 
-      // Log FormData contents
-        for (let [key, value] of formData.entries()) {
-          console.log(`${key}:`, value);
-      }
       await uploadDN(optionsWarehouse.selected, formData)
 
     } catch (error) {
@@ -340,23 +326,23 @@ const header = () => (
                     placeholder="All time"
                     oneTap
                     onChange={(e)=>{
-                      console.log(e)
                       setFilterQuery({ ...filterQuery, dateArrival: e !== null ? e : ""})
                     }} />
                 </div>
-                <div>
-                  <CFormText>Filter by Import Date</CFormText>
-                  <DatePicker 
-                    format='yyyy-MM-dd'
-                    value={filterQuery.date ? filterQuery.date : null} 
-                    placeholder="All time"
-                    placement='bottomEnd'
-                    oneTap
-                    onChange={(e)=>{
-                      console.log("filter import date:", e)
-                      setFilterQuery({ ...filterQuery, date: e !== null ? e : ""})
-                    }} />
-                </div>
+                { visibleColumns.find((data)=>data.field === 'importDate') && (
+                  <div>
+                    <CFormText>Filter by Import Date</CFormText>
+                    <DatePicker 
+                      format='yyyy-MM-dd'
+                      value={filterQuery.date ? filterQuery.date : null} 
+                      placeholder="All time"
+                      placement='bottomEnd'
+                      oneTap
+                      onChange={(e)=>{
+                        setFilterQuery({ ...filterQuery, date: e !== null ? e : ""})
+                      }} />
+                  </div>
+                )}
               </CCol>
             </CRow>
             <CRow className='mt-4 px-2'>
