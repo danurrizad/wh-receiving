@@ -40,6 +40,7 @@ import { InputText } from 'primereact/inputtext'
 import Select  from 'react-select';
 import { useToast } from '../../App'
 import CustomTableLoading from '../../components/LoadingTemplate'
+import { MultiSelect } from 'primereact/multiselect'
 
 const DNSetup = () => {
   const [loading, setLoading] = useState(true);
@@ -55,6 +56,7 @@ const DNSetup = () => {
     global: { value: null, matchMode: FilterMatchMode.CONTAINS },
   })
   const [globalFilterValue, setGlobalFilterValue] = useState('');
+  const [ visibleColumns, setVisibleColumns ] = useState([])
   const [modalUpload, setModalUpload] = useState(false)
   const [date, setDate] = useState(new Date().toLocaleDateString('en-CA'))
   const [loadingImport, setLoadingImport] = useState(false)
@@ -63,6 +65,24 @@ const DNSetup = () => {
     file: ""
   })
   
+  const columns = [
+    {
+      field: 'importBy',
+      header: 'Imported By',
+      sortable: true,
+    },
+    {
+      field: 'importDate',
+      header: 'Imported Date',
+      sortable: true,
+    },
+    // {
+    //   field: 'discrepancy',
+    //   header: 'Discrepancy',
+    //   sortable: true,
+    // },
+  ]
+
   const getOptionsWarehouse = async() => {
     try {
       const response = await getMasterData('warehouse-public') 
@@ -87,11 +107,11 @@ const DNSetup = () => {
   const getDNbyDate = async(importedDate, dateArrival) => {
     try {
       setLoading(true)
-      // console.log("Imported Date :", importedDate)
       const dateFormat = importedDate !== null && importedDate !== "" ? importedDate.toLocaleDateString('en-CA') : importedDate
       const arrivalDateFormat = dateArrival !== null && dateArrival !== "" ? dateArrival.toLocaleDateString('en-CA') : dateArrival
       // console.log("dateFormat :", dateFormat)
       const response = await getDNByDateData(dateFormat, arrivalDateFormat)
+      console.log(response)
       setDataDN(response.data.data)
 
     } catch (error) {
@@ -115,6 +135,29 @@ const DNSetup = () => {
     setFilterQuery(_filters);
     setGlobalFilterValue(value);
 };
+
+const onColumnToggle = (event) => {
+  let selectedColumns = event.value
+  let orderedSelectedColumns = columns.filter((col) =>
+    selectedColumns.some((sCol) => sCol.field === col.field),
+  )
+
+  setVisibleColumns(orderedSelectedColumns)
+}
+
+const header = () => (
+  <MultiSelect
+    value={visibleColumns}
+    options={columns}
+    optionLabel="header"
+    onChange={onColumnToggle}
+    className="w-full sm:w-20rem mb-2 mt-2"
+    display="chip"
+    placeholder="Show Hidden Columns"
+    style={{ borderRadius: '5px' }}
+  />
+)
+
   
 
   const uploadDN = async(warehouseId, bodyForm) => {
@@ -322,6 +365,7 @@ const DNSetup = () => {
                   <DataTable 
                     className='p-datatable-gridlines p-datatable-sm custom-datatable text-nowrap' style={{minHeight: "140px"}}
                     loading={loading} 
+                    header={header}
                     loadingIcon={<CustomTableLoading/>}
                     emptyMessage={renderCustomEmptyMsg} 
                     filters={filterQuery}
@@ -338,14 +382,26 @@ const DNSetup = () => {
                   >
                     <Column field="no" header="No" body={(rowData, { rowIndex }) => rowIndex + 1}></Column>
                     <Column field="dnNumber" sortable header="DN No"></Column> 
+                    <Column field="supplierName" sortable header="Vendor"></Column> 
                     <Column field="materialNo" sortable header="Material No"></Column>
                     <Column field="description" sortable header="Material Desc"></Column>
                     <Column field="addressRackName" sortable header="Rack Address"></Column>
                     <Column field="planningQuantity" sortable header="Req. Qty"></Column>
                     <Column field="uom" sortable header="UoM"></Column>
                     <Column field="arrivalPlanDate" sortable header="Arrival Date Plan"></Column>
-                    <Column field="importBy" sortable header="Import By"></Column>
-                    <Column field="importDate" sortable header="Import Date"></Column>
+                    {/* <Column field="importBy" sortable header="Import By"></Column>
+                    <Column field="importDate" sortable header="Import Date"></Column> */}
+                    {visibleColumns.map((col, index) => (
+                    <Column
+                      key={index}
+                      field={col.field}
+                      header={col.header}
+                      body={col.body}
+                      sortable={col.sortable}
+                      // headerStyle={col.headerStyle}
+                      // bodyStyle={col.bodyStyle}
+                    />
+                  ))}
                   </DataTable>
                 </CCardBody>
               </CCard>
