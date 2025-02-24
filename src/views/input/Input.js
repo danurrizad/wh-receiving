@@ -148,11 +148,11 @@ const Input = () => {
   }
 
   const handleOnEnterInputDN = async(e) => {
-    if(e.key === "-"){
-      setFormInput({ ...formInput, dn_no: 21002007})
-    } else if(e.key === "-") {
-      setFormInput({ ...formInput, dn_no: 21002007})
-    }
+    // if(e.key === "-"){
+    //   setFormInput({ ...formInput, dn_no: 21002007})
+    // } else if(e.key === "-") {
+    //   setFormInput({ ...formInput, dn_no: 21002007})
+    // }
 
     if(e.key === 'Enter'){
       if(formInput.dn_no === ""){
@@ -181,12 +181,12 @@ const Input = () => {
         const responseDN = response.data.data[0].deliveryNotes
         const responseVendor = response.data.data[0].vendorSchedules
         const responseStateArrived = response.data.viewOnly
-        // console.log("Response:", response.data)
-        // console.log("Response Status:", responseDN.map((data)=>data.status))
-        console.log("Response DN:", responseDN)
+        // console.log("Response DN:", responseDN)
         // console.log("Response Vendor:", responseVendor)
-        // console.log("Response State Arrived:", responseStateArrived)
-        
+        if(responseVendor.length === 0){
+          addToast("Vendor schedule not found", 'danger', 'error')
+          return
+        }
         setDataMaterialsByDN(responseDN)
         setDataVendorByDN(responseVendor)
         setQtyEachMaterials({
