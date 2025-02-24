@@ -51,11 +51,11 @@ const Input = () => {
                   <span>(Silahkan lengkapi identitas Anda)</span>
                   <CRow>
                     <CCol md='5'>
-                      <CFormText >Vendor Name</CFormText>
+                      <CFormText >Vendor Code</CFormText>
                       <CFormInput 
                         type='text'
                         inputMode='numeric'
-                        placeholder='Insert DN Number'
+                        placeholder='Insert vendor code'
                         />
                     </CCol>
                     <CCol md='5'>
@@ -63,7 +63,7 @@ const Input = () => {
                       <CFormInput 
                         type='text'
                         inputMode='numeric'
-                        placeholder='Insert DN Number'
+                        placeholder='Insert truck station'
                         />
                     </CCol>
                   </CRow>
@@ -77,7 +77,7 @@ const Input = () => {
                         <CFormInput 
                           type='text'
                           inputMode='numeric'
-                          placeholder='Insert DN Number'
+                          placeholder='Insert name'
                           />
                       </CCol>
                       <CCol md='3'>
@@ -92,7 +92,7 @@ const Input = () => {
                         <CFormInput 
                           type='text'
                           inputMode='numeric'
-                          placeholder='Insert DN Number'
+                          placeholder='...'
                           />
                       </CCol>
                     </CRow>
@@ -107,7 +107,7 @@ const Input = () => {
                         <CFormInput 
                           type='text'
                           inputMode='numeric'
-                          placeholder='Insert DN Number'
+                          placeholder='Insert delivery type'
                           />
                       </CCol>
                       <CCol md='5'>
@@ -115,7 +115,7 @@ const Input = () => {
                         <CFormInput 
                           type='text'
                           inputMode='numeric'
-                          placeholder='Insert DN Number'
+                          placeholder='Insert vehicle type'
                           />
                       </CCol>
                     </CRow>
@@ -250,7 +250,7 @@ const Input = () => {
                       <CFormInput 
                         type='text'
                         inputMode='numeric'
-                        placeholder='Insert DN Number'
+                        placeholder='Insert vendor name'
                         />
                     </CCol>
                     <CCol md='5'>
@@ -258,7 +258,7 @@ const Input = () => {
                       <CFormInput 
                         type='text'
                         inputMode='numeric'
-                        placeholder='Insert DN Number'
+                        placeholder='Insert truck station'
                         />
                     </CCol>
                   </CRow>
@@ -272,7 +272,7 @@ const Input = () => {
                         <CFormInput 
                           type='text'
                           inputMode='numeric'
-                          placeholder='Insert DN Number'
+                          placeholder='Insert name'
                           />
                       </CCol>
                       <CCol md='3'>
@@ -287,7 +287,7 @@ const Input = () => {
                         <CFormInput 
                           type='text'
                           inputMode='numeric'
-                          placeholder='Insert DN Number'
+                          placeholder='...'
                           />
                       </CCol>
                     </CRow>
@@ -302,7 +302,7 @@ const Input = () => {
                         <CFormInput 
                           type='text'
                           inputMode='numeric'
-                          placeholder='Insert DN Number'
+                          placeholder='Insert delivery type'
                           />
                       </CCol>
                       <CCol md='5'>
@@ -310,7 +310,7 @@ const Input = () => {
                         <CFormInput 
                           type='text'
                           inputMode='numeric'
-                          placeholder='Insert DN Number'
+                          placeholder='Insert vehicle type'
                           />
                       </CCol>
                     </CRow>
