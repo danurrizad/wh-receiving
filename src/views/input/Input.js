@@ -86,15 +86,8 @@ const Input = () => {
 
   const getStatusBasedOnTime = (matchesVendor) => {
     const { date, time } = getCurrentDateTime();
-    // console.log("date now :", date)
-    // console.log("date plan :", matchesVendor.arrivalPlanDate)
 
     const addedTime = addMinutes(matchesVendor.arrivalPlanTime, 15);
-    // console.log("added time plan:", addedTime)
-    // console.log("time now :", time)
-    // console.log("vendor by dn :", dataVendorByDN)
-    // console.log("formInput :", matchesVendor)
-    // console.log("departure plan :", matchesVendor.departurePlanTime)
 
     // Compare times
     if (date <= matchesVendor.arrivalPlanDate && time <= addedTime) {
@@ -148,12 +141,6 @@ const Input = () => {
   }
 
   const handleOnEnterInputDN = async(e) => {
-    // if(e.key === "-"){
-    //   setFormInput({ ...formInput, dn_no: 21002007})
-    // } else if(e.key === "-") {
-    //   setFormInput({ ...formInput, dn_no: 21002007})
-    // }
-
     if(e.key === 'Enter'){
       if(formInput.dn_no === ""){
         addToast("Please insert the DN number!", 'error', 'error')
@@ -254,7 +241,10 @@ const Input = () => {
   };
 
   const handleDisableInput = (rowData) => {
-    setEnabledRows((prev) => prev.filter((id) => id !== rowData.description)); // Remove row ID from enabled rows
+    setTimeout(()=>{
+      // inputRefs.current[refKey]?.focus(); // Focus the specific input field
+      setEnabledRows((prev) => prev.filter((id) => id !== rowData.description)); // Remove row ID from enabled rows
+    }, 100)
   };
 
   const handleEnterInputQty = (rowIndex, rowData, e) => {

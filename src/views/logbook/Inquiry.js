@@ -104,20 +104,12 @@ const Book = () => {
       setLoading(true)
       const idPlant = getPlantId(plantId)
       if(startDate !== null && endDate !== null) {
-        // const formattedStart = startDate.toISOString().split('T')[0]
-        // const formattedTo = endDate.toISOString().split('T')[0]
-
-        const [fromDate, fromMonth, fromYear] = startDate.toLocaleDateString('en-GB').split("/").map(Number)
-        const [toDate, toMonth, toYear] = endDate.toLocaleDateString('en-GB').split("/").map(Number)
-
-        const formattedFrom = `${fromYear}-${fromMonth}-${fromDate}`
-        const formattedTo = `${toYear}-${toMonth}-${toDate}`
-        
+        const formattedFrom = startDate.toLocaleDateString('en-CA')
+        const formattedTo = endDate.toLocaleDateString('en-CA')
         const response = await getDNInqueryData(idPlant, formattedFrom, formattedTo) 
         setDataDNInquery(response.data.data)
       }else{
         const response = await getDNInqueryData(idPlant, "", "") 
-        // console.log("response :", response.data.data)
         setDataDNInquery(response.data.data)
       }
     } catch (error) {
@@ -134,11 +126,7 @@ const Book = () => {
  
 
   const handleClickOpenMaterials = (data) => {
-    setShowModalInput({...showModalInput, state: true})
-    // console.log("data vendor:", data.deliveryNotes)
-    console.log("data material:", data.Materials)
-    // console.log("data material viewOnly:", data.deliveryNotes.Materials.map((data)=>Boolean(data.viewOnly)))
-    
+    setShowModalInput({...showModalInput, state: true})    
     const dataVendor = data
     const dataMaterials = data.Materials
     setDataMaterialsByDNInquery(data.Materials)
@@ -248,12 +236,15 @@ const Book = () => {
     const refKey = rowData.description; // Use the row's unique identifier
     setTimeout(()=>{
       inputRefs.current[refKey]?.focus(); // Focus the specific input field
-    }, 0)
+    }, 100)
 
   };
 
   const handleDisableInput = (rowData) => {
-    setEnabledRows((prev) => prev.filter((id) => id !== rowData.description)); // Remove row ID from enabled rows
+    setTimeout(()=>{
+      // inputRefs.current[refKey]?.focus(); // Focus the specific input field
+      setEnabledRows((prev) => prev.filter((id) => id !== rowData.description)); // Remove row ID from enabled rows
+    }, 100)
   };
 
   const handleInputChangeQty = (rowIndex, rowData, eValue) => {
@@ -295,9 +286,6 @@ const handleSubmitChangeQty = (rowIndex, rowData) => {
       index === rowIndex.rowIndex && newRemainQty !== rowData.remain && newRemainQty > 0 ? "completed" : 
       value
     ),
-    // remains: prevState.remains.map((value, index) => 
-    //   index === rowIndex.rowIndex ? 
-    // )
   }));
 }
 
@@ -305,37 +293,33 @@ const handleSubmitChangeQty = (rowIndex, rowData) => {
     const isInputEnabled = enabledRows.includes(rowData.description); 
     const recQty = rowData.receivedQuantity
     const indexMaterial = rowIndex.rowIndex
+    
     return(
       <div className='d-flex gap-3 align-items-center justify-content-center'>
-        {/* Input Field */}
-                <InputText
-                   ref={(el) => (inputRefs.current[rowData.description] = el)}
-                   id={`inputQty-${rowData.description}`}
-                   type='text'
-                  disabled={!isInputEnabled}
-                  placeholder='-'
-                  value={formUpdate.receivedQuantities[indexMaterial]}
-                  onChange={(e)=>handleInputChangeQty(indexMaterial, rowData, e.target.value)}
-                  onKeyDown={(e)=>handleEnterInputQty(rowIndex, rowData, e)}
-                  onBlur={()=>handleSubmitChangeQty(rowIndex, rowData)}
-                  // onBlur={(e)=>handleEnterInputQty(rowIndex, rowData, e)}
-                  style={{ width: "70px"}}
-                />
-         { isInputEnabled && !isViewOnly[indexMaterial] ? (
+          <InputText
+              ref={(el) => (inputRefs.current[rowData.description] = el)}
+              id={`inputQty-${rowData.description}`}
+              type='text'
+            disabled={!isInputEnabled}
+            placeholder='-'
+            value={formUpdate.receivedQuantities[indexMaterial]}
+            onChange={(e)=>handleInputChangeQty(indexMaterial, rowData, e.target.value)}
+            onKeyDown={(e)=>handleEnterInputQty(rowIndex, rowData, e)}
+            onBlur={()=>handleSubmitChangeQty(rowIndex, rowData)}
+            style={{ width: "70px"}}
+          />
+         { isInputEnabled && !isViewOnly[indexMaterial] && formUpdate.receivedQuantities[indexMaterial]!==rowData.reqQuantity ? (
               <CButton
                 color=''
                 className="p-button-sm p-button-secondary text-white"
-                // onClick={() => handleClickEditQuantity(rowData)}
                 onClick={()=>handleSubmitChangeQty(rowIndex, rowData)}
-                // onClick={() => handleDisableInput(rowData)}
               >
                 <CIcon style={{ color: "green"}} icon={icon.cilCheck}/>
               </CButton>
-            ) : !isInputEnabled && !isViewOnly[indexMaterial] ? (
+            ) : !isInputEnabled && !isViewOnly[indexMaterial] && formUpdate.receivedQuantities[indexMaterial]!==rowData.reqQuantity ?  (
               <CButton
                 color=''
                 className="p-button-sm p-button-secondary text-white"
-                // onClick={() => handleClickEditQuantity(rowData)}
                 onClick={()=>handleEnableInput(rowData)}
               >
                 <CIcon style={{ color: "gray"}} icon={icon.cilPen}/>
@@ -459,13 +443,13 @@ const handleSubmitChangeQty = (rowIndex, rowData) => {
             <CCardBody>
               <CRow className='d-flex align-items-end'>
                 
-                <CCol sm='3' className=''>
+                <CCol md='3' className=''>
                     <CFormText>Search</CFormText>
                     <Input value={globalFilterValue} onChange={(e)=>onGlobalFilterChange(e)} placeholder="Keyword Search"/>
                 </CCol>
 
                 <CCol className='d-flex justify-content-end gap-4'>
-                  <CCol sm='3' className=''>
+                  <CCol sm='4' md='3' className=''>
                       <CFormText>Filter by Plant</CFormText>
                       <Dropdown
                         value={queryFilter.plantId}
@@ -479,7 +463,16 @@ const handleSubmitChangeQty = (rowIndex, rowData) => {
                   </CCol>
                   <CCol sm='auto' className=''>
                       <CFormText>Filter by Date</CFormText>
-                      <DateRangePicker format="yyyy-MM-dd" character=' – ' showOneCalendar placeholder='All time' position='start' value={queryFilter.rangeDate} onChange={handleChangeRangeDate} />
+                      <DateRangePicker 
+                        format="yyyy-MM-dd" 
+                        character=' – ' 
+                        showOneCalendar 
+                        placeholder='All time' 
+                        position='start' 
+                        style={{ width: "210px"}}
+                        value={queryFilter.rangeDate} 
+                        onChange={handleChangeRangeDate} 
+                        />
                   </CCol>
                 </CCol>
               </CRow>
