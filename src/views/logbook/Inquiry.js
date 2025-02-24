@@ -145,7 +145,7 @@ const Book = () => {
   }
 
   const headerGroup = (
-    <ColumnGroup>
+    <ColumnGroup >
         <Row>
             <Column header="No" rowSpan={2} />
             <Column header="DN No" sortable field='deliveryNotes.dnNumber' rowSpan={2} />
@@ -156,7 +156,7 @@ const Book = () => {
             <Column header="Arrival" colSpan={2} align='center' />
             <Column header="Departure" sortable field='deliveryNotes.departureActualTime' rowSpan={2} />
             <Column header="Status Arrival" sortable field='deliveryNotes.status' rowSpan={2} />
-            <Column header="Delay Time" sortable field='deliveryNotes.delayTime' rowSpan={2} />
+            <Column header={`Delay Time`} sortable field='deliveryNotes.delayTime' rowSpan={2} style={{ width: "2%"}}/>
             <Column header="Status Received" sortable rowSpan={2} />
             <Column header="Materials" rowSpan={2} />
         </Row>
@@ -482,10 +482,12 @@ const handleSubmitChangeQty = (rowIndex, rowData) => {
                 <CCard className='p-0 overflow-hidden' >
                   <CCardBody className="p-0">
                     <DataTable
+                      // resizableColumns 
+                      // columnResizeMode="fit"
                       loading={loading}
                       loadingIcon={<CustomTableLoading/>}
                       headerColumnGroup={headerGroup}
-                      className='p-datatable-gridlines p-datatable-sm custom-datatable text-nowrap'
+                      className='p-datatable-gridlines p-datatable-sm custom-datatable '
                       style={{ minHeight: "200px"}}
                       removableSort
                       globalFilterFields={['dnNumber', 'supplierName', 'truckStation', '']}
@@ -514,8 +516,8 @@ const handleSubmitChangeQty = (rowIndex, rowData) => {
                       {/* <Column className='' field='deliveryNotes.departureActualDate'  header="Departure Date" /> */}
                       <Column className='' field='departureActualTime'  header="Dpt. Time" />
                       <Column className='' field='status'  header="Status Arrival" body={statusVendorBodyTemplate} />
-                      <Column className='' field='delayTime'  header="Delay Time" style={{ textTransform: "lowercase"}} />
-                      <Column className='' field=''  header="Status Received" body={statusReceivedBodyTemplate} />
+                      <Column className='' field='delayTime'  header="Delay Time" style={{ textTransform: "lowercase", width: "1%"}} />
+                      <Column className='' field=''  header="Status Received" body={statusReceivedBodyTemplate} style={{width: "1%"}}/>
                       <Column className='' field=''  header="Materials" body={materialsBodyTemplate} />
                   
                     </DataTable>
@@ -554,8 +556,9 @@ const handleSubmitChangeQty = (rowIndex, rowData) => {
             <DataTable
               loading={loading}
               loadingIcon={<CustomTableLoading/>}
-              className='p-datatable-gridlines p-datatable-sm custom-datatable text-nowrap'
+              className='p-datatable-gridlines p-datatable-sm custom-datatable text-wrap'
               removableSort
+              
               // filters={filters}
               size='small'
               // emptyMessage={renderCustomEmptyMsg}
