@@ -30,6 +30,7 @@ const useBarChartDataService = ({dataBarChart}) => {
             labels: dates,
             datasets: [
                 {
+                    type: 'bar',
                     label: '',
                     data: 0,
                     backgroundColor: "transparent",
@@ -51,6 +52,7 @@ const useBarChartDataService = ({dataBarChart}) => {
                     stack: "group2"
                   }, 
                 {
+                    type: 'bar',
                     label: '',
                     data: 0,
                     borderColor: 'transparent',
@@ -104,6 +106,7 @@ const useBarChartDataService = ({dataBarChart}) => {
             labels: dates,
             datasets: [
                 {
+                    type: 'bar',
                     label: '',
                     data: 0,
                     borderColor: 'transparent',
@@ -125,6 +128,7 @@ const useBarChartDataService = ({dataBarChart}) => {
                     borderColor: 'rgb(231, 63, 63)'
                 },
                 {
+                    type: 'bar',
                     label: '',
                     data: 0,
                     borderColor: 'transparent',
@@ -180,7 +184,6 @@ const useBarChartDataService = ({dataBarChart}) => {
             {
               type: 'bar',
               label: 'Req. Qty',
-            //   data: dataBarChart.map((data)=>data.itemCount),
               data: dates.map((date)=>{
                 const matchesDate = dataBarChart.find((data)=>data.incomingDate.split("-")[2] === date)
                 if(matchesDate){
@@ -192,11 +195,6 @@ const useBarChartDataService = ({dataBarChart}) => {
               borderColor: 'rgb(0, 174, 255)',
               backgroundColor: 'rgba(0, 110, 255, 0.73)',
               stack: "group1",
-            //   datalabels: {
-            //     labels: {
-            //         title: 'green'
-            //     }
-            //   }
             },
             {
                 type: 'bar',
@@ -241,8 +239,6 @@ const useBarChartDataService = ({dataBarChart}) => {
                     }
                 }
             },
-            // options: {
-            // },
             plugins: {
                 datalabels: {
                     display: function(context) {
@@ -250,15 +246,9 @@ const useBarChartDataService = ({dataBarChart}) => {
                       },
                     anchor: 'end',
                     align: 'top',
-                    // color: data.datasets[0] ? "red" : "yellow",
                     font: {
                         weight: 'bold',
                         size: 12
-                        // size: function(context) {
-                        //     console.log("context:", context)
-                        //     const value = context.dataset.data[context.dataIndex];
-                        //     return value > 0 ? 12 : 100; // Hide when value is 0
-                        //   }
                     }
                   },
                 legend: {
