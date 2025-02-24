@@ -21,7 +21,7 @@ import CustomTableLoading from '../../components/LoadingTemplate';
 
 
 const Book = () => {
-  const addToast = useToast()
+  // const addToast = useToast()
   const [ loading, setLoading ] = useState(false)
   const { getDNInqueryData, submitUpdateMaterialByDNData } = useReceivingDataService()
   const [ dataDNInquery, setDataDNInquery ] = useState([])
@@ -114,7 +114,6 @@ const Book = () => {
         const formattedTo = `${toYear}-${toMonth}-${toDate}`
         
         const response = await getDNInqueryData(idPlant, formattedFrom, formattedTo) 
-        console.log("response :", response)
         setDataDNInquery(response.data.data)
       }else{
         const response = await getDNInqueryData(idPlant, "", "") 
@@ -342,7 +341,7 @@ const handleSubmitChangeQty = (rowIndex, rowData) => {
                 <CIcon style={{ color: "gray"}} icon={icon.cilPen}/>
               </CButton>
     
-            ) : ""}
+            ) : null}
       </div>
     )
   }
@@ -401,13 +400,6 @@ const handleSubmitChangeQty = (rowIndex, rowData) => {
       }
 
     const handleSaveChangesMaterials = async() => {
-          // const { date, time } = getCurrentDateTime();
-          // setFormUpdate({
-          //   ...formUpdate,
-          //   updatedDate: date,
-          //   updatedTime: time
-          // })
-    
           // console.log("----------------------SUBMIT LOG---------------------", )
           const dnNumber = formUpdate.dnNumber
           const warehouseId = formUpdate.warehouseId
@@ -417,9 +409,6 @@ const handleSubmitChangeQty = (rowIndex, rowData) => {
             incomingIds: formUpdate.incomingIds.filter((data,index)=>Number(formUpdate.receivedQuantities[index]) !== Number(dataMaterialsByDNInquery[index].receivedQuantity) && Number(data)),
             quantities: filteredQty.map(Number),
           }
-          // console.log("formBody to submit :", formBody)
-          // console.log("dnNumber :", dnNumber)
-          // console.log("warehouseId :", warehouseId)
     
           Swal.fire({
             title: "Save confirmation",
@@ -432,7 +421,6 @@ const handleSubmitChangeQty = (rowIndex, rowData) => {
             preConfirm: async () => {
               try {
                 const response = await submitUpdateMaterialByDNData(warehouseId, formBody)
-                // await getMaterialByDN(formUpdate.dnNumber)
                 return "Material quantities updated!"
               } catch (error) {
                 console.warn("ERROR :", error)
@@ -492,7 +480,6 @@ const handleSubmitChangeQty = (rowIndex, rowData) => {
                   <CCol sm='auto' className=''>
                       <CFormText>Filter by Date</CFormText>
                       <DateRangePicker format="yyyy-MM-dd" character=' – ' showOneCalendar placeholder='All time' position='start' value={queryFilter.rangeDate} onChange={handleChangeRangeDate} />
-                      {/* <DateRangePicker showOneCalendar placeholder='All time' position='start' value={queryFilter.rangeDate} onChange={(e)=>console.log(e)} /> */}
                   </CCol>
                 </CCol>
               </CRow>
@@ -518,8 +505,6 @@ const handleSubmitChangeQty = (rowIndex, rowData) => {
                       rows={10}
                       rowsPerPageOptions={[10, 25, 50, 100]}
                       value={dataDNInquery}
-                      // dataKey="id"
-                      // onFilter={(e) => setFilters(e.filters)}
                       filterDisplay="row"
                     >
                       <Column className='' header="No" body={(rowBody, {rowIndex})=>rowIndex+1}/>

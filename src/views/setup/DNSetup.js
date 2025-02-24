@@ -92,7 +92,6 @@ const DNSetup = () => {
       const arrivalDateFormat = dateArrival !== null && dateArrival !== "" ? dateArrival.toLocaleDateString('en-CA') : dateArrival
       // console.log("dateFormat :", dateFormat)
       const response = await getDNByDateData(dateFormat, arrivalDateFormat)
-      // console.log(response.data)
       setDataDN(response.data.data)
 
     } catch (error) {
@@ -144,7 +143,7 @@ const DNSetup = () => {
     } catch (error) {
       console.error(error)
     } finally {
-      getDNbyDate(filterQuery.date)
+      getDNbyDate(filterQuery.date, filterQuery.dateArrival)
     }
   }
 
@@ -296,6 +295,7 @@ const DNSetup = () => {
                     format='yyyy-MM-dd'
                     value={filterQuery.dateArrival ? filterQuery.dateArrival : null} 
                     placeholder="All time"
+                    oneTap
                     onChange={(e)=>{
                       console.log(e)
                       setFilterQuery({ ...filterQuery, dateArrival: e !== null ? e : ""})
@@ -307,8 +307,10 @@ const DNSetup = () => {
                     format='yyyy-MM-dd'
                     value={filterQuery.date ? filterQuery.date : null} 
                     placeholder="All time"
+                    placement='bottomEnd'
+                    oneTap
                     onChange={(e)=>{
-                      console.log(e)
+                      console.log("filter import date:", e)
                       setFilterQuery({ ...filterQuery, date: e !== null ? e : ""})
                     }} />
                 </div>

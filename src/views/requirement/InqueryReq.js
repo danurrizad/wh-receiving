@@ -133,6 +133,7 @@ const InquiryReq = () => {
                   <CFormText>Filter by Updated Date</CFormText>
                   <DatePicker 
                     format='yyyy-MM-dd'
+                    oneTap
                     value={filterQuery.date ? filterQuery.date : null} 
                     placeholder="All time"
                     onChange={(e)=>{
