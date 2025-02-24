@@ -1,4 +1,3 @@
-import { plugins } from "chart.js";
 
 const useBarChartDataService = ({dataBarChart}) => {
     const getAllDatesOfThisMonth = () => {
@@ -8,31 +7,29 @@ const useBarChartDataService = ({dataBarChart}) => {
       
         const daysInMonth = new Date(year, month + 1, 0).getDate();
       
-        const dates = Array.from({ length: daysInMonth }, (_, i) => {
-          const day = i + 1;
-          const date = new Date(year, month, day);
+        const dates = [];
+        const colors = [];
+    
+        for (let i = 1; i <= daysInMonth; i++) {
+            const date = new Date(year, month, i);
+            const dayOfWeek = date.getDay(); // 0 = Sunday, 6 = Saturday
+    
+            dates.push(date.toLocaleDateString("en-CA").split("-")[2]); // Extract day part
+            colors.push(dayOfWeek === 0 || dayOfWeek === 6 ? "red" : "black");
+        }
+    
+        return { dates, colors };
+    };
 
-          
-          // Format the date as YYYY-MM-DD
-          return date.toLocaleDateString("en-CA").split("-")[2]; // en-CA gives YYYY-MM-DD format
-        });
       
-        return dates;
-      };
 
-    const dates = getAllDatesOfThisMonth()
-    // const randomData = dates.map(()=>Math.floor(Math.random() * 31) + 20)
-    // const randomDifferenceData = dates.map((data, index)=>50-randomData[index])
-
-    // const randomDataCompleted = randomData.map(value => Math.floor(value / 10) * 10);
-    // const randomDataPartial = randomData.map((value, index) => value - randomDataCompleted[index]);
+    const { dates, colors } = getAllDatesOfThisMonth()
 
     const setLineChartYellowData = () => {
         const data = {
             labels: dates,
             datasets: [
                 {
-                    // type: 'line',
                     label: '',
                     data: 0,
                     backgroundColor: "transparent",
@@ -54,7 +51,6 @@ const useBarChartDataService = ({dataBarChart}) => {
                     stack: "group2"
                   }, 
                 {
-                    // type: 'bar',
                     label: '',
                     data: 0,
                     borderColor: 'transparent',
@@ -85,19 +81,13 @@ const useBarChartDataService = ({dataBarChart}) => {
                 legend: {
                     position: 'top',
                     align: 'start', 
-                    // labels: {
-                    //     padding: {
-                    //         top: "20"
-                    //     }  
-                    // }
                 },        
                 datalabels: {
                     display: function(context) {
-                        return context.dataset.data[context.dataIndex] > 0; // Hide if value is 0
+                        return context.dataset.data[context.dataIndex] > 0; 
                       },
                     anchor: 'end',
                     align: 'top',
-                    // color: data.datasets[0] ? "red" : "yellow",
                     font: {
                         weight: 'bold',
                         size: 12
@@ -114,7 +104,6 @@ const useBarChartDataService = ({dataBarChart}) => {
             labels: dates,
             datasets: [
                 {
-                    // type: 'bar',
                     label: '',
                     data: 0,
                     borderColor: 'transparent',
@@ -123,7 +112,6 @@ const useBarChartDataService = ({dataBarChart}) => {
                 {
                     type: 'line',
                     label: 'Rec. Qty (NOT DELIVERED)',
-                    // data: dataBarChart?.map((data)=>data.notDeliveredCount),
                     data: dates.map((date)=>{
                         const matchesDate = dataBarChart.find((data)=>data.incomingDate.split("-")[2] === date)
                         if(matchesDate){
@@ -137,7 +125,6 @@ const useBarChartDataService = ({dataBarChart}) => {
                     borderColor: 'rgb(231, 63, 63)'
                 },
                 {
-                    // type: 'bar',
                     label: '',
                     data: 0,
                     borderColor: 'transparent',
@@ -150,7 +137,6 @@ const useBarChartDataService = ({dataBarChart}) => {
 
     const getLineChartRedOptions = () => {
         const data = setLineChartRedData()
-        // console.log("data type:", data)
         const config = {
             type: 'scatter',
             maintainAspectRatio: false,
@@ -169,11 +155,6 @@ const useBarChartDataService = ({dataBarChart}) => {
                 legend: {
                     position: 'top',
                     align: 'start', 
-                    // labels: {
-                    //     padding: {
-                    //         top: "20"
-                    //     }  
-                    // }
                 },        
                 datalabels: {
                     display: function(context) {
@@ -181,7 +162,6 @@ const useBarChartDataService = ({dataBarChart}) => {
                       },
                     anchor: 'end',
                     align: 'top',
-                    // color: data.datasets[0] ? "red" : "yellow",
                     font: {
                         weight: 'bold',
                         size: 12
@@ -253,6 +233,12 @@ const useBarChartDataService = ({dataBarChart}) => {
                 },
                 x: {
                     stacked: true,
+                    ticks: {
+                        color: (context) => {
+                            const index = context.index;
+                            return colors[index]; // Use colors array to color each label
+                        }
+                    }
                 }
             },
             // options: {

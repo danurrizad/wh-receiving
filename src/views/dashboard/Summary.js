@@ -122,13 +122,6 @@ const Summary = () => {
   const now = new Date();
   const year = now.getFullYear();
   const month = now.getMonth();
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
-
-  const getStartAndEndDate = (date) => {
-    const startDate = new Date(date.getFullYear(), date.getMonth(), 1);
-    const endDate = new Date(date.getFullYear(), date.getMonth() + 1, 0);
-    return { startDate, endDate };
-}
 
 
   const fetchPieChartReceiving = async(plantId) => {
@@ -142,7 +135,6 @@ const Summary = () => {
             "",
             ""
         )
-        // console.log("Response: ", response)
         setDataPieChart(response.summaryMaterial)
     } catch (error) {
         console.error(error)
@@ -191,7 +183,6 @@ const Summary = () => {
   const fetchHistoryChartReceiving = async(plantId, year, month) => {
     try {
         const response = await getChartHistoryReceiving(plantId, year, month)
-        console.log("response history chart:", response)
         setDataBarChart(response.data.data.byDate)
         setDataTableHistory(response.data.data.bySupplier)
     } catch (error) {
@@ -282,6 +273,7 @@ return (
                                             value={filterDate} 
                                             onChange={(e)=>setFilterDate(e !== null ? e : new Date())}
                                             placement='bottomEnd'
+                                            oneTap
                                         />
                                     </div>
                                 </CCol>
@@ -410,6 +402,7 @@ return (
                                             placement='bottomEnd'
                                             format='yyyy-MM'  
                                             placeholder="Select month" 
+                                            oneTap
                                             value={filterMonth} 
                                             onChange={(e)=>{
                                                 console.log(e)
