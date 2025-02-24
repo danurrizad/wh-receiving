@@ -308,7 +308,8 @@ const handleSubmitChangeQty = (rowIndex, rowData) => {
             onBlur={()=>handleSubmitChangeQty(rowIndex, rowData)}
             style={{ width: "70px"}}
           />
-         { isInputEnabled && !isViewOnly[indexMaterial] && formUpdate.receivedQuantities[indexMaterial]!==rowData.reqQuantity ? (
+         {/* { isInputEnabled && !isViewOnly[indexMaterial] && formUpdate.receivedQuantities[indexMaterial]!==rowData.reqQuantity ? ( */}
+         { isInputEnabled && !isViewOnly[indexMaterial]  ? (
               <CButton
                 color=''
                 className="p-button-sm p-button-secondary text-white"
@@ -316,7 +317,8 @@ const handleSubmitChangeQty = (rowIndex, rowData) => {
               >
                 <CIcon style={{ color: "green"}} icon={icon.cilCheck}/>
               </CButton>
-            ) : !isInputEnabled && !isViewOnly[indexMaterial] && formUpdate.receivedQuantities[indexMaterial]!==rowData.reqQuantity ?  (
+            // ) : !isInputEnabled && !isViewOnly[indexMaterial] && formUpdate.receivedQuantities[indexMaterial]!==rowData.reqQuantity ?  (
+            ) : !isInputEnabled && !isViewOnly[indexMaterial]  ?  (
               <CButton
                 color=''
                 className="p-button-sm p-button-secondary text-white"
