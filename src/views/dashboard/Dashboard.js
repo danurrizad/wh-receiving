@@ -237,15 +237,15 @@ const Dashboard = () => {
         const allResponse = response.data
         const filteredResponse = response.data.filter((data)=>data.status !== 'no schedule')
 
-        setDataSchedules(filteredResponse); // Simpan data dari API ke state
-        updateChartData(filteredData.length > 0 ? filteredData : filteredResponse, pagination.page, pagination.rows);
-        calculateSummary(filteredResponse)
+        setDataSchedules(allResponse); // Simpan data dari API ke state
+        updateChartData(filteredData.length > 0 ? filteredData : allResponse, pagination.page, pagination.rows);
+        calculateSummary(allResponse)
 
         // add options in vendor select
-        const vendorOptions = filteredResponse
+        const vendorOptions = allResponse
         ? Array.from(
             new Map(
-              filteredResponse
+              allResponse
                 .filter(vendor => vendor.vendorName) // Skip missing names
                 .map(vendor => [
                   vendor.vendorName,
