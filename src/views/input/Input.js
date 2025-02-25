@@ -709,6 +709,9 @@ const Input = () => {
                     {/* Table */}
                     <DataTable 
                       loading={loading}
+                      paginatorTemplate="CurrentPageReport FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown"
+                      currentPageReportTemplate="Showing {first} to {last} of {totalRecords}"
+                      
                       loadingIcon={<CustomTableLoading/>}
                       className='p-datatable-gridlines p-datatable-sm custom-datatable text-nowrap' 
                       style={{minHeight: "140px"}}
@@ -718,6 +721,7 @@ const Input = () => {
                       value={dataMaterialsByDN} 
                       paginator 
                       rows={10} 
+                      rowsPerPageOptions={[10, 25, 50]}
                       dataKey="materialNo" 
                       emptyMessage={renderCustomEmptyMsg}
                       selectionMode={formInput.rit ? "multiple" : undefined} 
