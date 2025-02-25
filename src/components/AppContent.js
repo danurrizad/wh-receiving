@@ -5,6 +5,7 @@ import CustomTableLoading from './LoadingTemplate'
 
 // routes config
 import routes from '../routes'
+import LoadingTWIIS from './LoadingTWIIS'
 
 const AppContent = () => {
   return (
@@ -12,7 +13,8 @@ const AppContent = () => {
       <Suspense 
         fallback={
         <div style={{ height: "100vh"}}>
-          <CustomTableLoading />
+          {/* <CustomTableLoading /> */}
+          <LoadingTWIIS/>
         </div>
         }>
         <Routes>
