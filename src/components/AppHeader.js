@@ -23,6 +23,7 @@ import {
   cilMenu,
 } from '@coreui/icons'
 import LogoTWIIS2 from 'src/assets/images/logo-twiis-2.png'
+import LogoReceiving from 'src/assets/images/LOGO-RECEIVING-2.png'
 import useVerify from '../hooks/UseVerify'
 import { FaCode } from 'react-icons/fa6'
 
@@ -62,9 +63,9 @@ const AppHeader = () => {
         >
           <CIcon icon={cilMenu} size="lg" />
         </CHeaderToggler>
-        <CHeaderNav style={{ position: 'fixed', top: "10px", left: "50px"}}>
+        {/* <CHeaderNav style={{ position: 'fixed', top: "10px", left: "50px"}}>
           <CImage className="" src={LogoTWIIS2} height={52} />
-        </CHeaderNav>
+        </CHeaderNav> */}
         {/* <CHeaderNav style={{ position: "absolute", left: "300px"}}>
          <div className='d-flex align-items-center gap-2'>
             <FaCode style={{ color:'rgb(72, 120, 187)', width: "40px"}}/>
@@ -74,6 +75,10 @@ const AppHeader = () => {
             <FaCode style={{ color:'rgb(72, 120, 187)', width: "40px"}}/>
          </div>
         </CHeaderNav> */}
+
+        <CHeaderNav>
+          <CImage src={LogoReceiving} width={200}/>
+        </CHeaderNav>
         <CHeaderNav className="ms-auto">
           <CNavItem>
             <CNavLink className="" style={{ textDecoration: 'none' }}>
