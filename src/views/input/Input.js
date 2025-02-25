@@ -90,9 +90,13 @@ const Input = () => {
     const addedTime = addMinutes(matchesVendor.arrivalPlanTime, 15);
 
     // Compare times
-    if (date <= matchesVendor.arrivalPlanDate && time <= addedTime) {
+    if (date < matchesVendor.arrivalPlanDate){
+      return 'on schedule'
+    }
+    else if (date <= matchesVendor.arrivalPlanDate && time <= addedTime) {
       return 'on schedule'; // Status if current time is within the range
-    } else {
+    } 
+    else {
       return 'overdue'; // Status if current time is outside the range
     }
   };
@@ -711,7 +715,6 @@ const Input = () => {
                       loading={loading}
                       paginatorTemplate="CurrentPageReport FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown"
                       currentPageReportTemplate="Showing {first} to {last} of {totalRecords}"
-                      
                       loadingIcon={<CustomTableLoading/>}
                       className='p-datatable-gridlines p-datatable-sm custom-datatable text-nowrap' 
                       style={{minHeight: "140px"}}
