@@ -529,6 +529,8 @@ const VendorSetup = () => {
                       paginator
                       rows={10}
                       rowsPerPageOptions={[10, 25, 50, 100]}
+                      paginatorTemplate="CurrentPageReport FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown"
+                      currentPageReportTemplate="Showing {first} to {last} of {totalRecords}"
                       value={dataSchedule}
                       dataKey="id"
                       onFilter={(e) => setFilters(e.filters)}

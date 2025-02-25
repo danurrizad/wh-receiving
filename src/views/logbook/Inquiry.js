@@ -501,6 +501,8 @@ const handleSubmitChangeQty = (rowIndex, rowData) => {
                       paginator
                       rows={10}
                       rowsPerPageOptions={[10, 25, 50, 100]}
+                      paginatorTemplate="CurrentPageReport FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown"
+                      currentPageReportTemplate="Showing {first} to {last} of {totalRecords}"
                       value={dataDNInquery}
                       filterDisplay="row"
                     >
@@ -558,8 +560,6 @@ const handleSubmitChangeQty = (rowIndex, rowData) => {
               loadingIcon={<CustomTableLoading/>}
               className='p-datatable-gridlines p-datatable-sm custom-datatable text-wrap'
               removableSort
-              
-              // filters={filters}
               size='small'
               // emptyMessage={renderCustomEmptyMsg}
               scrollable
@@ -568,10 +568,10 @@ const handleSubmitChangeQty = (rowIndex, rowData) => {
               stripedRows
               paginator
               rows={10}
-              // rowsPerPageOptions={[10, 25, 50, 100]}
+              rowsPerPageOptions={[10, 25, 50]}
+              paginatorTemplate="CurrentPageReport FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown"
+              currentPageReportTemplate="Showing {first} to {last} of {totalRecords}"
               value={dataMaterialsByDNInquery}
-              // dataKey="id"
-              // onFilter={(e) => setFilters(e.filters)}
               filterDisplay="row"
               // loading={loading}
             >

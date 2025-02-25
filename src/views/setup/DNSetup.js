@@ -364,6 +364,8 @@ const header = () => (
                     paginator 
                     rows={10} 
                     rowsPerPageOptions={[10, 25, 50, 100]} 
+                    paginatorTemplate="CurrentPageReport FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown"
+                    currentPageReportTemplate="Showing {first} to {last} of {totalRecords}"
                     tableStyle={{ minWidth: '50rem' }}
                   >
                     <Column field="no" header="No" body={(rowData, { rowIndex }) => rowIndex + 1}></Column>

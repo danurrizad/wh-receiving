@@ -823,8 +823,11 @@ const Dashboard = () => {
                     scrollable
                     scrollHeight="50vh"
                     showGridlines
-                    // paginator
+                    paginator
                     rows={10}
+                    rowsPerPageOptions={[10, 25, 50]}
+                    paginatorTemplate="CurrentPageReport FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown"
+                    currentPageReportTemplate="Showing {first} to {last} of {totalRecords}"
                     value={dataMaterialsByDNInquery}
                     filterDisplay="row"
                   >

@@ -458,6 +458,8 @@ return (
                             loadingIcon={CustomTableLoading}
                             value={dataTableHistory}
                             paginator rows={10} rowsPerPageOptions={[10, 25, 50, 100]}
+                            paginatorTemplate="CurrentPageReport FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown"
+                            currentPageReportTemplate="Showing {first} to {last} of {totalRecords}"
                         >
                             <Column header='No' body={(rowBody, { rowIndex }) => rowIndex + 1}/>
                             <Column field='supplierCode' header='Vendor Code'/>
