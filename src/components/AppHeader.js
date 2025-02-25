@@ -65,7 +65,7 @@ const AppHeader = () => {
         <CHeaderNav style={{ position: 'fixed', top: "10px", left: "50px"}}>
           <CImage className="" src={LogoTWIIS2} height={52} />
         </CHeaderNav>
-        <CHeaderNav style={{ position: "absolute", left: "300px"}}>
+        {/* <CHeaderNav style={{ position: "absolute", left: "300px"}}>
          <div className='d-flex align-items-center gap-2'>
             <FaCode style={{ color:'rgb(72, 120, 187)', width: "40px"}}/>
             <h3 style={{ color:'rgb(72, 120, 187)'}}>
@@ -73,7 +73,7 @@ const AppHeader = () => {
               </h3>
             <FaCode style={{ color:'rgb(72, 120, 187)', width: "40px"}}/>
          </div>
-        </CHeaderNav>
+        </CHeaderNav> */}
         <CHeaderNav className="ms-auto">
           <CNavItem>
             <CNavLink className="" style={{ textDecoration: 'none' }}>

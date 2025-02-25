@@ -10,6 +10,7 @@ import 'primeicons/primeicons.css'
 import 'primereact/resources/primereact.min.css'
 import CustomTableLoading from './components/LoadingTemplate'
 import LoadingTWIIS from './components/LoadingTWIIS'
+import Watermark from './components/Watermark'
 
 // Containers
 const DefaultLayout = React.lazy(() => import('./layout/DefaultLayout'))
@@ -92,6 +93,7 @@ const App = () => {
             </CToast>
           ))}
         </CToaster>
+        <Watermark/>
         <Suspense
           fallback={
             <div className="pt-3 text-center" style={{ height: "100vh"}}>
