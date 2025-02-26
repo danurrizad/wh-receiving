@@ -395,18 +395,14 @@ const Input = () => {
             })
             const formBody = createFormBody(formInput, qtyEachMaterials)
             const warehouseId = dataMaterialsByDN[0].warehouseId
-      
-            console.log("formBody to submit :", formBody)
-            console.log("warehouseId :", dataMaterialsByDN[0].warehouseId)
 
             const response = await submitMaterialByDNData(warehouseId, formBody)
-            console.log("Response submit :", response)
-            await getMaterialByDN(formBody.dnNumber)
-            setFormInput({...formInput, rit: 0})
-            setSelectedRows([])
-            setConfirmedRemaining('0 / 0')
-            setDisableInputDN(true)
-            // return response.data.message
+            // await getMaterialByDN(formBody.dnNumber)
+            // setFormInput({...formInput, rit: 0})
+            // setSelectedRows([])
+            // setConfirmedRemaining('0 / 0')
+            // setDisableInputDN(true)
+            handleClearInputDN()
             return "Material quantities received!"
           } catch (error) {
             console.error(error)
