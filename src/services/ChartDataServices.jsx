@@ -192,12 +192,8 @@ const useChartData = ({dataChartSchedules, handleClickOpenMaterials}) => {
                 if (points.length) {
                     const firstPoint = points[0];
                     const label = chart.data.labels[firstPoint.index]; // Y-axis label
-                    console.log(`Clicked on Y-axis label: ${label}`);
-                    console.log(`Clicked on Data: ${firstPoint.index}`);
 
                     handleClickOpenMaterials(dataChartSchedules[firstPoint.index])
-                    // setSelectedVendor(firstPoint.index);
-                    // setIsModalOpen(true);
                 }
             },
         };

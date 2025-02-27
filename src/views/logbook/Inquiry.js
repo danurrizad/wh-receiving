@@ -107,6 +107,7 @@ const Book = () => {
         const formattedFrom = startDate.toLocaleDateString('en-CA')
         const formattedTo = endDate.toLocaleDateString('en-CA')
         const response = await getDNInqueryData(idPlant, formattedFrom, formattedTo) 
+        console.log("response inquiry:", response)
         setDataDNInquery(response.data.data)
       }else{
         const response = await getDNInqueryData(idPlant, "", "") 
