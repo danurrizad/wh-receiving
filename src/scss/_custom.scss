@@ -305,3 +305,20 @@ td input.p-inputtext.p-component {
 .p-dropdown-panel.p-component.p-ripple-disabled.p-connected-overlay-enter-done{
   z-index: 1060 !important;
 }
+
+.card-req.consumable{
+  border: 2px solid#1959ac;
+}
+.card-req.chemical{
+  border: 2px solid#e8c94d;
+}
+.card-req.consumable:hover{
+  background-color: #1959ac;
+  color: white;
+  transition-duration: 300ms;
+}
+.card-req.chemical:hover{
+  background-color: #e8c94d;
+  color: white;
+  transition-duration: 300ms;
+}

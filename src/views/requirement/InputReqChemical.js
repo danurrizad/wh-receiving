@@ -17,7 +17,7 @@ import { InputText } from 'primereact/inputtext'
 import { FaCircleCheck, FaCircleExclamation, FaCircleXmark, FaInbox } from "react-icons/fa6";
 import Swal from 'sweetalert2'
 
-const InputConsumable = () => {
+const InputChemical = () => {
   const [isInputPlatDisabled, setIsInputPlatDisabled] = useState(true);
   const [isSTNKButtonDisabled, setIsSTNKButtonDisabled] = useState(true);
   const [isInputSTNKDisabled, setIsInputSTNKDisabled] = useState(true);
@@ -33,7 +33,7 @@ const InputConsumable = () => {
       <div>
         <CCard >
           <CCardHeader style={{backgroundColor: "#6482AD", color: "white", textAlign: "center"}}>
-            <CCardTitle> INPUT VENDOR REQUREMENTS - CONSUMABLE</CCardTitle>
+            <CCardTitle> INPUT VENDOR REQUREMENTS - CHEMICAL</CCardTitle>
           </CCardHeader>
           <CCardBody style={{ paddingTop: "30px", paddingBottom: "0"}}>
             <CBreadcrumb>
@@ -331,4 +331,4 @@ const InputConsumable = () => {
   )
 }
 
-export default InputConsumable
+export default InputChemical
