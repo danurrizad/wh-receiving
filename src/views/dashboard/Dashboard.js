@@ -233,7 +233,7 @@ const Dashboard = () => {
         limitPerPage
       );
       if (response) {
-        // console.log("Data Chart Receiving:", response.data);
+        console.log("Response dashboard:", response.data);
         const allResponse = response.data
         const filteredResponse = response.data.filter((data)=>data.status !== 'no schedule')
 
@@ -402,7 +402,7 @@ const Dashboard = () => {
     const color = complete !== total ? "red" : "black"
     return(
       <div>
-        {rowBody.statusMaterial !== '0 / 0' ? <span style={{color: color}}>{complete}<span style={{color: "black"}}> / {total}</span></span> : ""}
+        {rowBody.statusMaterial !== '0 / 0' ? <span style={{color: color}}>{complete}<span style={{color: "black"}}> / {total}</span></span> : "0 / 0"}
       </div>
     )
   }
