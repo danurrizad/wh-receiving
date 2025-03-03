@@ -233,7 +233,7 @@ const Dashboard = () => {
         limitPerPage
       );
       if (response) {
-        console.log("Response dashboard:", response.data);
+        // console.log("Response dashboard:", response.data);
         const allResponse = response.data
         const filteredResponse = response.data.filter((data)=>data.status !== 'no schedule')
 
