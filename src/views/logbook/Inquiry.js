@@ -471,7 +471,7 @@ const handleSubmitChangeQty = (rowIndex, rowData) => {
                         character=' – ' 
                         showOneCalendar 
                         placeholder='All time' 
-                        position='start' 
+                        placement='bottomEnd'
                         style={{ width: "210px"}}
                         value={queryFilter.rangeDate} 
                         onChange={handleChangeRangeDate} 
