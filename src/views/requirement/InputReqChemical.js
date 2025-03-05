@@ -26,6 +26,7 @@ const InputChemical = () => {
     item1: true,
     item2: false,
     item3: false,
+    item4: false
   }) 
 
   return (
@@ -37,12 +38,13 @@ const InputChemical = () => {
           </CCardHeader>
           <CCardBody style={{ paddingTop: "30px", paddingBottom: "0"}}>
             <CBreadcrumb>
-              <CBreadcrumbItem active={activeItem.item1} onClick={()=>setActiveItem({ item1: true, item2: false, item3: false})}><span style={{border: "2px solid black", borderRadius: "100%", padding: "10px 15px", cursor: "pointer"}}>1</span></CBreadcrumbItem>
-              <CBreadcrumbItem active={activeItem.item2} onClick={()=>setActiveItem({ item1: true, item2: true, item3: false})}><span style={{border: "2px solid black", borderRadius: "100%", padding: "10px 15px", cursor: "pointer"}}>2</span></CBreadcrumbItem>
-              <CBreadcrumbItem active={activeItem.item3} onClick={()=>setActiveItem({ item1: true, item2: true, item3: true})}><span style={{border: "2px solid black", borderRadius: "100%", padding: "10px 15px", cursor: "pointer"}}>3</span></CBreadcrumbItem>
+              <CBreadcrumbItem active={activeItem.item1} onClick={()=>setActiveItem({ item1: true, item2: false, item3: false,item4: false})}><span style={{border: "2px solid black", borderRadius: "100%", padding: "10px 15px", cursor: "pointer"}}>1</span></CBreadcrumbItem>
+              <CBreadcrumbItem active={activeItem.item2} onClick={()=>setActiveItem({ item1: true, item2: true, item3: false,item4: false})}><span style={{border: "2px solid black", borderRadius: "100%", padding: "10px 15px", cursor: "pointer"}}>2</span></CBreadcrumbItem>
+              <CBreadcrumbItem active={activeItem.item3} onClick={()=>setActiveItem({ item1: true, item2: true, item3: true,item4: false})}><span style={{border: "2px solid black", borderRadius: "100%", padding: "10px 15px", cursor: "pointer"}}>3</span></CBreadcrumbItem>
+              <CBreadcrumbItem active={activeItem.item4} onClick={()=>setActiveItem({ item1: true, item2: true, item3: true,item4: true,})}><span style={{border: "2px solid black", borderRadius: "100%", padding: "10px 15px", cursor: "pointer"}}>3</span></CBreadcrumbItem>
             </CBreadcrumb>
           </CCardBody>
-        {activeItem.item1 && !activeItem.item2 && !activeItem.item3 && (
+        {activeItem.item1 && !activeItem.item2 && !activeItem.item3 && !activeItem.item4 && (
           <CCardBody>
             <CRow className='mb-2'>
               <CCol>
@@ -131,7 +133,7 @@ const InputChemical = () => {
           </CCardBody>
         )}
           
-        { activeItem.item1 && activeItem.item2 && !activeItem.item3 && (
+          {activeItem.item1 && activeItem.item2 && !activeItem.item3 && !activeItem.item4 && (
           <CCardBody>
             <CRow className='mb-2'>
               <CCol>
@@ -237,88 +239,56 @@ const InputChemical = () => {
           </CCardBody>
         )}
 
-        { activeItem.item1 && activeItem.item2 && activeItem.item3 && (
+        {activeItem.item1 && activeItem.item2 && activeItem.item3 && !activeItem.item4 && (
           <CCardBody>
             <CRow className='mb-2'>
               <CCol>
                 <CCard className='p-3'>
-                  <span className='fs-5 fw-bold'>Identitas Vendor</span>
+                  <span className='fs-5 fw-bold'>Identitas Kelengkapan APD</span>
                   <span>(Silahkan lengkapi identitas Anda)</span>
                   <CRow>
                     <CCol md='5'>
-                      <CFormText >Vendor Name</CFormText>
-                      <CFormInput 
-                        type='text'
-                        inputMode='numeric'
-                        placeholder='Insert vendor name'
-                        />
+                      <CFormText >Apakah Anda Memakai APD?</CFormText>
+                      <div>
+                        <CButton color="success" variant="outline" className="mx-2">Ya</CButton>
+                        <CButton color="danger" variant="outline"  className="mx-2">Tidak</CButton>
+                      </div>
                     </CCol>
-                    <CCol md='5'>
-                      <CFormText >Truck Station</CFormText>
-                      <CFormInput 
-                        type='text'
-                        inputMode='numeric'
-                        placeholder='Insert truck station'
-                        />
-                    </CCol>
+                 
                   </CRow>
-                  <hr/>
-                  <CRow className='mb-2'>
-                    <span className='fs-5 fw-bold'>Identitas  Driver</span>
-                    <span>(Silahkan lengkapi identitas Anda)</span>
-                    <CRow>
-                      <CCol md='5'>
-                        <CFormText >Nama Driver</CFormText>
-                        <CFormInput 
-                          type='text'
-                          inputMode='numeric'
-                          placeholder='Insert name'
-                          />
-                      </CCol>
-                      <CCol md='3'>
-                        <CFormText >Apakah Anda Dalam Kondisi Sehat?</CFormText>
-                        <div>
-                          <CButton color="success" variant="outline">Yes</CButton>
-                          <CButton color="danger" variant="outline">No</CButton>
-                        </div>
-                      </CCol>
-                      <CCol md='4'>
-                        <CFormText >Kondisi yang dirasakan apabila Tidak Sehat</CFormText>
-                        <CFormInput 
-                          type='text'
-                          inputMode='numeric'
-                          placeholder='...'
-                          />
-                      </CCol>
-                    </CRow>
-                  </CRow>
-                  <hr/>
-                  <CRow className='mb-2'>
-                    <span className='fs-5 fw-bold'>Identitas  Kendaraan</span>
-                    <span>(Silahkan lengkapi identitas Anda)</span>
-                    <CRow>
-                      <CCol md='5'>
-                        <CFormText >Tipe Pengiriman</CFormText>
-                        <CFormInput 
-                          type='text'
-                          inputMode='numeric'
-                          placeholder='Insert delivery type'
-                          />
-                      </CCol>
-                      <CCol md='5'>
-                        <CFormText >Jenis Kendaraan</CFormText>
-                        <CFormInput 
-                          type='text'
-                          inputMode='numeric'
-                          placeholder='Insert vehicle type'
-                          />
-                      </CCol>
-                    </CRow>
-                  </CRow>
+                  
                   <hr/>
                   <CCol className="d-flex justify-content-center gap-3 mb-2">
-                    <CButton color="primary" variant="outline" onClick={()=>setActiveItem({item1: true, item2: true, item3: false})}>Kembali</CButton>
-                    <CButton color="secondary" variant="outline">Selanjutnya</CButton>
+                    <CButton color="primary" variant="outline" className="mx-2" onClick={()=>setActiveItem({item1: true, item2: false, item3: false})}>Kembali</CButton>
+                    <CButton color="secondary" variant="outline" className="mx-2" onClick={()=>setActiveItem({item1: true, item2: true, item3: true})}>Selanjutnya</CButton>
+                  </CCol>
+                </CCard>   
+              </CCol>
+            </CRow>
+          </CCardBody>
+        )}
+           {activeItem.item1 && activeItem.item2 && activeItem.item3 && !activeItem.item4 && (
+          <CCardBody>
+            <CRow className='mb-2'>
+              <CCol>
+                <CCard className='p-3'>
+                  <span className='fs-5 fw-bold'>Identitas Kelengkapan APD</span>
+                  <span>(Silahkan lengkapi identitas Anda)</span>
+                  <CRow>
+                    <CCol md='5'>
+                      <CFormText >Apakah Anda Memakai APD?</CFormText>
+                      <div>
+                        <CButton color="success" variant="outline" className="mx-2">Ya</CButton>
+                        <CButton color="danger" variant="outline"  className="mx-2">Tidak</CButton>
+                      </div>
+                    </CCol>
+                 
+                  </CRow>
+                  
+                  <hr/>
+                  <CCol className="d-flex justify-content-center gap-3 mb-2">
+                    <CButton color="primary" variant="outline" className="mx-2" onClick={()=>setActiveItem({item1: true, item2: false, item3: false})}>Kembali</CButton>
+                    <CButton color="secondary" variant="outline" className="mx-2" onClick={()=>setActiveItem({item1: true, item2: true, item3: true})}>Selanjutnya</CButton>
                   </CCol>
                 </CCard>   
               </CCol>
