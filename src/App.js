@@ -60,7 +60,7 @@ const App = () => {
   return (
     <ToastContext.Provider value={addToast}>
       <HashRouter>
-        <CToaster style={{ position: "fixed", right: "10px", top: "10px"}}>
+        <CToaster style={{ position: "fixed", right: "50%", transform: "translateX(50%)", top: "10px"}}>
           {toasts.map(({ id, message, type, color }) => (
             <CToast
               key={id}
