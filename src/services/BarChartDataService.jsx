@@ -39,7 +39,7 @@ const useBarChartDataService = ({dataBarChart}) => {
                 },
                 {
                     type: 'line',
-                    label: 'Rec. Materials (NOT COMPLETED)',
+                    label: 'Actual Materials (NOT COMPLETED)',
                     data: dates.map((date)=>{
                         const matchesDate = dataBarChart.find((data)=>data.incomingDate.split("-")[2] === date)
                         if(matchesDate){
@@ -130,7 +130,7 @@ const useBarChartDataService = ({dataBarChart}) => {
                   },
                 {
                     type: 'line',
-                    label: 'Rec. Materials (NOT DELIVERED)',
+                    label: 'Actual Materials (NOT DELIVERED)',
                     data: dates.map((date)=>{
                         const matchesDate = dataBarChart.find((data)=>data.incomingDate.split("-")[2] === date)
                         if(matchesDate){
@@ -221,7 +221,7 @@ const useBarChartDataService = ({dataBarChart}) => {
                   },
             {
               type: 'bar',
-              label: 'Req. Materials',
+              label: 'Planning Materials',
               data: dates.map((date)=>{
                 const matchesDate = dataBarChart.find((data)=>data.incomingDate.split("-")[2] === date)
                 if(matchesDate){
@@ -236,7 +236,7 @@ const useBarChartDataService = ({dataBarChart}) => {
             },
             {
                 type: 'bar',
-                label: 'Rec. Materials (COMPLETED)',
+                label: 'Actual Materials (COMPLETED)',
                 // data: dataBarChart.map((data)=>data.completedCount),
                 data: dates.map((date)=>{
                     const matchesDate = dataBarChart.find((data)=>data.incomingDate.split("-")[2] === date)
@@ -262,6 +262,11 @@ const useBarChartDataService = ({dataBarChart}) => {
             type: 'scatter',
             maintainAspectRatio: false,
             data: data,
+            // layout: {
+            //     padding: {
+            //       top: 200 // Adds space between chart and legend
+            //     }
+            //   },
             scales: {
                 y: {
                     beginAtZero: true,
@@ -285,6 +290,13 @@ const useBarChartDataService = ({dataBarChart}) => {
                 mode: 'index',
               },
             plugins: {
+                beforeInit: function(chart) {
+                    const originalFit = chart.legend.fit;
+                    chart.legend.fit = function fit() {
+                      originalFit.bind(chart.legend)();
+                      return this.height += 200; // Adjust this value as needed
+                    };
+                  },
                 datalabels: {
                     display: function(context) {
                         return context.dataset.data[context.dataIndex] > 0; // Hide if value is 0
@@ -299,6 +311,13 @@ const useBarChartDataService = ({dataBarChart}) => {
                 legend: {
                     position: 'top',
                     align: 'start', 
+                    legendMargin: {
+                        margin: 100
+                    }
+                    // fullSize: false, // Allows spacing adjustments
+                    // labels: {
+                    //     padding: 100,
+                    //   }
                 },
                 tooltip: {
                     callbacks: {

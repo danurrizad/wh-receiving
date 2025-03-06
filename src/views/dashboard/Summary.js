@@ -210,6 +210,170 @@ const Summary = () => {
       
 return (
   <CContainer fluid>
+    {/* -------------------------------------------------------------------VERTICAL BAR CHART--------------------------------------------- */}
+
+    <CRow className='mb-5 '>
+      <CCard className='px-0' style={{  border: "1px solid #6482AD", minHeight: "400px", overflow: "hidden" }}>
+        <CCardHeader className='text-center' style={{ backgroundColor: "#6482AD", color: "white" }}>
+          <CCardTitle className='fs-4'>MONTHLY MATERIALS RECEIVED</CCardTitle>
+        </CCardHeader>
+        <CCardBody>
+        <CRow className='mb-3'>
+                <CCol>
+                    {/* <CCard>
+                        <CCardBody> */}
+                            <CRow>
+                                <CCol className="d-flex align-items-end">
+                                    <h1>{monthsName[filterMonth.getMonth()]} </h1>
+                                </CCol>
+                                <CCol className='d-flex align-items-end justify-content-end gap-2'>
+                                    <div className="h-100" style={{ width: "33%"}}>
+                                        <CFormText>Filter by Plant</CFormText>
+                                        <Select 
+                                            options={optionsSelectPlant.list}
+                                            value={optionsSelectPlant.list.find((opt)=>opt.value === optionsSelectPlant.selectedBar)}
+                                            onChange={(e)=>{
+                                                setOptionsSelectPlant({...optionsSelectPlant, selectedBar: e !== null ? e.value : ""})
+                                            }}
+                                            placeholder="All plant"
+                                            isClearable
+                                            styles={{
+                                                control: provided => ({
+                                                    ...provided,
+                                                    minHeight: "42px"
+                                                })
+                                            }}
+                                        />
+                                    </div>
+                                    <div>
+                                        <CFormText>Filter by Month</CFormText>
+                                        <DatePicker 
+                                            style={{ width: "130px"}} 
+                                            showonecalendar='true'
+                                            placement='bottomEnd'
+                                            format='yyyy-MM'  
+                                            placeholder="Select month" 
+                                            oneTap
+                                            value={filterMonth} 
+                                            onChange={(e)=>{
+                                                console.log(e)
+                                                setFilterMonth(e !== null ? e : new Date(year, month, 1))
+                                            }}
+                                        />
+                                    </div>
+                                </CCol>
+                            </CRow>
+                        {/* </CCardBody>
+                    </CCard> */}
+                </CCol>
+            </CRow>
+            { loading ? <CustomTableLoading/> : (
+                <CRow className='d-flex'>
+                    <CCol sm='12'>
+                    <CCard>
+                        <CCardBody className='border'>
+                            <div className=''>
+                                <Line
+                                    data={setLineChartRedData()}
+                                    options={getLineChartRedOptions()}
+                                    height={150}
+                                    plugins={[
+                                        {
+                                          id: "increase-legend-spacing-1",
+                                          beforeInit(chart) {
+                                            // Get reference to the original fit function
+                                            const originalFit = (chart.legend).fit;
+                                            // Override the fit function
+                                            (chart.legend).fit = function fit() {
+                                              // Call original function and bind scope in order to use `this` correctly inside it
+                                              originalFit.bind(chart.legend)();
+                                              this.height += 20;
+                                            };
+                                          }
+                                        }
+                                      ]}
+                                />
+                            </div>
+                        </CCardBody>
+                        <CCardBody className='border'>
+                            <div className='' style={{ paddingLeft: "px"}}>
+                                <Line
+                                    data={setLineChartYellowData()}
+                                    options={getLineChartYellowOptions()}
+                                    height={150}
+                                    plugins={[
+                                        {
+                                          id: "increase-legend-spacing-2",
+                                          beforeInit(chart) {
+                                            // Get reference to the original fit function
+                                            const originalFit = (chart.legend).fit;
+                                            // Override the fit function
+                                            (chart.legend).fit = function fit() {
+                                              // Call original function and bind scope in order to use `this` correctly inside it
+                                              originalFit.bind(chart.legend)();
+                                              this.height += 20;
+                                            };
+                                          }
+                                        }
+                                      ]}
+                                />
+                            </div>
+                        </CCardBody>
+                        <CCardBody className='border'>
+                            <div className=''>
+                                <Bar
+                                    data={setBarChartData()}
+                                    options={getBarChartOptions()}
+                                    height={300}
+                                    plugins={[
+                                        {
+                                          id: "increase-legend-spacing-3",
+                                          beforeInit(chart) {
+                                            // Get reference to the original fit function
+                                            const originalFit = (chart.legend).fit;
+                                            // Override the fit function
+                                            (chart.legend).fit = function fit() {
+                                              // Call original function and bind scope in order to use `this` correctly inside it
+                                              originalFit.bind(chart.legend)();
+                                              this.height += 20;
+                                            };
+                                          }
+                                        }
+                                      ]}
+                                />
+                            </div>
+                        </CCardBody>
+                    </CCard>
+                    </CCol>
+                    <CCol className='d-flex mt-3' sm='12'>
+                    <CCard className='overflow-hidden w-100'>
+                        <CCardBody className='p-0'>
+                        <DataTable 
+                            className="p-datatable-sm custom-datatable text-nowrap dashboard"
+                            emptyMessage={renderCustomEmptyMsg}
+                            loading={loading}
+                            loadingIcon={CustomTableLoading}
+                            value={dataTableHistory}
+                            paginator rows={10} rowsPerPageOptions={[10, 25, 50, 100]}
+                            paginatorTemplate="CurrentPageReport FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown"
+                            currentPageReportTemplate="Showing {first} to {last} of {totalRecords}"
+                        >
+                            <Column header='No' body={(rowBody, { rowIndex }) => rowIndex + 1}/>
+                            <Column field='supplierCode' header='Vendor Code'/>
+                            <Column field='supplierName' header='Vendor Name'/>
+                            <Column field='notDeliveredCount' header='Delayed Material'/>
+                        </DataTable>
+                        </CCardBody>
+                    </CCard>
+                    </CCol>
+                </CRow>
+
+            )}
+        </CCardBody>
+      </CCard>
+    </CRow>
+
+
   {/*--------------------------------------------------------------------PIE CHART-------------------------------------------------------------------------------  */}
     <CRow className='mb-3'>
       <CCard className='px-0 mb-3' style={{  border: "1px solid #6482AD", minHeight: "400px", overflow: "hidden" }}>
@@ -361,120 +525,8 @@ return (
         </CCardBody>
       </CCard>
     </CRow>
+    
 
-    {/* -------------------------------------------------------------------VERTICAL BAR CHART--------------------------------------------- */}
-
-    <CRow className='mb-3 mt-5 '>
-      <CCard className='px-0' style={{  border: "1px solid #6482AD", minHeight: "400px", overflow: "hidden" }}>
-        <CCardHeader className='text-center' style={{ backgroundColor: "#6482AD", color: "white" }}>
-          <CCardTitle className='fs-4'>MONTHLY MATERIALS RECEIVED</CCardTitle>
-        </CCardHeader>
-        <CCardBody>
-        <CRow className='mb-3'>
-                <CCol>
-                    {/* <CCard>
-                        <CCardBody> */}
-                            <CRow>
-                                <CCol className="d-flex align-items-end">
-                                    <h1>{monthsName[filterMonth.getMonth()]} </h1>
-                                </CCol>
-                                <CCol className='d-flex align-items-end justify-content-end gap-2'>
-                                    <div className="h-100" style={{ width: "33%"}}>
-                                        <CFormText>Filter by Plant</CFormText>
-                                        <Select 
-                                            options={optionsSelectPlant.list}
-                                            value={optionsSelectPlant.list.find((opt)=>opt.value === optionsSelectPlant.selectedBar)}
-                                            onChange={(e)=>{
-                                                setOptionsSelectPlant({...optionsSelectPlant, selectedBar: e !== null ? e.value : ""})
-                                            }}
-                                            placeholder="All plant"
-                                            isClearable
-                                            styles={{
-                                                control: provided => ({
-                                                    ...provided,
-                                                    minHeight: "42px"
-                                                })
-                                            }}
-                                        />
-                                    </div>
-                                    <div>
-                                        <CFormText>Filter by Month</CFormText>
-                                        <DatePicker 
-                                            style={{ width: "130px"}} 
-                                            showonecalendar='true'
-                                            placement='bottomEnd'
-                                            format='yyyy-MM'  
-                                            placeholder="Select month" 
-                                            oneTap
-                                            value={filterMonth} 
-                                            onChange={(e)=>{
-                                                console.log(e)
-                                                setFilterMonth(e !== null ? e : new Date(year, month, 1))
-                                            }}
-                                        />
-                                    </div>
-                                </CCol>
-                            </CRow>
-                        {/* </CCardBody>
-                    </CCard> */}
-                </CCol>
-            </CRow>
-            { loading ? <CustomTableLoading/> : (
-                <CRow className='d-flex'>
-                    <CCol sm='12'>
-                    <CCard>
-                        <CCardBody>
-                            <div className=''>
-                                <Line
-                                    data={setLineChartRedData()}
-                                    options={getLineChartRedOptions()}
-                                    height={150}
-                                />
-                            </div>
-                            <div className='' style={{ paddingLeft: "px"}}>
-                                <Line
-                                    data={setLineChartYellowData()}
-                                    options={getLineChartYellowOptions()}
-                                    height={150}
-                                />
-                            </div>
-                            <div className=''>
-                                <Bar
-                                    data={setBarChartData()}
-                                    options={getBarChartOptions()}
-                                    height={300}
-                                />
-                            </div>
-                        </CCardBody>
-                    </CCard>
-                    </CCol>
-                    <CCol className='d-flex mt-3' sm='12'>
-                    <CCard className='overflow-hidden w-100'>
-                        <CCardBody className='p-0'>
-                        <DataTable 
-                            className="p-datatable-sm custom-datatable text-nowrap dashboard"
-                            emptyMessage={renderCustomEmptyMsg}
-                            loading={loading}
-                            loadingIcon={CustomTableLoading}
-                            value={dataTableHistory}
-                            paginator rows={10} rowsPerPageOptions={[10, 25, 50, 100]}
-                            paginatorTemplate="CurrentPageReport FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown"
-                            currentPageReportTemplate="Showing {first} to {last} of {totalRecords}"
-                        >
-                            <Column header='No' body={(rowBody, { rowIndex }) => rowIndex + 1}/>
-                            <Column field='supplierCode' header='Vendor Code'/>
-                            <Column field='supplierName' header='Vendor Name'/>
-                            <Column field='notDeliveredCount' header='Delayed Material'/>
-                        </DataTable>
-                        </CCardBody>
-                    </CCard>
-                    </CCol>
-                </CRow>
-
-            )}
-        </CCardBody>
-      </CCard>
-    </CRow>
 
   {/* Modal List Materials */}
 
