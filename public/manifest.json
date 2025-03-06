@@ -1,9 +1,9 @@
 {
-  "short_name": "CoreUI-React",
-  "name": "CoreUI-React sample",
+  "short_name": "TWIIS Receiving",
+  "name": "TWIIS Receiving",
   "icons": [
     {
-      "src": "./assets/img/favicon.png",
+      "src": "./assets/images/LOGO-RECEIVING-2.png",
       "sizes": "100x100",
       "type": "image/png"
     }
