@@ -1,22 +1,8 @@
 import React, { useState, useEffect, useRef} from 'react'
-import CIcon from '@coreui/icons-react'
-import * as icon from '@coreui/icons'
-import { CButton, CTooltip, CButtonGroup, CCard, CCardBody, CCardHeader, CCardTitle, CCol, CContainer, CFormInput, CFormLabel, CFormText, CInputGroup, CModal, CModalBody, CModalFooter, CModalHeader, CModalTitle, CRow, CTable, CTableBody, CTableDataCell, CTableHead, CTableHeaderCell, CTableRow, CToaster, CSpinner, CCardText, CBreadcrumb, CBreadcrumbItem } from '@coreui/react'
-import { dataReceivingDummy, dataSchedulesDummy, dataDummy } from '../../utils/DummyData'
-import { Button, DatePicker } from 'rsuite';
-import Select from 'react-select'
-import CreatableSelect from 'react-select/creatable'
-import BarcodeScannerComponent from "react-qr-barcode-scanner";
-import { DataTable } from 'primereact/datatable'
+import { CButton, CTooltip, CButtonGroup, CCard, CCardBody, CCardHeader, CCardTitle, CCol, CContainer, CFormInput, CFormLabel, CFormText, CInputGroup, CModal, CModalBody, CModalFooter, CModalHeader, CModalTitle, CRow, CTable, CTableBody, CTableDataCell, CTableHead, CTableHeaderCell, CTableRow,
+ CToaster, CSpinner, CCardText, CBreadcrumb, CBreadcrumbItem } from '@coreui/react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faWrench,faOilCan} from '@fortawesome/free-solid-svg-icons';
-import { Column } from 'primereact/column'
-import useReceivingDataService from '../../services/ReceivingDataServices';
-import { useToast } from '../../App'
-import { InputText } from 'primereact/inputtext'
-import { FaCircleCheck, FaCircleExclamation, FaCircleXmark, FaInbox } from "react-icons/fa6";
-import Swal from 'sweetalert2'
-import { faPeopleCarryBox,faTruck} from '@fortawesome/free-solid-svg-icons';
+import { faPeopleCarryBox,faTruck,faHelmetSafety,faFill} from '@fortawesome/free-solid-svg-icons';
 
 
 const InputChemical = () => {
@@ -246,7 +232,7 @@ const InputChemical = () => {
                   <CRow className='mb-2'>
                     <CRow>
                     <CFormText style={{ fontStyle: 'italic', fontSize: '13px', fontWeight: 'bold',marginTop: '10px' }}>
-                    1. SIM
+                    2. STNK
                   </CFormText>
                       <CCol md='5'>
                         <CFormText >Apakah Anda Membawa STNK</CFormText>
@@ -259,9 +245,7 @@ const InputChemical = () => {
                           </CButton>
                         </div>
                       </CCol>
-                      <CFormText style={{ fontStyle: 'italic', fontSize: '13px', fontWeight: 'bold',marginTop: '5px' }}>
-                    2. STNK
-                  </CFormText>
+                     
                       <CCol md='3'>
                       <CFormText >STNK Anda dalam kondisi pajak ?</CFormText>
                         <div>
@@ -298,6 +282,9 @@ const InputChemical = () => {
                   </CRow>
                   <hr/>
                   <CRow className='mb-2'>
+                  <CFormText style={{ fontStyle: 'italic', fontSize: '13px', fontWeight: 'bold',marginTop: '10px' }}>
+                    2. Plat No
+                  </CFormText>
                     <CCol md='5'>
                       <CFormText >Apakah Plat No Polisi Anda Terpasang?</CFormText>
                       <div>
@@ -335,7 +322,21 @@ const InputChemical = () => {
             <CRow className="mb-2 d-flex justify-content-center">
             <CCol md="8">
               <CCard className="p-4 text-center">
+                <CRow>
+                <CCol>
+              <FontAwesomeIcon 
+                  icon={faHelmetSafety} 
+                  style={{
+                    fontSize: '12px', // Larger icon size
+                    border: '1px solid #000', // Circle border
+                    borderRadius: '100%', // Make it round
+                    padding: '6px', // Space inside the circle
+                    marginRight: '7px' // Space between icon and span
+                  }} 
+                />
                 <span className="fs-4 fw-bold d-block">Identitas Kelengkapan APD</span>
+                </CCol>
+                </CRow>
                 <span className="mb-3 d-block">(Silahkan lengkapi identitas Anda)</span>
 
                 {/* Pertanyaan APD */}
@@ -421,20 +422,63 @@ const InputChemical = () => {
             <CRow className='mb-2'>
               <CCol>
                 <CCard className='p-3'>
-                  <span className='fs-5 fw-bold'>Identitas Kelengkapan APD</span>
+                  <CCol className='d-flex justify-content-center-start'>
+                <FontAwesomeIcon 
+                  icon={faFill} 
+                  style={{
+                    fontSize: '12px', // Larger icon size
+                    border: '1px solid #000', // Circle border
+                    borderRadius: '100%', // Make it round
+                    padding: '6px', // Space inside the circle
+                    marginRight: '7px' // Space between icon and span
+                  }} 
+                />
+                  <span className='fs-5 fw-bold'>Identitas Chemical</span>
+                  </CCol>
                   <span>(Silahkan lengkapi identitas Anda)</span>
                   <CRow>
                     <CCol md='5'>
-                      <CFormText >Apakah Anda Memakai APD?</CFormText>
+                      <CFormText >Apakah Anda Membawa Seal ?</CFormText>
                       <div>
                         <CButton color="success" variant="outline" className="mx-2">Ya</CButton>
                         <CButton color="danger" variant="outline"  className="mx-2">Tidak</CButton>
                       </div>
                     </CCol>
-                 
                   </CRow>
                   
                   <hr/>
+                  <CRow>
+                    <CCol md='5'>
+                      <CFormText >Apakah Anda Membawa Barang Tidak Tumpah?</CFormText>
+                      <div>
+                        <CButton color="success" variant="outline" className="mx-2">Ya</CButton>
+                        <CButton color="danger" variant="outline"  className="mx-2">Tidak</CButton>
+                      </div>
+                    </CCol>
+                  </CRow>
+                  <hr/>
+                  <CRow>
+                    <CCol md='5'>
+                      <CFormText >Apakah Anda Memastikan tidak memebawa alat/barang yang dapat menyebabkan kebakaran
+                        ?</CFormText>
+                      <div>
+                        <CButton color="success" variant="outline" className="mx-2">Ya</CButton>
+                        <CButton color="danger" variant="outline"  className="mx-2">Tidak</CButton>
+                      </div>
+                    </CCol>
+                  </CRow>
+                  <hr/>
+                  <CRow>
+                    <CCol md='5'>
+                      <CFormText >Apakah Anda Memastikan Barang Chemical yang ada bawa  tidak membuang ke saluran air
+                        ?</CFormText>
+                      <div>
+                        <CButton color="success" variant="outline" className="mx-2">Ya</CButton>
+                        <CButton color="danger" variant="outline"  className="mx-2">Tidak</CButton>
+                      </div>
+                    </CCol>
+                  </CRow>
+                  
                   <CCol className="d-flex justify-content-center gap-3 mb-2">
                     <CButton color="primary" variant="outline" className="mx-2" onClick={()=>setActiveItem({item1: true, item2: false, item3: false})}>Kembali</CButton>
                     <CButton color="secondary" variant="outline" className="mx-2" onClick={()=>setActiveItem({item1: true, item2: true, item3: true})}>Selanjutnya</CButton>
