@@ -357,10 +357,8 @@ const InputConsumable = () => {
                   </CCol>
                 </CRow>
               )}
-
                       <hr />
-
-                      {/* Tombol Navigasi */}
+                    {/* Tombol Navigasi */}
                       <CCol className="d-flex justify-content-center gap-3">
                         <CButton color="primary" variant="outline" onClick={() => setActiveItem({ item1: true, item2: false, item3: false })}>
                           Kembali

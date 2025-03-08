@@ -27,7 +27,7 @@ import 'primeicons/primeicons.css'; // Icon bawaan PrimeReact
 import 'primeicons/primeicons.css';
 import { useToast } from '../../App'
 import { InputText } from 'primereact/inputtext'
-import { FaChevronRight ,FaAnglesLeft ,FaChevronLeft ,FaAnglesRight, FaCircleExclamation, FaCircleXmark, FaInbox } from "react-icons/fa6";
+import { FaChevronRight ,faUserHelmetSafetyFaAnglesLeft ,FaChevronLeft ,FaAnglesRight, FaCircleExclamation, FaCircleXmark, FaInbox } from "react-icons/fa6";
 import Swal from 'sweetalert2'
 
 const TrackRecord = () => {
