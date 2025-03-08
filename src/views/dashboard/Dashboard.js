@@ -209,6 +209,7 @@ const Dashboard = () => {
       overdue: data.filter((data)=>data.status === 'overdue').length,
       delayed: data.filter((data)=>data.status === 'delayed').length,
       remaining: data.filter((data)=>data.status === 'scheduled').length,
+      onRequest: data.filter((data)=>data.status === 'no schedule').length
     })
   }
   
@@ -233,9 +234,16 @@ const Dashboard = () => {
         limitPerPage
       );
       if (response) {
-        // console.log("Response dashboard:", response.data);
-        const allResponse = response.data
+        
+        const allResponse = response.data.sort((a, b) => {
+          const [aHours, aMinutes] = a.arrivalPlanTime ? a.arrivalPlanTime.split(":").map(Number) : [ 23, 59];
+          const [bHours, bMinutes] = b.arrivalPlanTime ? b.arrivalPlanTime.split(":").map(Number) : [ 23, 59];
+          
+          return aHours * 60 + aMinutes - (bHours * 60 + bMinutes);
+      });
+      
         const filteredResponse = response.data.filter((data)=>data.status !== 'no schedule')
+        console.log("Response dashboard:", allResponse);
 
         setDataSchedules(allResponse); // Simpan data dari API ke state
         updateChartData(filteredData.length > 0 ? filteredData : allResponse, pagination.page, pagination.rows);
@@ -390,7 +398,7 @@ const Dashboard = () => {
               cursor: "pointer"
             }}
           >
-            {status}
+            {status === 'no schedule' ? "on request" : status}
           </button>
         </CTooltip>
     )
@@ -634,7 +642,7 @@ const Dashboard = () => {
           {/* Tombol Hide/Show di pojok kiri */}
 
           {isFilterVisible && (
-            <div className="d-flex  gap- mt-1">
+            <div className="d-flex  gap- mt-1 pb-3 mb-2" style={{ borderBottom: "1px solid gray"}}>
               <CCol sm={12} md={12} lg={5} xl={5} className="d-flex gap-1">
                 <div>
                   <CFormText>Filter Plant</CFormText>
@@ -733,6 +741,88 @@ const Dashboard = () => {
             </div>
           )}
          </CRow>
+          <CRow className='pb-3'>
+          <CCol sm={12} className='d-flex justify-content-between gap-2 p-0'>
+            <CCard className=" bg-transparent p-0 overflow-hidden w-100 " style={{ border: "3px solid #6E9CFF", boxShadow: "none" }}>
+              <div className="text-muted small text-center d-flex align-items-center p-0 overflow-hidden" style={{ backgroundColor: "transparent" }}>
+                <h6 style={{ color: "#6E9CFF", fontSize: "12px", width: "100%" }}>REMAINING</h6>
+                <CCardText className="fs-3 fw-bold w-50 " style={{ color: "black", backgroundColor: "white", borderLeft: "3px solid #6E9CFF" }}>
+                  {cardData.remaining}
+                </CCardText>
+              </div>
+            </CCard>
+          {/* </CCol>
+          <CCol sm={2}> */}
+            <CCard className=" bg-transparent p-0 overflow-hidden w-100" style={{ border: "3px solid #F64242", boxShadow: "none" }}>
+              <div className="text-muted small text-center d-flex align-items-center p-0 overflow-hidden" style={{ backgroundColor: "#F64242" }}>
+                <h6 style={{ color: "white", fontSize: "12px", width: "100%" }}>DELAYED PLAN</h6>
+                <CCardText className="fs-3 fw-bold w-50" style={{ color: "black", backgroundColor: "white" }}>
+                  {cardData.delayed}
+                </CCardText>
+              </div>
+            </CCard>
+          {/* </CCol>
+          <CCol sm={3}> */}
+            <CCard className=" bg-transparent p-0 overflow-hidden  w-100  " style={{ border: "3px solid #FBC550", boxShadow: "none" }}>
+              <div className="text-muted small text-center d-flex align-items-center p-0 overflow-hidden" style={{ backgroundColor: "#FBC550" }}>
+                <h6 style={{ color: "black", fontSize: "12px", width: "100%" }}>OVERDUE ARRIVAL</h6>
+                <CCardText className="fs-3 fw-bold w-50" style={{ color: "black", backgroundColor: "white" }}>
+                  {cardData.overdue}
+                </CCardText>
+              </div>
+            </CCard>
+          {/* </CCol>
+          <CCol sm={3}> */}
+            <CCard className=" bg-transparent p-0 overflow-hidden  w-100  " style={{ border: "3px solid #49C05F", boxShadow: "none" }}>
+              <div className="text-muted small text-center d-flex align-items-center p-0 overflow-hidden" style={{ backgroundColor: "#49C05F" }}>
+                <h6 style={{ color: "white", fontSize: "12px", width: "100%" }}>ON SCHEDULE ARRIVAL</h6>
+                <CCardText className="fs-3 fw-bold  w-50" style={{ color: "black", backgroundColor: "white" }}>
+                  {cardData.onSchedule}
+                </CCardText>
+              </div>
+            </CCard>
+          {/* </CCol>
+          <CCol sm={2}> */}
+            <CCard className=" bg-transparent p-0 overflow-hidden  w-100  " style={{ border: "3px solid gray", boxShadow: "none" }}>
+              <div className="text-muted small text-center d-flex align-items-center p-0 overflow-hidden" style={{ backgroundColor: "gray" }}>
+                <h6 style={{ color: "white", fontSize: "12px", width: "100%" }}>ON REQUEST</h6>
+                <CCardText className="fs-3 fw-bold  w-50" style={{ color: "black", backgroundColor: "white" }}>
+                  {cardData.onRequest}
+                </CCardText>
+              </div>
+            </CCard>
+          </CCol>
+            {/* <CCard className=" bg-transparent" style={{ border: "2px solid #FBC550" }}>
+              <CCardHeader className="text-muted small text-center" style={{ backgroundColor: "#FBC550" }}>
+                <h6 style={{ color: "black", fontSize: "12px" }}>OVERDUE ARRIVAL</h6>
+              </CCardHeader>
+              <CCardBody className="text-center">
+                <CCardText className="fs-3 fw-bold"style={{ color: "black" }}>{cardData.overdue}</CCardText>
+              </CCardBody>
+            </CCard>
+
+            <CCard className="bg-transparent" style={{ border: "2px solid #F64242" }}>
+              <CCardHeader className="text-muted small text-center" style={{ backgroundColor: "#F64242" }}>
+                <h6 style={{ color: "white", fontSize: "12px" }}>DELAYED PLAN</h6>
+              </CCardHeader>
+              <CCardBody className="text-center ">
+                <CCardText className="fs-3 fw-bold" style={{ color: "black" }}> 
+                  {cardData.delayed}
+                </CCardText>
+              </CCardBody>
+            </CCard>
+
+            <CCard className=" bg-transparent" style={{ border: "2px solid #6E9CFF" }} >
+              <CCardHeader className="text-muted small text-center" style={{ backgroundColor: "transparent", borderBottom: "2px solid #6E9CFF" }}>
+                <h6 style={{ color: "#6E9CFF", fontSize: "12px" }}>REMAINING</h6>
+              </CCardHeader>
+              <CCardBody className="text-center">
+                <CCardText className="fs-3 fw-bold" style={{ color: "black" }}>{cardData.remaining}</CCardText>
+              </CCardBody>
+            </CCard>     */}
+
+            
+          </CRow>
           <CRow style={{ minHeight: "300px"}}>
             <CCard className='p-0 overflow-hidden h-100'>
               <CCardBody className="p-0">
@@ -742,6 +832,7 @@ const Dashboard = () => {
                   removableSort
                   globalFilterFields={['dnNumber', 'vendorName', 'vendorCode', 'truckStation', 'status']}
                   filters={queryFilter}
+                  rowsPerPageOptions={[12, 25, 50, 100]}
                   showGridlines 
                   size="small"
                   paginator
@@ -756,19 +847,19 @@ const Dashboard = () => {
                     handlePageChange(e)
                   }}
                   onFilter={(e)=>{
-                    console.log("e onfilter:", e)
+                    // console.log("e onfilter:", e)
                     handleFilter(e)
                   }} // Track filtering
                 >
                   <Column className='' header="No" body={(rowBody, { rowIndex }) => rowIndex + 1}></Column>
                   {/* <Column className='' field='dnNumber'  header="DN No"></Column> */}
-                  <Column className='' field='vendorCode'  header="Vendor Code"></Column>
+                  <Column className='' field='arrivalPlanDate'  header="Plan Date" ></Column>
+                  <Column className='' field='arrivalPlanTime'  header="Plan Time" body={planTimeBodyTemplate} ></Column>
+                  {/* <Column className='' field='vendorCode'  header="Vendor Code"></Column> */}
                   <Column className='' field='vendorName'  header="Vendor Name" ></Column>
                   <Column className='' field='statusMaterial'  header="Status Received" body={statusMaterialBodyTemplate}></Column>
                   <Column className='' field='truckStation'  header="Truck Station" ></Column>
                   <Column className='' field='rit'  header="Rit" ></Column>
-                  <Column className='' field='arrivalPlanDate'  header="Plan Date" ></Column>
-                  <Column className='' field='arrivalPlanTime'  header="Plan Time" body={planTimeBodyTemplate} ></Column>
                   <Column className='' field='arrivalActualDate'  header="Arriv. Date" ></Column>
                   <Column className='' field='arrivalActualTime'  header="Arriv. Time" ></Column>
                   {/* <Column className='' field='deliveryNotes.departureActualDate'  header="Departure Date" /> */}
@@ -838,7 +929,7 @@ const Dashboard = () => {
                     <Column field="reqQuantity" header="Req. Qty" body={(data) => <div className="text-center">{data.reqQuantity}</div>} />
                     <Column field="actQuantity" header="Act. Qty" body={(data) => <div className="text-center">{data.actQuantity}</div>} />
                     <Column field="remain" header="Remain" body={remainBodyTemplate} align="center" />
-                    <Column   field='status'  header="Status" body={statusQtyBodyTemplate} />
+                    <Column field='status'  header="Status" body={statusQtyBodyTemplate} />
                   </DataTable>
                 </CRow>
                 <CRow  className='mt-1 px-2'></CRow>
@@ -848,7 +939,7 @@ const Dashboard = () => {
        </CCard>
       </CRow>
         
-        {isVisible && (
+        {/* {isVisible && (
         <CRow ref={vendorScheduleRef} className='mb-3 mt-5 '>
           <CCard  className='px-0 ' style={{maxHeight: `${showCard.schedule ? "2000px" : "50px"}`, overflow: "hidden", transitionDuration: '500ms', border: "1px solid #6482AD"}}>
             <CCardHeader style={{ position: "relative", cursor: "pointer", backgroundColor: "#6482AD", color: "white"}} onClick={()=>setShowCard({ ...showCard, schedule: !showCard.schedule})}>
@@ -856,51 +947,8 @@ const Dashboard = () => {
             </CCardHeader>
             <CCardBody>
               <CRow>
-                <CCol sm={2} className='d-flex flex-column justify-content-between'>
 
-                  <CCard className=" bg-transparent" style={{ border: "2px solid #49C05F" }}>
-                    <CCardHeader className="text-muted small text-center" style={{ backgroundColor: "#49C05F" }}>
-                      <h6 style={{ color: "white", fontSize: "12px" }}>ON SCHEDULE ARRIVAL</h6>
-                    </CCardHeader>
-                    <CCardBody className="text-center">
-                      <CCardText className="fs-3 fw-bold" style={{ color: "black" }}>
-                        {cardData.onSchedule}
-                      </CCardText>
-                    </CCardBody>
-                  </CCard>
-
-                  <CCard className=" bg-transparent" style={{ border: "2px solid #FBC550" }}>
-                    <CCardHeader className="text-muted small text-center" style={{ backgroundColor: "#FBC550" }}>
-                      <h6 style={{ color: "black", fontSize: "12px" }}>OVERDUE ARRIVAL</h6>
-                    </CCardHeader>
-                    <CCardBody className="text-center">
-                      <CCardText className="fs-3 fw-bold"style={{ color: "black" }}>{cardData.overdue}</CCardText>
-                    </CCardBody>
-                  </CCard>
-
-                  <CCard className="bg-transparent" style={{ border: "2px solid #F64242" }}>
-                    <CCardHeader className="text-muted small text-center" style={{ backgroundColor: "#F64242" }}>
-                      <h6 style={{ color: "white", fontSize: "12px" }}>DELAYED PLAN</h6>
-                    </CCardHeader>
-                    <CCardBody className="text-center ">
-                      <CCardText className="fs-3 fw-bold" style={{ color: "black" }}> 
-                        {cardData.delayed}
-                      </CCardText>
-                    </CCardBody>
-                  </CCard>
-
-                  <CCard className=" bg-transparent" style={{ border: "2px solid #6E9CFF" }} >
-                    <CCardHeader className="text-muted small text-center" style={{ backgroundColor: "transparent", borderBottom: "2px solid #6E9CFF" }}>
-                      <h6 style={{ color: "#6E9CFF", fontSize: "12px" }}>REMAINING</h6>
-                    </CCardHeader>
-                    <CCardBody className="text-center">
-                      <CCardText className="fs-3 fw-bold" style={{ color: "black" }}>{cardData.remaining}</CCardText>
-                    </CCardBody>
-                  </CCard>    
-
-                </CCol>
-
-                <CCol xs={12} sm={10}  >
+                <CCol xs={12} sm={12}  >
                   <CCard className='p-3' style={{ maxHeight:"70vh", overflow: "auto"  }} >
                     <CRow>
                       <CCol className='d-flex gap-2'>
@@ -948,13 +996,11 @@ const Dashboard = () => {
                     </CRow>
                   </CCard>
                 </CCol>
-              {/* //untuk tabel */}
+              </CRow>
+            </CCardBody>
+          </CCard>
         </CRow>
-      </CCardBody>
-    </CCard>
-  </CRow>
-        
-  )}
+      )} */}
 
 
   {/* Modal List Materials */}
