@@ -111,7 +111,7 @@ const Dashboard = () => {
   const [dataSchedules, setDataSchedules] = useState([]); // Menyimpan data dari API
   const [dataChartSchedules, setDataChartSchedules] = useState(dataSchedules.slice(1, 10)); // Synchronized chart data
 
-  const [pagination, setPagination] = useState({ page: 0, rows: 12 });
+  const [pagination, setPagination] = useState({ page: 0, rows: 10 });
   const totalPage = Math.ceil(dataSchedules.length / pagination.rows)
   const [filteredData, setFilteredData] = useState([]);
 
@@ -243,7 +243,7 @@ const Dashboard = () => {
       });
       
         const filteredResponse = response.data.filter((data)=>data.status !== 'no schedule')
-        console.log("Response dashboard:", allResponse);
+        // console.log("Response dashboard:", allResponse);
 
         setDataSchedules(allResponse); // Simpan data dari API ke state
         updateChartData(filteredData.length > 0 ? filteredData : allResponse, pagination.page, pagination.rows);
@@ -456,12 +456,12 @@ const Dashboard = () => {
             backgroundColor: data.color,
             display: 'flex',
             justifyContent: "center",
-            padding: "10px",
+            padding: "5px",
             borderRadius: '5px',
             marginTop: "10px",
             marginLeft: "10px",
             width: '90%',
-            color: "white",
+            color: data.value === 'overdue' ? "black" : "white",
             fontWeight: "bold",
             ':active': {
               ...base[':active'],
@@ -469,11 +469,13 @@ const Dashboard = () => {
             },
             ':hover': {
               ...base[':hover'],
+              color: data.value === 'overdue' ? "black" : "white",
               backgroundColor: 
                 data.value === 'scheduled' ? "#B8CEFF" : 
                 data.value === 'delayed' ? "#FFA4A4" : 
                 data.value === 'on schedule' ? "#97D497" : 
                 data.value === 'overdue' ? "#FFDE97" : 
+                data.value === 'no schedule' ? "lightgray" : 
                 "gray"
             }
           }),
@@ -491,6 +493,7 @@ const Dashboard = () => {
               state.data.value === "scheduled" ? "#6E9CFF" : 
               state.data.value === "overdue" ? "#FBC550" : 
               state.data.value === "on schedule" ? "#43AB43" : 
+              state.data.value === "no schedule" ? "gray" : 
               "transparent",
             fontWeight: "bold",
             padding: "5px 10px",
@@ -501,7 +504,8 @@ const Dashboard = () => {
           control: (base) => ({
             ...base,
             height: "42px",
-            minWidth: "220px"
+            minWidth: "220px",
+            
           })
         };
 
@@ -539,6 +543,12 @@ const Dashboard = () => {
                 { label: "OVERDUE", value: "overdue", color: '#FBC550' },
               ],
             },
+            {
+              label: 'REQUEST',
+              options: [
+                { label: "ON REQUEST", value: "no schedule", color: "gray"}
+              ]
+            }
           ];
     
           const handlePageChange = (event) => {
@@ -603,7 +613,7 @@ const Dashboard = () => {
             padding: "10px",
         }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%" }}>
-            <CTooltip content="Scroll to Vendor Schedule">
+            {/* <CTooltip content="Scroll to Vendor Schedule">
               <button
                 className="btn d-flex align-items-center justify-content-center me-2 btn-toggle"
                 style={{
@@ -616,7 +626,7 @@ const Dashboard = () => {
               >
                 <CIcon icon={cilChart} size="lg" className='icon-toggle'/>
               </button>
-            </CTooltip>
+            </CTooltip> */}
             <CTooltip content="Toggle Filter Visibility">
               <button
                 className="btn d-flex align-items-center justify-content-center btn-toggle"
@@ -642,13 +652,13 @@ const Dashboard = () => {
           {/* Tombol Hide/Show di pojok kiri */}
 
           {isFilterVisible && (
-            <div className="d-flex  gap- mt-1 pb-3 mb-2" style={{ borderBottom: "1px solid gray"}}>
-              <CCol sm={12} md={12} lg={5} xl={5} className="d-flex gap-1">
+            <CRow className="d-flex  gap- mt-1 pb-3 mb-2" style={{ borderBottom: "1px solid gray"}}>
+              <CCol sm={12} md={12} lg={5} xl={5} className="d-flex gap-2">
                 <div>
                   <CFormText>Filter Plant</CFormText>
                   <Select
                     className="basic-single"
-                    classNamePrefix="select"
+                    classNamePrefix="select-plant"
                     isClearable
                     id="plant"
                     options={plants}
@@ -680,6 +690,9 @@ const Dashboard = () => {
                 <div>
                   <CFormText >Filter by Status</CFormText>
                   <Select
+                    className="select-status"
+                    classNamePrefix="select-status"
+                    id='status'
                     onChange={onChangeFilterStatus}
                     // onChange={(e)=>console.log(groupedOptions)}
                     placeholder="All" // Default placeholder
@@ -696,6 +709,9 @@ const Dashboard = () => {
                 <div>
                   <CFormText style={{ alignSelf: "flex-start" }}>Search vendor</CFormText>
                   <Select 
+                    classNamePrefix="select-vendor"
+                    id='vendor'
+                    className='select-vendor'
                     options={optionsSelectVendor?.list} 
                     value={optionsSelectVendor?.list?.find((option)=>option.value===optionsSelectVendor?.selected) || ""}
                     onChange={onChangeFilterVendor}
@@ -738,13 +754,13 @@ const Dashboard = () => {
                     }}/>
                 </div>
               </CCol>
-            </div>
+            </CRow>
           )}
          </CRow>
-          <CRow className='pb-3'>
+          <CRow className='pb-1'>
           <CCol sm={12} className='d-flex justify-content-between gap-2 p-0'>
-            <CCard className=" bg-transparent p-0 overflow-hidden w-100 " style={{ border: "3px solid #6E9CFF", boxShadow: "none" }}>
-              <div className="text-muted small text-center d-flex align-items-center p-0 overflow-hidden" style={{ backgroundColor: "transparent" }}>
+            <CCard className=" bg-transparent p-0 overflow-hidden w-100 h-75" style={{ border: "3px solid #6E9CFF", boxShadow: "none" }}>
+              <div className="text-muted small text-center d-flex align-items-center p-0 overflow-hidden h-100" style={{ backgroundColor: "transparent" }}>
                 <h6 style={{ color: "#6E9CFF", fontSize: "12px", width: "100%" }}>REMAINING</h6>
                 <CCardText className="fs-3 fw-bold w-50 " style={{ color: "black", backgroundColor: "white", borderLeft: "3px solid #6E9CFF" }}>
                   {cardData.remaining}
@@ -753,8 +769,8 @@ const Dashboard = () => {
             </CCard>
           {/* </CCol>
           <CCol sm={2}> */}
-            <CCard className=" bg-transparent p-0 overflow-hidden w-100" style={{ border: "3px solid #F64242", boxShadow: "none" }}>
-              <div className="text-muted small text-center d-flex align-items-center p-0 overflow-hidden" style={{ backgroundColor: "#F64242" }}>
+            <CCard className=" bg-transparent p-0 overflow-hidden w-100 h-75" style={{ border: "3px solid #F64242", boxShadow: "none" }}>
+              <div className="text-muted small text-center d-flex align-items-center p-0 overflow-hidden h-100" style={{ backgroundColor: "#F64242" }}>
                 <h6 style={{ color: "white", fontSize: "12px", width: "100%" }}>DELAYED PLAN</h6>
                 <CCardText className="fs-3 fw-bold w-50" style={{ color: "black", backgroundColor: "white" }}>
                   {cardData.delayed}
@@ -763,8 +779,8 @@ const Dashboard = () => {
             </CCard>
           {/* </CCol>
           <CCol sm={3}> */}
-            <CCard className=" bg-transparent p-0 overflow-hidden  w-100  " style={{ border: "3px solid #FBC550", boxShadow: "none" }}>
-              <div className="text-muted small text-center d-flex align-items-center p-0 overflow-hidden" style={{ backgroundColor: "#FBC550" }}>
+            <CCard className=" bg-transparent p-0 overflow-hidden  w-100 h-75  " style={{ border: "3px solid #FBC550", boxShadow: "none" }}>
+              <div className="text-muted small text-center d-flex align-items-center p-0 overflow-hidden h-100" style={{ backgroundColor: "#FBC550" }}>
                 <h6 style={{ color: "black", fontSize: "12px", width: "100%" }}>OVERDUE ARRIVAL</h6>
                 <CCardText className="fs-3 fw-bold w-50" style={{ color: "black", backgroundColor: "white" }}>
                   {cardData.overdue}
@@ -773,9 +789,9 @@ const Dashboard = () => {
             </CCard>
           {/* </CCol>
           <CCol sm={3}> */}
-            <CCard className=" bg-transparent p-0 overflow-hidden  w-100  " style={{ border: "3px solid #49C05F", boxShadow: "none" }}>
-              <div className="text-muted small text-center d-flex align-items-center p-0 overflow-hidden" style={{ backgroundColor: "#49C05F" }}>
-                <h6 style={{ color: "white", fontSize: "12px", width: "100%" }}>ON SCHEDULE ARRIVAL</h6>
+            <CCard className=" bg-transparent p-0 overflow-hidden  w-100 h-75  " style={{ border: "3px solid #49C05F", boxShadow: "none" }}>
+              <div className="text-muted small text-center d-flex align-items-center p-0 overflow-hidden h-100" style={{ backgroundColor: "#49C05F" }}>
+                <h6 style={{ color: "white", fontSize: "12px", width: "100%" }}>ON SCHEDULE </h6>
                 <CCardText className="fs-3 fw-bold  w-50" style={{ color: "black", backgroundColor: "white" }}>
                   {cardData.onSchedule}
                 </CCardText>
@@ -783,8 +799,8 @@ const Dashboard = () => {
             </CCard>
           {/* </CCol>
           <CCol sm={2}> */}
-            <CCard className=" bg-transparent p-0 overflow-hidden  w-100  " style={{ border: "3px solid gray", boxShadow: "none" }}>
-              <div className="text-muted small text-center d-flex align-items-center p-0 overflow-hidden" style={{ backgroundColor: "gray" }}>
+            <CCard className=" bg-transparent p-0 overflow-hidden  w-100 h-75  " style={{ border: "3px solid gray", boxShadow: "none" }}>
+              <div className="text-muted small text-center d-flex align-items-center p-0 overflow-hidden h-100" style={{ backgroundColor: "gray" }}>
                 <h6 style={{ color: "white", fontSize: "12px", width: "100%" }}>ON REQUEST</h6>
                 <CCardText className="fs-3 fw-bold  w-50" style={{ color: "black", backgroundColor: "white" }}>
                   {cardData.onRequest}
@@ -832,10 +848,12 @@ const Dashboard = () => {
                   removableSort
                   globalFilterFields={['dnNumber', 'vendorName', 'vendorCode', 'truckStation', 'status']}
                   filters={queryFilter}
-                  rowsPerPageOptions={[12, 25, 50, 100]}
+                  rowsPerPageOptions={[10, 25, 50, 100]}
                   showGridlines 
                   size="small"
                   paginator
+                  paginatorTemplate="CurrentPageReport FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown"
+                  currentPageReportTemplate="Showing {first} to {last} of {totalRecords}"
                   rows={pagination.rows}
                   tableStyle={{ minWidth: '50rem', height: "100%" }}
                   value={filteredData.length > 0 ? filteredData : dataSchedules} // Sync filter

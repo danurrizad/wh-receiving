@@ -142,8 +142,14 @@ td input.p-inputtext.p-component {
   border-color: #3498ff !important;
 }
 
+.select-status__menu.css-1nmdiq5-menu{
+  position: absolute;
+  z-index: 50 !important;
+}
 .css-1nmdiq5-menu{
-  position: relative;
+  z-index: 50 !important;
+}
+.css-1y5o33s-menu{
   z-index: 50 !important;
 }
 
@@ -307,10 +313,10 @@ td input.p-inputtext.p-component {
 }
 
 .card-req.consumable{
-  border: 2px solid#1959ac;
+  border: 2px solid black;
 }
 .card-req.chemical{
-  border: 2px solid#e8c94d;
+  border: 2px solid black;
 }
 .card-req.consumable:hover{
   background-color: #1959ac;

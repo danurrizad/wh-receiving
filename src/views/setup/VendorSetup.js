@@ -478,11 +478,11 @@ const VendorSetup = () => {
                 </CCol>
               </CRow>
               <CRow className='mb-3'>
-                <CCol xs={8}>
+                <CCol xs={4} lg={8}>
                   <CFormText>Search</CFormText>
-                  <InputText value={globalFilterValue} onChange={onGlobalFilterChange} placeholder='Keyword search' style={{ borderRadius: '5px', padding: "5.5px"}}/>
+                  <InputText value={globalFilterValue} onChange={onGlobalFilterChange} placeholder='Keyword search' style={{ borderRadius: '5px', padding: "8px"}}/>
                 </CCol>
-                <CCol xs={2}>
+                <CCol xs={4} lg={2}>
                   <CFormText>Filter by Plant</CFormText>
                   <Select 
                     isClearable
@@ -498,7 +498,7 @@ const VendorSetup = () => {
                     }}  
                   />
                 </CCol>
-                <CCol xs={2}>
+                <CCol xs={4} lg={2}>
                   <CFormText>Filter by Day</CFormText>
                   <Select 
                     options={optionsDay}

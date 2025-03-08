@@ -446,37 +446,39 @@ const handleSubmitChangeQty = (rowIndex, rowData) => {
             <CCardBody>
               <CRow className='d-flex align-items-end'>
                 
-                <CCol md='3' className=''>
+                <CCol md='12' xl='4 ' className=''>
                     <CFormText>Search</CFormText>
-                    <Input value={globalFilterValue} onChange={(e)=>onGlobalFilterChange(e)} placeholder="Keyword Search"/>
+                    <Input value={globalFilterValue} className='' onChange={(e)=>onGlobalFilterChange(e)} placeholder="Keyword Search"/>
                 </CCol>
 
-                <CCol className='d-flex justify-content-end gap-4'>
-                  <CCol sm='4' md='3' className=''>
-                      <CFormText>Filter by Plant</CFormText>
-                      <Dropdown
-                        value={queryFilter.plantId}
-                        options={plants}
-                        onChange={handleChangeFilterPlant}
-                        // onChange={(e)=>console.log(e.target.value)}
-                        placeholder="All plant"
-                        showClear
-                        style={{ width: '100%', borderRadius: '5px', padding: '1.75px' }}
-                      />
-                  </CCol>
-                  <CCol sm='auto' className=''>
-                      <CFormText>Filter by Date</CFormText>
-                      <DateRangePicker 
-                        format="yyyy-MM-dd" 
-                        character=' – ' 
-                        showOneCalendar 
-                        placeholder='All time' 
-                        placement='bottomEnd'
-                        style={{ width: "210px"}}
-                        value={queryFilter.rangeDate} 
-                        onChange={handleChangeRangeDate} 
+                <CCol xl='8' className='d-xl-flex d-sm-block justify-content-end'>
+                  <CRow>
+                    <CCol sm='6' xs='6' xl='5' className='flex-shrink-0 flex-grow-0' >
+                        <CFormText>Filter by Plant</CFormText>
+                        <Dropdown
+                          value={queryFilter.plantId}
+                          options={plants}
+                          onChange={handleChangeFilterPlant}
+                          // onChange={(e)=>console.log(e.target.value)}
+                          placeholder="All plant"
+                          showClear
+                          style={{ width: '100%', borderRadius: '5px', padding: '1.75px' }}
                         />
-                  </CCol>
+                    </CCol>
+                    <CCol sm='6' xs='6' xl='7' className=''>
+                        <CFormText>Filter by Date</CFormText>
+                        <DateRangePicker 
+                          format="yyyy-MM-dd" 
+                          character=' – ' 
+                          showOneCalendar 
+                          placeholder='All time' 
+                          placement='bottomEnd'
+                          style={{ width: "100%"}}
+                          value={queryFilter.rangeDate} 
+                          onChange={handleChangeRangeDate} 
+                          />
+                    </CCol>
+                  </CRow>
                 </CCol>
               </CRow>
               <CRow className='mt-3 px-3'>

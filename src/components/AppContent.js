@@ -9,7 +9,7 @@ import LoadingTWIIS from './LoadingTWIIS'
 
 const AppContent = () => {
   return (
-    <CContainer className="px-4" fluid>
+    <CContainer className="px-4 mb-4" style={{ flex: 1}} fluid>
       <Suspense 
         fallback={
         <div style={{ height: "100vh"}}>

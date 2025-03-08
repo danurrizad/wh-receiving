@@ -319,11 +319,12 @@ const header = () => (
                   <Input value={globalFilterValue} onChange={onGlobalFilterChange} placeholder='Keyword search'/>
                 </div>
                 <div>
-                  <CFormText>Filter by Arrival Date Plan</CFormText>
+                  <CFormText>Filter by Arrival Plan</CFormText>
                   <DatePicker 
                     format='yyyy-MM-dd'
                     value={filterQuery.dateArrival ? filterQuery.dateArrival : null} 
                     placeholder="All time"
+                    placement='bottomEnd'
                     oneTap
                     onChange={(e)=>{
                       setFilterQuery({ ...filterQuery, dateArrival: e !== null ? e : ""})
