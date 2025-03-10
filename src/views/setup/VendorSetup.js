@@ -443,6 +443,40 @@ const VendorSetup = () => {
                   <CCardTitle className="text-center">VENDOR SCHEDULE DATA</CCardTitle>
               </CCardHeader>
               <CCardBody>
+              <CRow className='mb-3'>
+                <CCol xs={4} lg={8}>
+                  <CFormText>Search</CFormText>
+                  <InputText value={globalFilterValue} onChange={onGlobalFilterChange} placeholder='Keyword search' style={{ borderRadius: '5px', padding: "8px"}}/>
+                </CCol>
+                <CCol xs={4} lg={2}>
+                  <CFormText>Filter by Plant</CFormText>
+                  <Select 
+                    isClearable
+                    placeholder="All plant"
+                    options={optionsPlant.list} 
+                    value={optionsPlant?.list?.find((data)=>data.value === optionsPlant.selected) || ""}
+                    onChange={(e)=>{
+                      console.log(e)
+                      setOptionsPlant({
+                        ...optionsPlant,
+                        selected: e !== null ? e.value : ""
+                      })
+                    }}  
+                  />
+                </CCol>
+                <CCol xs={4} lg={2}>
+                  <CFormText>Filter by Day</CFormText>
+                  <Select 
+                    options={optionsDay}
+                    isClearable
+                    value={optionsDay.find((opt)=>opt.value === selectedOptionsDay) || ""}
+                    onChange={(e)=>{
+                      setSelectedOptionsDay(e !== null ? Number(e.value) : "")
+                    }}
+                  />
+                </CCol>
+              </CRow>
+              <hr/>
               <CRow>
                 <CCol className='d-flex align-items-center'>
                   <Button
@@ -474,39 +508,6 @@ const VendorSetup = () => {
                     className="rounded-2 me-2 mb-1 py-2 text-white"
                     onClick={exportExcel}
                     data-pr-tooltip="XLS"
-                  />
-                </CCol>
-              </CRow>
-              <CRow className='mb-3'>
-                <CCol xs={4} lg={8}>
-                  <CFormText>Search</CFormText>
-                  <InputText value={globalFilterValue} onChange={onGlobalFilterChange} placeholder='Keyword search' style={{ borderRadius: '5px', padding: "8px"}}/>
-                </CCol>
-                <CCol xs={4} lg={2}>
-                  <CFormText>Filter by Plant</CFormText>
-                  <Select 
-                    isClearable
-                    placeholder="All plant"
-                    options={optionsPlant.list} 
-                    value={optionsPlant?.list?.find((data)=>data.value === optionsPlant.selected) || ""}
-                    onChange={(e)=>{
-                      console.log(e)
-                      setOptionsPlant({
-                        ...optionsPlant,
-                        selected: e !== null ? e.value : ""
-                      })
-                    }}  
-                  />
-                </CCol>
-                <CCol xs={4} lg={2}>
-                  <CFormText>Filter by Day</CFormText>
-                  <Select 
-                    options={optionsDay}
-                    isClearable
-                    value={optionsDay.find((opt)=>opt.value === selectedOptionsDay) || ""}
-                    onChange={(e)=>{
-                      setSelectedOptionsDay(e !== null ? Number(e.value) : "")
-                    }}
                   />
                 </CCol>
               </CRow>

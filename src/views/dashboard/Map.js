@@ -96,15 +96,15 @@ ChartJS.register(
 );
 
 const buttonPositions = {
-  "TS 1-02": { top: "45%", left: "40%", color: "#074799" },
-  "TS 1-01": { top: "27%", left: "15%", color: "#5bc0de" },
-  "TS 1-06": { top: "35%", left: "50%", color: "#f0ad4e" },
+  "TS 1-02": { top: "45%", left: "32%", color: "#074799" },
+  "TS 1-01": { top: "48%", left: "15%", color: "#5bc0de" },
+  "TS 1-06": { top: "35%", left: "40%", color: "#f0ad4e" },
   "TS 1-07": { top: "35%", left: "50%", color: "#d9534f" },
   "TS 1-14": { top: "20%", left: "60%", color: "#5bc0de" },
-  "TS 1-12": { top: "20%", left: "30%", color: "#f0ad4e" },
-  "OIL STORE": { top: "8%", left: "12%", color: "#d9534f" },
+  "TS 1-12": { top: "48%", left: "45%", color: "#f0ad4e" },
+  "OIL STORE": { top: "12%", left: "12%", color: "#d9534f" },
   "GAS STORAGE": { top: "18%", left: "48%", color: "#f0ad4e" },
-  "TS - PACKING": { top: "8%", left: "25%", color: "#5bc0de" },
+  "TS - PACKING": { top: "14%", left: "25%", color: "#5bc0de" },
 };
 
 const Dashboard = () => {
