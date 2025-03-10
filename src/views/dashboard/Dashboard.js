@@ -762,7 +762,7 @@ const Dashboard = () => {
             <CCard className=" bg-transparent p-0 overflow-hidden w-100 h-75" style={{ border: "3px solid #6E9CFF", boxShadow: "none" }}>
               <div className="text-muted small text-center d-flex align-items-center p-0 overflow-hidden h-100" style={{ backgroundColor: "transparent" }}>
                 <h6 style={{ color: "#6E9CFF", fontSize: "12px", width: "100%" }}>REMAINING</h6>
-                <CCardText className="fs-3 fw-bold w-50 " style={{ color: "black", backgroundColor: "white", borderLeft: "3px solid #6E9CFF" }}>
+                <CCardText className="fs-4 fw-bold w-50 " style={{ color: "black", backgroundColor: "white", borderLeft: "3px solid #6E9CFF" }}>
                   {cardData.remaining}
                 </CCardText>
               </div>
@@ -772,7 +772,7 @@ const Dashboard = () => {
             <CCard className=" bg-transparent p-0 overflow-hidden w-100 h-75" style={{ border: "3px solid #F64242", boxShadow: "none" }}>
               <div className="text-muted small text-center d-flex align-items-center p-0 overflow-hidden h-100" style={{ backgroundColor: "#F64242" }}>
                 <h6 style={{ color: "white", fontSize: "12px", width: "100%" }}>DELAYED PLAN</h6>
-                <CCardText className="fs-3 fw-bold w-50" style={{ color: "black", backgroundColor: "white" }}>
+                <CCardText className="fs-4 fw-bold w-50" style={{ color: "black", backgroundColor: "white", borderRadius: "4px" }}>
                   {cardData.delayed}
                 </CCardText>
               </div>
@@ -782,7 +782,7 @@ const Dashboard = () => {
             <CCard className=" bg-transparent p-0 overflow-hidden  w-100 h-75  " style={{ border: "3px solid #FBC550", boxShadow: "none" }}>
               <div className="text-muted small text-center d-flex align-items-center p-0 overflow-hidden h-100" style={{ backgroundColor: "#FBC550" }}>
                 <h6 style={{ color: "black", fontSize: "12px", width: "100%" }}>OVERDUE ARRIVAL</h6>
-                <CCardText className="fs-3 fw-bold w-50" style={{ color: "black", backgroundColor: "white" }}>
+                <CCardText className="fs-4 fw-bold w-50" style={{ color: "black", backgroundColor: "white", borderRadius: "4px"}}>
                   {cardData.overdue}
                 </CCardText>
               </div>
@@ -792,7 +792,7 @@ const Dashboard = () => {
             <CCard className=" bg-transparent p-0 overflow-hidden  w-100 h-75  " style={{ border: "3px solid #49C05F", boxShadow: "none" }}>
               <div className="text-muted small text-center d-flex align-items-center p-0 overflow-hidden h-100" style={{ backgroundColor: "#49C05F" }}>
                 <h6 style={{ color: "white", fontSize: "12px", width: "100%" }}>ON SCHEDULE </h6>
-                <CCardText className="fs-3 fw-bold  w-50" style={{ color: "black", backgroundColor: "white" }}>
+                <CCardText className="fs-4 fw-bold  w-50" style={{ color: "black", backgroundColor: "white",  borderRadius: "4px" }}>
                   {cardData.onSchedule}
                 </CCardText>
               </div>
@@ -802,7 +802,7 @@ const Dashboard = () => {
             <CCard className=" bg-transparent p-0 overflow-hidden  w-100 h-75  " style={{ border: "3px solid gray", boxShadow: "none" }}>
               <div className="text-muted small text-center d-flex align-items-center p-0 overflow-hidden h-100" style={{ backgroundColor: "gray" }}>
                 <h6 style={{ color: "white", fontSize: "12px", width: "100%" }}>ON REQUEST</h6>
-                <CCardText className="fs-3 fw-bold  w-50" style={{ color: "black", backgroundColor: "white" }}>
+                <CCardText className="fs-4 fw-bold  w-50" style={{ color: "black", backgroundColor: "white", borderRadius: "4px"}}>
                   {cardData.onRequest}
                 </CCardText>
               </div>
