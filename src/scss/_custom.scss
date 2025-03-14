@@ -54,6 +54,7 @@ input::-webkit-inner-spin-button {
 //   color: white;
 // }
 
+
 .custom-datatable .p-datatable-thead > tr > th,
 .custom-datatable .p-datatable-tbody > tr > td {
   border: 1px solid rgb(199, 199, 199);
@@ -62,10 +63,200 @@ input::-webkit-inner-spin-button {
 .custom-datatable .p-datatable-tbody > tr > td {
   padding: 10px 5px 10px 5px;
 }
+.text-status{
+  background-color: white;
+  color: black;
+}
+.dropdown-item.active, .dropdown-item:focus{
+  background-color: rgb(72, 96, 129);
+}
+// ---------------------------------------------------------------------------- DARK MODE ----------------------------------------------------------------------------
+@include color-mode(dark){
+  .custom-datatable .p-datatable-thead > tr > th,
+  .custom-datatable .p-datatable-tbody > tr > td,
+  .custom-table.dashboard .p-datatable-thead > tr > th,
+  .custom-table.dashboard .p-datatable-tbody > tr > td,
+  .custom-table.dashboard
+   {
+    border: 1px solid rgb(74 84 98) !important;
+  }
+    .custom-datatable .p-datatable-thead > tr > th{
+      background-color: rgb(74 84 98);
+      color: white;
+      // border-start-start-radius: 5px;
+    }
+
+    .p-datatable .p-datatable-tbody > tr{
+        background-color: transparent;
+        color: white;
+    }
+    .card-header.summary{
+      background-color: transparent !important;
+    }
+    .card-header,
+    .p-paginator .p-paginator-pages .p-paginator-page.p-highlight
+    {
+      background-color: rgb(74 84 98) !important;
+    }
+    .p-paginator-page.p-paginator-element.p-link:hover{
+      background-color: #46525e;
+    }
+    .card{
+      border-color: rgb(74 84 98) !important;
+    }
+    .card.status-blue{
+      border-color: #6E9CFF !important;
+    }
+    .card.status-red{
+      border-color: #F64242 !important;
+    }
+    .card.status-yellow{
+      border-color: #FBC550 !important;
+    }
+    .card.status-green{
+      border-color: #49C05F !important;
+    }
+    .card.status-gray{
+      border-color: gray !important;
+    }
+    .p-row-odd{
+      background-color: #2e323b !important;
+      color: white  
+    }
+    .text-status{
+      background-color: #212631;
+      color: white;
+    }
+
+    .p-paginator .p-paginator-current
+    {
+      color: white;
+    }
+    .p-datatable-header{
+      background-color: rgb(88, 100, 116);
+      border-bottom: 1px solid white;
+      border-start-start-radius: 5px;
+      border-color: rgb(74 84 98);
+    }
+    .custom-datatable .p-datatable-header
+    {
+      // background-color: rgb(74 84 98);
+      // border-bottom: 1px solid white;
+      border-start-start-radius: 5px;
+    }
+    .p-paginator-first.p-paginator-element.p-link:hover,
+    .p-paginator-prev.p-paginator-element.p-link:hover,
+    .p-paginator-next.p-paginator-element.p-link:hover,
+    .p-paginator-page.p-paginator-element.p-link:hover,
+    .p-paginator-last.p-paginator-element.p-link:hover{
+      background-color: #697077;
+    }
+    .p-dropdown.p-component.p-inputwrapper.p-inputwrapper-filled, 
+    .p-dropdown-label.p-inputtext, 
+    .p-dropdown-trigger,
+    .p-paginator-first.p-paginator-element.p-link,
+    .p-paginator-prev.p-paginator-element.p-link,
+    .p-paginator-next.p-paginator-element.p-link,
+    .p-paginator-last.p-paginator-element.p-link,
+    .p-paginator-pages,
+    .rs-input,
+    .rs-picker-input-group.rs-input-group.rs-input-group-inside,
+    .p-multiselect.p-component.p-inputwrapper.p-multiselect-chip,
+    .p-multiselect-label.p-placeholder,
+    .p-multiselect-trigger,
+    .css-b62m3t-container,
+    .css-hlgwow,
+    .css-1wy0on6,
+    .css-c3cgez-control,
+    .css-t3ipsp-control,
+    .css-fzixz9-control,
+    .css-1dimb5e-singleValue,
+    .css-13cymwt-control,
+    .form-label,
+    .modal-title,
+    .css-1la6e8m-control,
+    .select__control--is-focused,
+    .select-vendor__control--is-focused,
+    .select-status__control.css-9ty51l-control,
+    .select-status__control--is-focused,
+    .css-13b0vh8-control,
+    .select-plant__control,
+    .select-plant__control--is-focused,
+    .select__control.css-78o1ds-control,
+    .css-9ty51l-control
+    {
+      background-color: transparent !important;
+      color: white;
+    }
+    .form-control{
+      border-color: lightgray;
+    }
+    .css-1nmdiq5-menu, .css-1y5o33s-menu{
+      background-color: #2e323b;
+      color: white;
+    }
+    .css-1nmdiq5-menu:active{
+      background-color: #33363d;
+    }
+    // .css-1nmdiq5-menu:hover{
+    //   background-color: #5b5f68;
+    // }
+    .p-inputtext.p-component.p-disabled.p-filled{
+      background-color: #2e323b;
+    }
+    .custom-table.dashboard .p-datatable-thead > tr > th{
+      // background-color: #15181E;
+      background-color: rgb(74 84 98);
+      color: white;
+    }
+    .p-inputtext.p-component.p-filled:focus, .p-inputtext.p-component{
+      background-color: transparent;
+      color: white;
+    }
+    .empty-msg{
+      color: white !important
+    }
+    .custom-loading, .loading-twiis{
+      color: white !important;
+    }
+    .btn.disabled{
+      background-color: #4f4f4f !important;
+      color: #888888 !important;
+      opacity: 100%;
+      cursor: pointer !important;
+      border: 0;
+    }
+    .css-16xfy0z-control{
+      background-color: #4f4f4f !important;
+      color: #888888 !important;
+      border-color: #4f4f4f !important;
+    }
+    .css-16xfy0z-control[aria-disabled="true"]{
+      cursor: not-allowed;
+    }
+    .css-16xfy0z-control:disabled .css-894a34-indicatorSeparator{
+      background-color: #888888 !important;
+    }
+    .css-16xfy0z-control:disabled .css-1xc3v61-indicatorContainer, .css-1jqq78o-placeholder{
+      color: #888888 !important;
+    }
+    .p-highlight.p-selectable-row.p-row-odd, .p-highlight.p-selectable-row{
+      background-color:  rgb(62, 98, 147) !important;
+      color: white !important;
+    }
+    .custom-loading{
+      background-color: #1D222B !important;
+    }
+    .custom-spinner{
+      color: lightgray;
+    }
+  }
+// ---------------------------------------------------------------------------- DARK MODE ----------------------------------------------------------------------------
 
 .custom-datatable .p-datatable-thead > tr > th {
   background-color: #d5dfe9;
 }
+
 
 .p-row-odd{
   background-color: #F4F6F8;
@@ -113,6 +304,7 @@ td input.p-inputtext.p-component {
 {
   border: 0;
   margin-top: 12px;
+  background-color: transparent;
 }
 
 .p-paginator-pages{
@@ -144,7 +336,11 @@ td input.p-inputtext.p-component {
 
 .select-status__menu.css-1nmdiq5-menu{
   position: absolute;
-  z-index: 50 !important;
+  z-index: 1000000 !important;
+}
+.select-plant__menu.css-1y5o33s-menu{
+  position: absolute;
+  z-index: 1000000 !important;
 }
 .css-1nmdiq5-menu{
   z-index: 50 !important;
@@ -348,4 +544,10 @@ td input.p-inputtext.p-component {
 .btn-selanjutnya:hover, .btn-selanjutnya:focus{
   background-color: rgb(62, 98, 147);
   color: white;
+}
+
+@media (max-width: 576px) { /* sm breakpoint */
+  .h-sm-100 {
+      height: 100%;
+  }
 }

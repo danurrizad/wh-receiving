@@ -379,7 +379,7 @@ const Dashboard = () => {
     <CContainer fluid>
       <CRow className="mt-1">
         <CCard
-          className="px-0 bg-white text-black mb-1"
+          className="px-0 text-black mb-1"
           style={{
             overflow: "hidden",
             transitionDuration: "500ms",
@@ -428,8 +428,8 @@ const Dashboard = () => {
                   <div>
                     <CFormText>Filter Plant</CFormText>
                     <Select
-                      className="basic-single"
-                      classNamePrefix="select"
+                      className="select-plant"
+                      classNamePrefix="select-plant"
                       id="plant"
                       isClearable
                       options={optionsSelectPlant.list} // Tambahkan opsi "All"
@@ -468,6 +468,8 @@ const Dashboard = () => {
                   <div>
                     <CFormText>Filter by Status</CFormText>
                     <Select
+                      className="select-status"
+                      classNamePrefix="select-status"
                       options={optionsSelectStatus.list}
                       value={optionsSelectStatus.list.flatMap((group) => group.options).find(option => option.value === optionsSelectStatus.selected) || ""}
                       onChange={(e) => {
@@ -495,6 +497,8 @@ const Dashboard = () => {
                       Search vendor
                     </CFormText>
                     <Select
+                      className="select-vendor"
+                      classNamePrefix="select-vendor"
                       options={optionsSelectVendor.list}
                       isClearable
                       placeholder="Vendor name"
@@ -592,7 +596,7 @@ const Dashboard = () => {
                   tableStyle={{ minWidth: "50rem" }}
                   value={dataDNInquery}
                   filterDisplay="row"
-                  className="custom-table mt-2"
+                  className="p-datatable-sm custom-datatable mt-2"
                 >
                   <Column
                     className=""

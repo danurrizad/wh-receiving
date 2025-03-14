@@ -93,6 +93,7 @@ ChartJS.register(
 
 
 const Dashboard = () => {
+  const colorMode = localStorage.getItem('coreui-free-react-admin-template-theme')
   const addToast = useToast()
   const [loading, setLoading] = useState(false)
   const { getMasterData } = useMasterDataService()
@@ -407,10 +408,15 @@ const Dashboard = () => {
   const statusMaterialBodyTemplate = (rowBody) => {
     const complete = rowBody.statusMaterial?.split(" / ")[0] || "0"
     const total = rowBody.statusMaterial?.split(" / ")[1] || "0"
-    const color = complete !== total ? "red" : "black"
+    const color = 
+      (complete !== total && colorMode === 'light') ? "red" : 
+      (complete !== total && colorMode === 'dark') ? "red" : 
+      (complete === total && colorMode === 'light') ? "black" : 
+      (complete === total && colorMode === 'dark') ? "white" : 
+      "white"
     return(
       <div>
-        {rowBody.statusMaterial !== '0 / 0' ? <span style={{color: color}}>{complete}<span style={{color: "black"}}> / {total}</span></span> : "0 / 0"}
+        {rowBody.statusMaterial !== '0 / 0' ? <span style={{color: color}}>{complete}<span style={{color: colorMode === 'light' ? "black" : "white"}}> / {total}</span></span> : "0 / 0"}
       </div>
     )
   }
@@ -521,7 +527,7 @@ const Dashboard = () => {
         
         const renderCustomEmptyMsg = () => {
             return(
-              <div className='w-100 d-flex h-100 flex-column align-items-center justify-content-center py-3' style={{ color: "black", opacity: "50%"}}>
+              <div className='empty-msg w-100 d-flex h-100 flex-column align-items-center justify-content-center py-3' style={{ color: "black", opacity: "50%"}}>
                 <FaInbox size={40}/>
                 <p>NO SCHEDULES FOUND FROM {queryFilter.rangeDate[0].toLocaleDateString('en-CA')} UNTIL {queryFilter.rangeDate[1].toLocaleDateString('en-CA')}</p>
               </div>
@@ -555,23 +561,6 @@ const Dashboard = () => {
             setPagination({ page: event.page, rows: event.rows });
             updateChartData(filteredData.length > 0 ? filteredData : dataSchedules, event.page, event.rows);
           };
-
-          // useEffect(()=>{
-          //   const interval = setInterval(()=>{
-          //     // addToast("2 detik")
-          //     if(queryFilter.plantId === "" && queryFilter.global.value === null){
-          //       if(pagination.page >= totalPage-1){
-          //         setPagination({ ...pagination, page: 0})
-          //         updateChartData(filteredData.length > 0 ? filteredData : dataSchedules, 0, pagination.rows);
-          //       } else{
-          //         setPagination({ ...pagination, page: pagination.page + 1})
-          //         updateChartData(filteredData.length > 0 ? filteredData : dataSchedules, pagination.page+1, pagination.rows);
-          //       }
-          //     }
-          //   }, 24000)
-
-          //   return () => clearInterval(interval);
-          // }, [selectedStatus, optionsSelectVendor.selected, currentPage, limitPerPage, queryFilter, pagination, totalPage])
           
           const handleFilter = (event) => {
             console.log("EVENT:", event)
@@ -593,13 +582,29 @@ const Dashboard = () => {
             setDataChartSchedules(paginatedData);
           };
 
-      
+          const styleSelect = {
+            option: (styles, { data, isDisabled, isFocused, isSelected }) => {
+              return {
+                ...styles,
+                backgroundColor: rgb(72, 96, 129),
+                color: colorMode === 'dark' ? 'white' : "black",
+                ':active': {
+                  ...styles[':active'],
+                  backgroundColor: !isDisabled
+                    ? isSelected
+                      ? 'lightgrey'
+                      : 'white'
+                    : undefined,
+                },
+              };
+            },
+          }
       
   return (
   <CContainer fluid>
     <CRow className='mt-1'>
       <CCard
-        className="px-0 bg-white text-black mb-1"
+        className="px-0 text-black mb-1"
         style={{
           overflow: "hidden",
           transitionDuration: "500ms",
@@ -653,7 +658,7 @@ const Dashboard = () => {
 
           {isFilterVisible && (
             <CRow className="d-flex  gap- mt-1 pb-3 mb-2" style={{ borderBottom: "1px solid gray"}}>
-              <CCol sm={12} md={12} lg={5} xl={5} className="d-flex gap-2">
+              <CCol sm={12} md={12} lg={5} xl={5} className="d-sm-block d-lg-flex gap-2">
                 <div>
                   <CFormText>Filter Plant</CFormText>
                   <Select
@@ -670,8 +675,6 @@ const Dashboard = () => {
                       control: (base) => {
                         return ({
                           ...base,
-                          width: '250px', // Atur lebar lebih kecil agar lebih proporsional
-                          minWidth: '200px',
                           maxWidth: '100%',
                           borderRadius: '5px',
                           padding: '2px',
@@ -683,7 +686,32 @@ const Dashboard = () => {
                       menu: (base) => ({
                         ...base,
                         zIndex: 3, // Pastikan menu dropdown tidak tertutup elemen lain
-                      })
+                      }),
+                      option: (styles, { data, isDisabled, isFocused, isSelected }) => {
+                        return {
+                          ...styles,
+                          backgroundColor: isDisabled
+                            ? undefined
+                            : isSelected && colorMode === 'dark'
+                            ? "rgb(72, 96, 129)"
+                            : isSelected && colorMode === 'light'
+                            ? "#6699FF"
+                            : isFocused && colorMode === 'dark'
+                            ? "rgb(72, 96, 129)"
+                            : isFocused && colorMode === 'light'
+                            ? "#6482AD"
+                            : undefined,
+                          color: colorMode === 'dark' ? 'white' : "black",
+                          ':active': {
+                            ...styles[':active'],
+                            backgroundColor: !isDisabled
+                              ? isSelected
+                                ? 'lightgrey'
+                                : 'white'
+                              : undefined,
+                          },
+                        };
+                      },
                     }}
                   />
                 </div>
@@ -726,7 +754,32 @@ const Dashboard = () => {
                       control: (base) => ({
                         ...base,
                         height: '42px'
-                      })
+                      }),
+                      option: (styles, { data, isDisabled, isFocused, isSelected }) => {
+                        return {
+                          ...styles,
+                          backgroundColor: isDisabled
+                            ? undefined
+                            : isSelected && colorMode === 'dark'
+                            ? "rgb(72, 96, 129)"
+                            : isSelected && colorMode === 'light'
+                            ? "#6699FF"
+                            : isFocused && colorMode === 'dark'
+                            ? "rgb(72, 96, 129)"
+                            : isFocused && colorMode === 'light'
+                            ? "#6482AD"
+                            : undefined,
+                          color: colorMode === 'dark' ? 'white' : "black",
+                          ':active': {
+                            ...styles[':active'],
+                            backgroundColor: !isDisabled
+                              ? isSelected
+                                ? 'lightgrey'
+                                : 'white'
+                              : undefined,
+                          },
+                        };
+                      },
                     }}
                   />
                 </div>
@@ -758,51 +811,51 @@ const Dashboard = () => {
           )}
          </CRow>
           <CRow className='pb-1'>
-          <CCol sm={12} className='d-flex justify-content-between gap-2 p-0'>
-            <CCard className=" bg-transparent p-0 overflow-hidden w-100 h-75" style={{ border: "3px solid #6E9CFF", boxShadow: "none" }}>
+          <CCol sm={12} className='d-flex  flex-sm-nowrap flex-wrap h-sm-100  justify-content-between gap-2 p-0'>
+            <CCard className=" bg-transparent p-0 overflow-hidden w-100 h-75 status-blue" style={{ border: "3px solid #6E9CFF", boxShadow: "none" }}>
               <div className="text-muted small text-center d-flex align-items-center p-0 overflow-hidden h-100" style={{ backgroundColor: "transparent" }}>
                 <h6 style={{ color: "#6E9CFF", fontSize: "12px", width: "100%" }}>REMAINING</h6>
-                <CCardText className="fs-4 fw-bold w-50 " style={{ color: "black", backgroundColor: "white", borderLeft: "3px solid #6E9CFF" }}>
+                <CCardText className="fs-4 fw-bold text-status w-50 " style={{ borderLeft: "3px solid #6E9CFF" }}>
                   {cardData.remaining}
                 </CCardText>
               </div>
             </CCard>
           {/* </CCol>
           <CCol sm={2}> */}
-            <CCard className=" bg-transparent p-0 overflow-hidden w-100 h-75" style={{ border: "3px solid #F64242", boxShadow: "none" }}>
+            <CCard className=" bg-transparent p-0 overflow-hidden w-100 h-75 status-red" style={{ border: "3px solid #F64242", boxShadow: "none" }}>
               <div className="text-muted small text-center d-flex align-items-center p-0 overflow-hidden h-100" style={{ backgroundColor: "#F64242" }}>
                 <h6 style={{ color: "white", fontSize: "12px", width: "100%" }}>DELAYED PLAN</h6>
-                <CCardText className="fs-4 fw-bold w-50" style={{ color: "black", backgroundColor: "white", borderRadius: "4px" }}>
+                <CCardText className="fs-4 fw-bold text-status w-50" style={{ borderRadius: "4px" }}>
                   {cardData.delayed}
                 </CCardText>
               </div>
             </CCard>
           {/* </CCol>
           <CCol sm={3}> */}
-            <CCard className=" bg-transparent p-0 overflow-hidden  w-100 h-75  " style={{ border: "3px solid #FBC550", boxShadow: "none" }}>
+            <CCard className=" bg-transparent p-0 overflow-hidden  w-100 h-75 status-yellow  " style={{ border: "3px solid #FBC550", boxShadow: "none" }}>
               <div className="text-muted small text-center d-flex align-items-center p-0 overflow-hidden h-100" style={{ backgroundColor: "#FBC550" }}>
                 <h6 style={{ color: "black", fontSize: "12px", width: "100%" }}>OVERDUE ARRIVAL</h6>
-                <CCardText className="fs-4 fw-bold w-50" style={{ color: "black", backgroundColor: "white", borderRadius: "4px"}}>
+                <CCardText className="fs-4 fw-bold text-status w-50" style={{ borderRadius: "4px"}}>
                   {cardData.overdue}
                 </CCardText>
               </div>
             </CCard>
           {/* </CCol>
           <CCol sm={3}> */}
-            <CCard className=" bg-transparent p-0 overflow-hidden  w-100 h-75  " style={{ border: "3px solid #49C05F", boxShadow: "none" }}>
+            <CCard className=" bg-transparent p-0 overflow-hidden  w-100 h-75 status-green  " style={{ border: "3px solid #49C05F", boxShadow: "none" }}>
               <div className="text-muted small text-center d-flex align-items-center p-0 overflow-hidden h-100" style={{ backgroundColor: "#49C05F" }}>
                 <h6 style={{ color: "white", fontSize: "12px", width: "100%" }}>ON SCHEDULE </h6>
-                <CCardText className="fs-4 fw-bold  w-50" style={{ color: "black", backgroundColor: "white",  borderRadius: "4px" }}>
+                <CCardText className="fs-4 fw-bold text-status w-50" style={{  borderRadius: "4px" }}>
                   {cardData.onSchedule}
                 </CCardText>
               </div>
             </CCard>
           {/* </CCol>
           <CCol sm={2}> */}
-            <CCard className=" bg-transparent p-0 overflow-hidden  w-100 h-75  " style={{ border: "3px solid gray", boxShadow: "none" }}>
+            <CCard className=" bg-transparent p-0 overflow-hidden  w-100 h-75 status-gray  " style={{ border: "3px solid gray", boxShadow: "none" }}>
               <div className="text-muted small text-center d-flex align-items-center p-0 overflow-hidden h-100" style={{ backgroundColor: "gray" }}>
                 <h6 style={{ color: "white", fontSize: "12px", width: "100%" }}>ON REQUEST</h6>
-                <CCardText className="fs-4 fw-bold  w-50" style={{ color: "black", backgroundColor: "white", borderRadius: "4px"}}>
+                <CCardText className="fs-4 fw-bold text-status w-50" style={{ borderRadius: "4px"}}>
                   {cardData.onRequest}
                 </CCardText>
               </div>
@@ -839,9 +892,9 @@ const Dashboard = () => {
 
             
           </CRow>
-          <CRow style={{ minHeight: "300px"}}>
+          <CRow style={{ minHeight: "300px", backgroundColor: "transparent"}}>
             <CCard className='p-0 overflow-hidden h-100'>
-              <CCardBody className="p-0">
+              <CCardBody className="p-0" style={{ backgroundColor: "transparent"}}>
                 <DataTable
                   loading={loading}
                   loadingIcon={<CustomTableLoading/>}

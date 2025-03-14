@@ -24,8 +24,10 @@ import {
 } from '@coreui/icons'
 import LogoTWIIS2 from 'src/assets/images/logo-twiis-2.png'
 import LogoReceiving from 'src/assets/images/LOGO-RECEIVING-2.png'
+import LogoReceivingDark from 'src/assets/images/LOGO-RECEIVING-2-DARK.png'
 import useVerify from '../hooks/UseVerify'
 import { FaCode } from 'react-icons/fa6'
+import AppHeaderDropdown from './header/AppHeaderDropdown'
 
 
 
@@ -54,6 +56,10 @@ const AppHeader = () => {
     })
   }, [])
 
+  useEffect(()=>{
+    localStorage.setItem('coreui-free-react-admin-template-theme', colorMode)
+  }, [colorMode])
+
   return (
     <CHeader position="sticky" className="mb-4 p-0" ref={headerRef}>
       <CContainer className="border-bottom px-4 d-flex justify-content-between" fluid>
@@ -65,7 +71,7 @@ const AppHeader = () => {
             <CIcon icon={cilMenu} size="lg" />
           </CHeaderToggler>
           <CHeaderNav className='d-sm-block d-none'>
-            <CImage src={LogoReceiving} width={200}/>
+            <CImage src={ colorMode === 'light' ? LogoReceiving : LogoReceivingDark} width={200}/>
           </CHeaderNav>
         </div>
 
@@ -90,30 +96,71 @@ const AppHeader = () => {
               </CNavLink>
             </CNavItem>
           </CHeaderNav>
-          <div className="nav-item py-0 d-flex align-items-center d-none d-md-flex" style={{ textDecoration: 'none', display: '' }}>
-            <div className="vr h-100 mx-2 text-body text-opacity-100"></div>
+
+          <div className='d-flex align-items-center'>
+            {/* THEME MODE */}
+            <CHeaderNav>
+              <li className="nav-item py-1  py-0 d-flex align-items-center">
+                <div className="vr h-100 mx-2 text-body text-opacity-75"></div>
+              </li>
+              <CDropdown variant="nav-item" placement="bottom-end">
+                <CDropdownToggle caret={false}>
+                  {colorMode === 'dark' ? (
+                    <CIcon icon={icon.cilMoon} size="lg" />
+                  ) : colorMode === 'auto' ? (
+                    <CIcon icon={icon.cilContrast} size="lg" />
+                  ) : (
+                    <CIcon icon={icon.cilSun} size="lg" />
+                  )}
+                </CDropdownToggle>
+                <CDropdownMenu>
+                  <CDropdownItem
+                    active={colorMode === 'light'}
+                    className="d-flex align-items-center"
+                    as="button"
+                    type="button"
+                    onClick={() => setColorMode('light')}
+                  >
+                    <CIcon className="me-2" icon={icon.cilSun} size="lg" /> Light
+                  </CDropdownItem>
+                  <CDropdownItem
+                    active={colorMode === 'dark'}
+                    className="d-flex align-items-center"
+                    as="button"
+                    type="button"
+                    onClick={() => setColorMode('dark')}
+                  >
+                    <CIcon className="me-2" icon={icon.cilMoon} size="lg" /> Dark
+                  </CDropdownItem>
+                  <CDropdownItem
+                    active={colorMode === 'auto'}
+                    className="d-flex align-items-center"
+                    as="button"
+                    type="button"
+                    onClick={() => setColorMode('auto')}
+                  >
+                    <CIcon className="me-2" icon={icon.cilContrast} size="lg" /> Auto
+                  </CDropdownItem>
+                </CDropdownMenu>
+              </CDropdown>
+              <li className="nav-item py-1  py-0 d-flex align-items-center ">
+                <div className="vr h-100 mx-2 text-body text-opacity-75"></div>
+              </li>
+            </CHeaderNav>
+            <CHeaderNav>
+              <CNavItem className="d-flex align-items-center">
+              <AppHeaderDropdown colorMode={colorMode} imgProfile={imgProfile} />
+
+                {/* <CHeaderNav> */}
+            {/* </CHeaderNav> */}
+                <CNavLink className="d-flex flex-column justify-content-center h-100" style={{ textDecoration: 'none' }}>
+                  <span style={{ fontSize: '', marginTop: '0px'}}>{name === 'Danur SiPalingGhanzzz' ? 'Danur' : name}</span>
+                  <span style={{ fontSize: '10px', marginTop: '0px' }}>{roleName.toUpperCase()}</span>
+                </CNavLink>
+              </CNavItem>
+            </CHeaderNav>
           </div>
-          <CHeaderNav>
-            <CNavItem className="d-flex align-items-center">
-              <CNavLink style={{ textDecoration: 'none' }}>
-                <div
-                  className="d-flex align-items-center justify-content-center"
-                  style={{
-                    border: '1px solid black',
-                    height: '30px',
-                    width: '30px',
-                    borderRadius: '100%',
-                  }}
-                >
-                  { imgProfile ? <CImage src={imgProfile}/> : <CIcon icon={icon.cilUser} />}
-                </div>
-              </CNavLink>
-              <CNavLink className="d-flex flex-column justify-content-center h-100" style={{ textDecoration: 'none' }}>
-                <span style={{ fontSize: '', marginTop: '0px'}}>{name}</span>
-                <span style={{ fontSize: '10px', marginTop: '0px' }}>{roleName.toUpperCase()}</span>
-              </CNavLink>
-            </CNavItem>
-          </CHeaderNav>
+
         </div>
       </CContainer>
     </CHeader>

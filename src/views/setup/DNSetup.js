@@ -275,7 +275,7 @@ const header = () => (
 
   const renderCustomEmptyMsg = () => {
     return(
-      <div className='w-100 d-flex flex-column align-items-center justify-content-center py-3' style={{ color: "black", opacity: "50%"}}>
+      <div className='empty-msg w-100 d-flex flex-column align-items-center justify-content-center py-3' style={{ color: "black", opacity: "50%"}}>
         <FaInbox size={40}/>
         <p>DN Data Not Found!</p>
       </div>
@@ -350,7 +350,7 @@ const header = () => (
               <CCard className='p-0 overflow-hidden h-100' >
                 <CCardBody className="p-0">
                   <DataTable 
-                    className='p-datatable-gridlines p-datatable-sm custom-datatable text-nowrap' style={{minHeight: "140px"}}
+                    className='p-datatable-gridlines p-datatable-sm custom-datatable text-nowrap' style={{minHeight: "340px"}}
                     loading={loading} 
                     header={header}
                     loadingIcon={<CustomTableLoading/>}

@@ -53,6 +53,7 @@ import CustomTableLoading from '../../components/LoadingTemplate'
 
 
 const VendorSetup = () => {
+      const colorMode = localStorage.getItem('coreui-free-react-admin-template-theme')
       const addToast = useToast()
       const [modalUpload, setModalUpload] = useState(false)
       const [modalAdd, setModalAdd] = useState(false)
@@ -313,10 +314,16 @@ const VendorSetup = () => {
         return dateStr.split("T")[1].slice(0, 5); 
       };
 
+      const formatTimeOnly = (dateStr) => {
+        const timeParts = dateStr.split(":");
+        const formattedTime = `${timeParts[0]}:${timeParts[1]}`;
+        return formattedTime; 
+      };
+
   
     const renderCustomEmptyMsg = () => {
         return(
-          <div className='w-100 d-flex flex-column align-items-center justify-content-center py-3' style={{ color: "black", opacity: "50%"}}>
+          <div className='empty-msg w-100 d-flex flex-column align-items-center justify-content-center py-3' style={{ color: "black", opacity: "50%"}}>
             <FaInbox size={40}/>
             <p>Schedules Data Not Found!</p>
           </div>
@@ -400,7 +407,6 @@ const VendorSetup = () => {
       try {
         setLoadingImport(true)
         const response = await postMasterData('delivery-schedule', formModal)
-        // console.log("response add:", response)
         addToast(response.data.message, 'success', 'success')
         getScheduleAll(optionsPlant.selected, selectedOptionsDay)
         setModalAdd(false)
@@ -435,6 +441,28 @@ const VendorSetup = () => {
       return date;
     };
 
+    const styleSelect = {
+      option: (styles, { data, isDisabled, isFocused, isSelected }) => {
+        return {
+          ...styles,
+          backgroundColor: isDisabled
+            ? undefined
+            : isSelected ? "rgb(72, 96, 129)"
+            : isFocused ? "#6482AD"
+            : undefined,
+          color: colorMode === 'light' ? 'black' : 'white',
+          ':active': {
+            ...styles[':active'],
+            backgroundColor: !isDisabled
+              ? isSelected
+                ? 'lightgrey'
+                : 'white'
+              : undefined,
+          },
+        };
+      },
+    }
+
   return (
     <CContainer fluid>
       <CRow className=''>
@@ -455,8 +483,8 @@ const VendorSetup = () => {
                     placeholder="All plant"
                     options={optionsPlant.list} 
                     value={optionsPlant?.list?.find((data)=>data.value === optionsPlant.selected) || ""}
+                    styles={styleSelect}
                     onChange={(e)=>{
-                      console.log(e)
                       setOptionsPlant({
                         ...optionsPlant,
                         selected: e !== null ? e.value : ""
@@ -473,6 +501,7 @@ const VendorSetup = () => {
                     onChange={(e)=>{
                       setSelectedOptionsDay(e !== null ? Number(e.value) : "")
                     }}
+                    styles={styleSelect}
                   />
                 </CCol>
               </CRow>
@@ -541,6 +570,7 @@ const VendorSetup = () => {
                       <Column className='' field='Supplier.supplierCode' sortable header="Vendor Code" />
                       <Column className='' field='Supplier.SupplierName' filterField='Supplier.SupplierName' sortable header="Vendor Name" />
                       <Column className='' field="schedule" filterField='schedule' sortable header="Day" body={(rowData) => getDays(rowData.schedule)} />
+                      {/* <Column className='' field="arrival" sortable header="Arrival Time" dataType="date" body={(rowData) => rowData.arrival} /> */}
                       <Column className='' field="arrival" sortable header="Arrival Time" dataType="date" body={(rowData) => formatTime(rowData.arrival)} />
                       <Column className='' field="departure" sortable header="Departure Time" dataType="date" body={(rowData) => formatTime(rowData.departure)} />
                       <Column className='' field="rit" sortable header="Rit" dataType="number" />
@@ -571,6 +601,7 @@ const VendorSetup = () => {
                         onChange={(e)=>{
                           setFormModal({ ...formModal, supplierId: e !== null ? e.value : ""})
                         }}
+                        styles={styleSelect}
                       />
                     </CCol>
                   </CRow>
@@ -582,6 +613,7 @@ const VendorSetup = () => {
                         isClearable
                         value={optionsDay?.find((data)=>data.value === formModal.schedule) || ""}
                         onChange={(e)=>setFormModal({...formModal, schedule: e !== null ? Number(e.value) : ""})}
+                        styles={styleSelect}
                       />
                     </CCol>
                     <CCol>
@@ -597,8 +629,7 @@ const VendorSetup = () => {
                         placeholder="Select time"
                         value={formModal?.arrival ? convertToDateTime(formModal?.arrival) : null}
                         onChange={(e)=>{
-                          console.log(e)
-                          setFormModal({ ...formModal, arrival: formatTime(e)})
+                          setFormModal({ ...formModal, arrival: formatTimeOnly(e.toLocaleTimeString())})
                         }}/>
                     </CCol>
                     <CCol>
@@ -608,8 +639,7 @@ const VendorSetup = () => {
                         placeholder="Select time"
                         value={formModal?.departure ? convertToDateTime(formModal?.departure) : null}
                         onChange={(e)=>{
-                          console.log(e)
-                          setFormModal({ ...formModal, departure: formatTime(e)})
+                          setFormModal({ ...formModal, departure: formatTimeOnly(e.toLocaleTimeString())})
                         }}/>
                     </CCol>
                   </CRow>
@@ -621,6 +651,7 @@ const VendorSetup = () => {
                         isClearable
                         value={optionsPlant?.list?.find((data)=>data.value === formModal.plantId) || ""}
                         onChange={(e)=>setFormModal({ ...formModal, plantId: e !== null ? Number(e.value) : ""})}
+                        styles={styleSelect}
                       />
                     </CCol>
                     <CCol>
@@ -694,8 +725,7 @@ const VendorSetup = () => {
                         placeholder="Select time"
                         value={formModal?.arrival ? convertToDateTime(formModal?.arrival) : null}
                         onChange={(e)=>{
-                          console.log(e)
-                          setFormModal({ ...formModal, arrival: e !== null ? formatTime(e) : ""})
+                          setFormModal({ ...formModal, arrival: e !== null ? formatTimeOnly(e.toLocaleTimeString()) : ""})
                         }}/>
                     </CCol>
                     <CCol>
@@ -705,8 +735,7 @@ const VendorSetup = () => {
                         placeholder="Select time"
                         value={formModal?.departure ? convertToDateTime(formModal?.departure) : null}
                         onChange={(e)=>{
-                          console.log(e)
-                          setFormModal({ ...formModal, departure: e !== null ? formatTime(e) : ""})
+                          setFormModal({ ...formModal, departure: e !== null ? formatTimeOnly(e.toLocaleTimeString()) : ""})
                         }}/>
                     </CCol>
                   </CRow>
