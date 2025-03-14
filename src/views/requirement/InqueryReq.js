@@ -29,6 +29,8 @@ import {
   faTruck,
   faHelmetSafety,
   faFill,
+  faTrash,
+  faCheckSquare
 } from "@fortawesome/free-solid-svg-icons";
 import { FilterMatchMode } from 'primereact/api'
 import Select  from 'react-select';
@@ -78,7 +80,9 @@ const [modalData4, setModalData4] = useState(null);
       questionTiga:"Unfinished",
     },
     questionSum: "1/3",
-    updatedAt: "2025-02-14"
+    createdAt: "2025-02-13",
+    updatedAt: "2025-02-14",
+    picReceiv:"Jumatoro"
   },
   {
     idSupplier: 1211138,
@@ -103,9 +107,59 @@ const [modalData4, setModalData4] = useState(null);
       questionEmpat:"Unfinished",
     },
     questionSum: "3/4",
-    updatedAt: "2025-02-14"
+    createdAt: "2025-02-12",
+    updatedAt: "2025-02-14",
+    picReceiv:"Feri"
+  },
+  {
+    idSupplier: 1211137,
+    supplierName: "Nippon Abadi",
+    driverName: "Ucup",
+    typeMaterial: "Chemical",
+    vehicleType: "Truck",
+    receiveType: "Vendor",
+    drivingEquipment: {
+      licenseNumber: "",
+      stnk: "",
+      sim: ""
+    },
+    ppeEquipment: {
+      safetyShoes: "",
+      apd: ""
+    },
+    questionStatus:{
+      questionSatu:"Finished",
+      questionDua:"Finished",
+      questionTiga:"Finished",
+      questionEmpat:"Finished",
+    },
+    questionSum: "4/4",
+    createdAt: "2025-02-12",
+    updatedAt: "2025-02-14",
+    picReceiv:"Feri"
   }
 ]
+const getStatusStyle = (status) => ({
+  color: status === "Finished" ? "green" : "red",
+  fontSize: "8px",
+  marginTop: "5px",
+});
+
+const getSumStyle = (questionSum) => {
+  const [answered, total] = questionSum.split("/").map(Number);
+  return {
+    color: answered < total ? "red" : "green",
+    fontWeight: "bold",
+  };
+};
+const QuestionSumTemplate = (rowData) => {
+  return (
+    <span style={getSumStyle(rowData.questionSum)}>
+      {rowData.questionSum}
+    </span>
+  );
+};
+
 
   const getData = async() => {
     setDummyData(exampleData)}
@@ -146,7 +200,7 @@ const [modalData4, setModalData4] = useState(null);
         >
           <FontAwesomeIcon icon={faPeopleCarryBox} style={{ color: "white" }} />
         </CButton>
-        <span style={{ color: "red", fontSize: "8px", marginTop: "5px" }}>
+        <span style={ getStatusStyle(rowBody.questionStatus?.questionSatu)}>
         {rowBody.questionStatus?.questionSatu}
         </span>
       </div>
@@ -166,7 +220,7 @@ const [modalData4, setModalData4] = useState(null);
         >
           <FontAwesomeIcon icon={faTruck} style={{ color: "white" }} />
         </CButton>
-        <span style={{ color: "red", fontSize: "8px", marginTop: "5px" }}>
+        <span style={ getStatusStyle(rowBody.questionStatus?.questionDua)}>
         {rowBody.questionStatus?.questionDua}
         </span>
       </div>
@@ -185,7 +239,7 @@ const [modalData4, setModalData4] = useState(null);
         >
           <FontAwesomeIcon icon={faHelmetSafety} style={{ color: "white" }} />
         </CButton>
-        <span style={{ color: "red", fontSize: "8px", marginTop: "5px" }}>
+        <span style={ getStatusStyle(rowBody.questionStatus?.questionTiga)}>
         {rowBody.questionStatus?.questionTiga}
         </span>
       </div>
@@ -204,7 +258,7 @@ const [modalData4, setModalData4] = useState(null);
         >
           <FontAwesomeIcon icon={faFill} style={{ color: "white" }} />
         </CButton>
-        <span style={{ color: "red", fontSize: "8px", marginTop: "5px" }}>
+        <span style={ getStatusStyle(rowBody.questionStatus?.questionEmpat)}>
         {rowBody.questionStatus?.questionEmpat}
         </span>
       </div>
@@ -215,6 +269,23 @@ const [modalData4, setModalData4] = useState(null);
     { item: "Vest", status: "Pakai", statusColor: "text-success" },
     { item: "Perlengkapan lain", status: "Tidak Pakai", statusColor: "text-danger" }
   ];
+
+  const handleDelete = (idSupplier) => {
+    setExampleData((prevData) => prevData.filter(item => item.idSupplier !== idSupplier));
+  };
+
+const ActionTemplate = (rowData) => {
+  return (
+    <CButton 
+    className="d-flex justify-content-center align-items-center p-3" 
+    onClick={() => handleDelete(rowData.idSupplier)}
+    style={{ backgroundColor: "transparent", border: "none", boxShadow: "none" }}
+      >
+        <FontAwesomeIcon icon={faTrash} style={{ color: "red", fontSize: "15px" }} />
+      </CButton>
+  
+  );
+};
   
 
   return (
@@ -284,10 +355,11 @@ const [modalData4, setModalData4] = useState(null);
                 <Column field="vehicleType"  header="Question 3" body={Question3Template}></Column>  
                 <Column field="vehicleType"  header="Question 4" body={Question4Template}></Column>  
 
-                <Column field="questionSum"sortable header="Status " align='center' ></Column>
-                <Column field="" sortable header="Adjust" align='center' ></Column>
-                
+                <Column  field="questionSum"  sortable  header="Status" align="center" body={QuestionSumTemplate} />
+                <Column field="createdAt" sortable header="Createdd At"></Column>
                 <Column field="updatedAt" sortable header="Updated At"></Column>
+                <Column field="picReceiv" sortable header="PIC Receiv"></Column>
+                <Column field="action" header="Action" align="center" body={ActionTemplate} />
               </DataTable>
             </CRow>
           </CCardBody>
@@ -318,7 +390,7 @@ const [modalData4, setModalData4] = useState(null);
               <CFormInput type="text" inputMode="numeric" placeholder="Masukkan truck station" />
             </CCol>
             <CCol md="1">
-            <CFormCheck id="checkboxNoLabel" value=""  />
+              <FontAwesomeIcon icon={faCheckSquare} style={{ fontSize: "30px", color: "green"}}/>
             </CCol>
 
           </CRow>
@@ -349,7 +421,7 @@ const [modalData4, setModalData4] = useState(null);
               <CFormInput type="text" inputMode="numeric" placeholder="..." />
             </CCol>
             <CCol md="1">
-            <CFormCheck id="checkboxNoLabel" value=""  />
+            <FontAwesomeIcon icon={faCheckSquare} style={{ fontSize: "30px", color: "green"}}/>
             </CCol>
           </CRow>
           <hr />
@@ -368,18 +440,19 @@ const [modalData4, setModalData4] = useState(null);
               <CFormInput type="text" inputMode="numeric" placeholder="Insert vehicle type" />
             </CCol>
             <CCol md="1">
-            <CFormCheck id="checkboxNoLabel" value=""  />
+            <FontAwesomeIcon icon={faCheckSquare} style={{ fontSize: "30px", color: "green"}}/>
             </CCol>
           </CRow>
         </CModalBody>
       </CModal>
+
        {/* Modal  2*/}
        <CModal size="xl" visible={modalUpdate2} onClose={() => setModalUpdate2(false)} backdrop="static">
         <CModalHeader closeButton>
-          <CModalTitle className="fw-bold fs-4">Identitas Vendor Driver</CModalTitle>
+          <CModalTitle className="fw-bold fs-5">Modal Summary Requirement</CModalTitle>
         </CModalHeader>
         <CModalBody>
-          <span>Silahkan lengkapi identitas Anda</span>
+          <span className="fw-bold fs-6">Identitas Kelengkapan Surat</span>
          <CRow>
           <CFormText
             style={{
@@ -391,7 +464,7 @@ const [modalData4, setModalData4] = useState(null);
           >
             1. SIM
           </CFormText>
-          <CCol md="3">
+          <CCol md="5">
             <CFormText>Apakah Anda Membawa SIM?</CFormText>
             <div>
               <CButton
@@ -410,7 +483,7 @@ const [modalData4, setModalData4] = useState(null);
               </CButton>
             </div>
           </CCol>
-          <CCol md="5">
+          <CCol md="6">
             <CFormText>Berapa Jangka Waktu SIM Anda?</CFormText>
             <CFormInput
               type="text"
@@ -419,7 +492,7 @@ const [modalData4, setModalData4] = useState(null);
             />
           </CCol>
           <CCol md="1">
-            <CFormCheck id="checkboxNoLabel" value=""  />
+          <FontAwesomeIcon icon={faCheckSquare} style={{ fontSize: "30px", color: "green"}}/>
             </CCol>
         </CRow>
         <hr />
@@ -434,7 +507,7 @@ const [modalData4, setModalData4] = useState(null);
             >
               2. STNK
             </CFormText>
-            <CCol md="3">
+            <CCol md="5">
               <CFormText>Apakah Anda Membawa STNK</CFormText>
               <div>
                 <CButton
@@ -456,7 +529,7 @@ const [modalData4, setModalData4] = useState(null);
               </div>
             </CCol>
 
-            <CCol md="3">
+            <CCol md="2">
               <CFormText>
                 Kondisi pajak SIM Anda
               </CFormText>
@@ -481,7 +554,7 @@ const [modalData4, setModalData4] = useState(null);
                 </CButton>
               </div>
             </CCol>
-            <CCol md="5">
+            <CCol md="4">
               <CFormText>
                 Berapa lama Jangka Pajak STNK anda
               </CFormText>
@@ -493,7 +566,7 @@ const [modalData4, setModalData4] = useState(null);
               />
             </CCol>
             <CCol md="1">
-            <CFormCheck id="checkboxNoLabel" value=""  />
+            <FontAwesomeIcon icon={faCheckSquare} style={{ fontSize: "30px", color: "green"}}/>
             </CCol>
         </CRow>
         <hr />
@@ -531,7 +604,7 @@ const [modalData4, setModalData4] = useState(null);
               </CButton>
             </div>
           </CCol>
-          <CCol md="5">
+          <CCol md="6">
             <CFormText>
               Berapakah Akhir Periode Plat No Polisi anda?
             </CFormText>
@@ -543,7 +616,7 @@ const [modalData4, setModalData4] = useState(null);
             />
           </CCol>
           <CCol md="1">
-            <CFormCheck id="checkboxNoLabel" value=""  />
+          <FontAwesomeIcon icon={faCheckSquare} style={{ fontSize: "30px", color: "green"}}/>
             </CCol>
         </CRow>
         </CModalBody>
@@ -552,10 +625,15 @@ const [modalData4, setModalData4] = useState(null);
   {/* Modal  3*/}
   <CModal size="xl" visible={modalUpdate3} onClose={() => setModalUpdate3(false)} backdrop="static">
   <CModalHeader closeButton>
-    <CModalTitle className="fw-bold fs-4">Identitas Vendor Driver</CModalTitle>
+    <CModalTitle className="fw-bold fs-5">Modal Summary Requirement</CModalTitle>
   </CModalHeader>
   <CModalBody>
-    <span className="fw-bold fs-5">Identitas Vendor Driver</span>
+  <CRow >
+    <CCol md='12'className="d-flex align-items-center justify-content-between">
+    <span className="fw-bold fs-6">Kelengkapan APD</span>
+    <FontAwesomeIcon icon={faCheckSquare} style={{ fontSize: "25px", color: "green" }} />
+    </CCol>
+    </CRow>
     <CRow className="mt-3">
       {/* Kartu di pojok kiri */}
       <CCol md="6">
@@ -576,14 +654,17 @@ const [modalData4, setModalData4] = useState(null);
       </CCol>
 
       {/* Bagian kanan dengan 3 row */}
-      <CCol className='mt-3' >
+      <CCol className='mt-1' >
       <CRow>
           <CCol md="12">
           <span className="fs-5 fw-bold fst-italic">Info Kelengkapan APD</span>
 
           </CCol>
         </CRow>
-        <DataTable value={apdData} showGridlines responsiveLayout="scroll">
+        <DataTable
+         className='p-datatable-gridlines p-datatable-sm custom-datatable text-nowrap mt-2' 
+         value={apdData} 
+         showGridlines >
           <Column field="item" header="Kelengkapan APD" body={(rowData) => (
             <span className="fs-6 fw-bold">{rowData.item}</span>
           )} />
@@ -600,9 +681,10 @@ const [modalData4, setModalData4] = useState(null);
 
 <CModal size="xl" visible={modalUpdate4} onClose={() => setModalUpdate4(false)} backdrop="static">
   <CModalHeader closeButton>
-    <CModalTitle className="fw-bold fs-4">Identitas Vendor Driver</CModalTitle>
+    <CModalTitle className="fw-bold fs-5">Modal Summary Requirement</CModalTitle>
   </CModalHeader>
   <CModalBody>
+  <span className="fw-bold fs-6">Chemical Report</span>
     <CRow>
     <CCol md='5'>
       <CFormText >Apakah Anda Membawa Seal ?</CFormText>
