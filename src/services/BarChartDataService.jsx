@@ -1,5 +1,9 @@
+import { useColorModes } from "@coreui/react";
+import { useEffect } from "react";
 
 const useBarChartDataService = ({dataBarChart}) => {
+    const colorMode = localStorage.getItem('coreui-free-react-admin-template-theme')
+
     const getAllDatesOfThisMonth = () => {
         const now = new Date();
         const year = now.getFullYear();
@@ -16,7 +20,10 @@ const useBarChartDataService = ({dataBarChart}) => {
             const dayOfWeek = date.getDay(); // 0 = Sunday, 6 = Saturday
     
             dates.push(date.toLocaleDateString("en-CA").split("-")[2]); // Extract day part
-            colors.push(dayOfWeek === 0 || dayOfWeek === 6 ? "red" : "black");
+            colors.push(
+                (dayOfWeek === 0 || dayOfWeek === 6) ? "red" : 
+                (colorMode === "light" && dayOfWeek !== 0 && dayOfWeek !== 6) ? "black" : 
+                "white");
         }
     
         return { dates, colors, monthName, year };
@@ -40,6 +47,7 @@ const useBarChartDataService = ({dataBarChart}) => {
                 {
                     type: 'line',
                     label: 'Actual Materials (NOT COMPLETED)',
+                    
                     data: dates.map((date)=>{
                         const matchesDate = dataBarChart.find((data)=>data.incomingDate.split("-")[2] === date)
                         if(matchesDate){
@@ -48,7 +56,7 @@ const useBarChartDataService = ({dataBarChart}) => {
                             return 0
                         }
                     }),
-                    backgroundColor: 'white',
+                    backgroundColor: colorMode === 'light' ? 'white' : '#212631',
                     borderColor: 'rgb(255, 204, 0)',
                     stack: "group2"
                   }, 
@@ -74,13 +82,22 @@ const useBarChartDataService = ({dataBarChart}) => {
                 x: {
                     ticks: {
                         display: false 
-                    }
+                    },
+                    grid: {
+                        color: colorMode === 'light' ? "lightgray" : "#7B7B7B"
+                    },
                 },
                 y: {
                     beginAtZero: true,
                     afterFit: function(scaleInstance) {
                         scaleInstance.width = 30; // Set fixed width for Y-axis labels
-                      }
+                    },
+                    ticks: {
+                        color: colorMode === 'light' ? "gray" : "white"
+                    },
+                    grid: {
+                        color: colorMode === 'light' ? "lightgray" : "#7B7B7B"
+                    }
                 },
             },
             interaction: {
@@ -91,6 +108,9 @@ const useBarChartDataService = ({dataBarChart}) => {
                 legend: {
                     position: 'top',
                     align: 'start', 
+                    labels: {
+                        color: colorMode === 'light' ? "gray" : "white"
+                    }
                 },        
                 datalabels: {
                     display: function(context) {
@@ -101,7 +121,8 @@ const useBarChartDataService = ({dataBarChart}) => {
                     font: {
                         weight: 'bold',
                         size: 12
-                    }
+                    },
+                    color: colorMode === 'light' ? "gray" : "white"
                   },
                 tooltip: {
                     callbacks: {
@@ -140,7 +161,7 @@ const useBarChartDataService = ({dataBarChart}) => {
                         }
                     }),
                     fill: false,
-                    backgroundColor: "white",
+                    backgroundColor: colorMode === 'light' ? 'white' : '#212631',
                     borderColor: 'rgb(231, 63, 63)'
                 },
                 {
@@ -165,13 +186,22 @@ const useBarChartDataService = ({dataBarChart}) => {
                 x: {
                     ticks: {
                         display: false 
+                    },
+                    grid: {
+                        color: colorMode === 'light' ? "lightgray" : "#7B7B7B"
                     }
                 },
                 y: {
                     beginAtZero: true,
                     afterFit: function(scaleInstance) {
                         scaleInstance.width = 30; // Set fixed width for Y-axis labels
-                      }
+                    },
+                    ticks: {
+                        color: colorMode === 'light' ? "gray" : "white"
+                    },
+                    grid: {
+                        color: colorMode === 'light' ? "lightgray" : "#7B7B7B"
+                    }
                 },
             },
             interaction: {
@@ -182,6 +212,9 @@ const useBarChartDataService = ({dataBarChart}) => {
                 legend: {
                     position: 'top',
                     align: 'start', 
+                    labels: {
+                        color: colorMode === 'light' ? "gray" : "white"
+                    }
                 },        
                 datalabels: {
                     display: function(context) {
@@ -192,7 +225,8 @@ const useBarChartDataService = ({dataBarChart}) => {
                     font: {
                         weight: 'bold',
                         size: 12
-                    }
+                    },
+                    color: colorMode === 'light' ? "gray" : "white"
                   },
                 tooltip: {
                     callbacks: {
@@ -262,18 +296,19 @@ const useBarChartDataService = ({dataBarChart}) => {
             type: 'scatter',
             maintainAspectRatio: false,
             data: data,
-            // layout: {
-            //     padding: {
-            //       top: 200 // Adds space between chart and legend
-            //     }
-            //   },
             scales: {
                 y: {
                     beginAtZero: true,
                     stacked: true,
                     afterFit: function(scaleInstance) {
                         scaleInstance.width = 30; // Set fixed width for Y-axis labels
-                      }
+                      },
+                    ticks: {
+                        color: colorMode === 'light' ? "gray" : "white"
+                    },
+                    grid: {
+                        color: colorMode === 'light' ? "lightgray" : "#7B7B7B"
+                    }
                 },
                 x: {
                     stacked: true,
@@ -282,6 +317,9 @@ const useBarChartDataService = ({dataBarChart}) => {
                             const index = context.index;
                             return colors[index]; // Use colors array to color each label
                         }
+                    },
+                    grid: {
+                        color: colorMode === 'light' ? "lightgray" : "#7B7B7B"
                     }
                 }
             },
@@ -305,14 +343,18 @@ const useBarChartDataService = ({dataBarChart}) => {
                     align: 'top',
                     font: {
                         weight: 'bold',
-                        size: 12
-                    }
+                        size: 12,
+                    },
+                    color: colorMode === 'light' ? "gray" : "white"
                   },
                 legend: {
                     position: 'top',
                     align: 'start', 
                     legendMargin: {
                         margin: 100
+                    },
+                    labels: {
+                        color: colorMode === 'light' ? "gray" : "white"
                     }
                     // fullSize: false, // Allows spacing adjustments
                     // labels: {

@@ -1,25 +1,24 @@
 import React, { Suspense, useState, useEffect, createContext, useContext } from 'react'
 import { HashRouter, Route, Routes } from 'react-router-dom'
-import { CSpinner, useColorModes, CToaster, CToast, CToastHeader, CToastBody } from '@coreui/react'
+import { CSpinner, useColorModes, CToaster, CToast, CToastHeader, CToastBody, CButton, CToastClose } from '@coreui/react'
 import './scss/style.scss'
 import 'rsuite/dist/rsuite.min.css'
 import './scss/examples.scss'
 import 'primereact/resources/themes/nano/theme.css'
-// import "primereact/resources/themes/lara-light-indigo/theme.css";
 import 'primeicons/primeicons.css'
 import 'primereact/resources/primereact.min.css'
 import CustomTableLoading from './components/LoadingTemplate'
 import LoadingTWIIS from './components/LoadingTWIIS'
 import Watermark from './components/Watermark'
+import { useSelector } from 'react-redux'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faCheck, faCheckCircle, faInfo, faQuestionCircle, faWarning, faX } from '@fortawesome/free-solid-svg-icons'
 
 // Containers
 const DefaultLayout = React.lazy(() => import('./layout/DefaultLayout'))
 
 // Pages
 const Login = React.lazy(() => import('./views/pages/login/Login'))
-// const Register = React.lazy(() => import('./views/pages/register/Register'))
-// const Page404 = React.lazy(() => import('./views/pages/page404/Page404'))
-// const Page500 = React.lazy(() => import('./views/pages/page500/Page500'))
 
 // Create a context for toast
 const ToastContext = createContext()
@@ -53,9 +52,25 @@ const App = () => {
 
   const { isColorModeSet, setColorMode } = useColorModes('coreui-free-react-admin-template-theme')
 
+  const storedTheme = useSelector((state) => state.theme)
+
   useEffect(() => {
-    setColorMode('light')
+    const urlParams = new URLSearchParams(window.location.href.split('?')[1])
+    const theme = urlParams.get('theme') && urlParams.get('theme').match(/^[A-Za-z0-9\s]+/)[0]
+    if (theme) {
+      setColorMode(theme)
+    }
+
+    if (isColorModeSet()) {
+      return
+    }
+
+    setColorMode(storedTheme)
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // useEffect(() => {
+  //   setColorMode('dark')
+  // }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <ToastContext.Provider value={addToast}>
@@ -69,26 +84,15 @@ const App = () => {
               delay={5000}
               visible={true}
             >
-              <CToastHeader closeButton>
-                <svg
-                  className="rounded me-2"
-                  width="20"
-                  height="20"
-                  xmlns="http://www.w3.org/2000/svg"
-                  preserveAspectRatio="xMidYMid slice"
-                  focusable="false"
-                  role="img"
-                >
-                  <rect
-                    width="100%"
-                    height="100%"
-                    fill={color}
-                  />
-                </svg>
-                <strong className="me-auto">{type === 'danger' ? 'ERROR' : type.toUpperCase()}</strong>
-              </CToastHeader>
-              <CToastBody style={{ backgroundColor: 'white' }}>
-                {message}
+              <CToastBody className='text-white d-flex justify-content-between align-items-center' closeButton>
+                <div className='d-flex gap-3 align-items-center'>
+                  <FontAwesomeIcon icon={ type === 'danger' || type === 'error' ? faWarning : type === 'success' ? faCheckCircle : type === 'warning' ? faWarning : type === 'info' ? faInfo : faQuestionCircle} size='lg'/>   
+                  {message}
+                </div> 
+                <div className='d-flex align-items-center gap-2'>
+                  <div style={{ borderLeft: '2px solid white', height: "20px", width: "1px"}}></div>
+                  <CToastClose dark style={{ color: "white", opacity: 1, boxShadow: 'none', fontSize: '10px'}}/>
+                </div>
               </CToastBody>
             </CToast>
           ))}

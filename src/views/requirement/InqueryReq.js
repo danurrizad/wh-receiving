@@ -126,7 +126,7 @@ const [modalData4, setModalData4] = useState(null);
 
   const renderCustomEmptyMsg = () => {
     return(
-      <div className='w-100 d-flex flex-column align-items-center justify-content-center py-3' style={{ color: "black", opacity: "50%"}}>
+      <div className='empty-msg w-100 d-flex flex-column align-items-center justify-content-center py-3' style={{ color: "black", opacity: "50%"}}>
         <FaInbox size={40}/>
         <p>DATA NOT FOUND!</p>
       </div>

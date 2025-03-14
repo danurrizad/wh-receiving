@@ -1,5 +1,7 @@
 
 const usePieChartDataService = ({dataPieChart}) => {
+    const colorMode = localStorage.getItem('coreui-free-react-admin-template-theme')
+
     const setPieChartData = () => {
         const data = {
             labels: [
@@ -37,6 +39,9 @@ const usePieChartDataService = ({dataPieChart}) => {
             plugins: {
                 legend: {
                     position: "right",
+                    labels: {
+                      color: colorMode === 'light' ? 'gray' : "white"
+                    }
                 },
                 datalabels: {
                     display: 'auto',

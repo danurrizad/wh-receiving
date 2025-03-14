@@ -240,7 +240,7 @@ const Summary = () => {
   const renderCustomEmptyMsg = () => {
     return (
       <div
-        className="w-100 d-flex h-100 flex-column align-items-center justify-content-center py-3"
+        className="empty-msg w-100 d-flex h-100 flex-column align-items-center justify-content-center py-3"
         style={{ color: "black", opacity: "50%" }}
       >
         <FaInbox size={40} />
@@ -307,6 +307,25 @@ const Summary = () => {
                             ...provided,
                             minHeight: "42px",
                           }),
+                          option: (styles, { data, isDisabled, isFocused, isSelected }) => {
+                            return {
+                              ...styles,
+                              backgroundColor: isDisabled
+                                ? undefined
+                                : isSelected ? "rgb(72, 96, 129)"
+                                : isFocused ? "#6482AD"
+                                : undefined,
+                              color: "white",
+                              ':active': {
+                                ...styles[':active'],
+                                backgroundColor: !isDisabled
+                                  ? isSelected
+                                    ? 'lightgrey'
+                                    : 'white'
+                                  : undefined,
+                              },
+                            };
+                          },
                         }}
                       />
                     </div>
@@ -536,6 +555,25 @@ const Summary = () => {
                             ...provided,
                             minHeight: "42px",
                           }),
+                          option: (styles, { data, isDisabled, isFocused, isSelected }) => {
+                            return {
+                              ...styles,
+                              backgroundColor: isDisabled
+                                ? undefined
+                                : isSelected ? "rgb(72, 96, 129)"
+                                : isFocused ? "#6482AD"
+                                : undefined,
+                              color: "white",
+                              ':active': {
+                                ...styles[':active'],
+                                backgroundColor: !isDisabled
+                                  ? isSelected
+                                    ? 'lightgrey'
+                                    : 'white'
+                                  : undefined,
+                              },
+                            };
+                          },
                         }}
                       />
                     </div>
@@ -581,7 +619,7 @@ const Summary = () => {
                 <CCol className="d-flex flex-column justify-content-between gap-4 gap-lg-0 pt-4 pt-lg-0">
                   <CCard className="px-0">
                     <CCardHeader
-                      className="d-flex gap-3 align-items-center "
+                      className="summary d-flex gap-3 align-items-center "
                       style={{
                         backgroundColor: "transparent",
                         borderBottom: "2px solid #00DB42",
@@ -606,7 +644,7 @@ const Summary = () => {
 
                   <CCard className="px-0">
                     <CCardHeader
-                      className="d-flex gap-3 align-items-center "
+                      className="summary d-flex gap-3 align-items-center "
                       style={{
                         backgroundColor: "transparent",
                         borderBottom: "2px solid #FFD43B",
@@ -633,7 +671,7 @@ const Summary = () => {
 
                   <CCard className="px-0">
                     <CCardHeader
-                      className="d-flex gap-3 align-items-center "
+                      className="summary d-flex gap-3 align-items-center "
                       style={{
                         backgroundColor: "transparent",
                         borderBottom: "2px solid #FF0000",
@@ -660,7 +698,7 @@ const Summary = () => {
 
                   <CCard className="px-0">
                     <CCardHeader
-                      className="d-flex gap-3 align-items-center "
+                      className="summary d-flex gap-3 align-items-center "
                       style={{
                         backgroundColor: "transparent",
                         borderBottom: "2px solid lightblue",

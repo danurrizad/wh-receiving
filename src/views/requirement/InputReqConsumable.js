@@ -86,7 +86,8 @@ const InputConsumable = () => {
       registrationCondition: "",
       registrationDuration: "",
       licensePlate: "",
-      licensePlateDuration: ""
+      licensePlateDuration: "",
+      apdReason: ""
     })
     const [apdStatus, setApdStatus] = useState(null);
     const [reason, setReason] = useState("");
@@ -94,7 +95,7 @@ const InputConsumable = () => {
     const [textCamera, setTextCamera] = useState('Matikan Kamera');
     const [activeItem, setActiveItem] = useState({
       item1: true,
-      item2: true,
+      item2: false,
       item3: false,
     });
 
@@ -154,15 +155,24 @@ const InputConsumable = () => {
     };
 
   useEffect(()=>{
-    if(apdStatus === 'yes'){
+    if(apdStatus === 'yes' || formQuestions.apdReason !== ""){
       setShowCamera(true)
       // startCamera()
-    }else if (apdStatus === 'no'){
+    }else if (apdStatus === 'no' && formQuestions.apdReason === ""){
       setShowCamera(false)
       // stopCamera()
     }
-  }, [apdStatus])
+  }, [apdStatus, formQuestions.apdReason])
   
+  const optionsSelectDelivery = [
+    { label: "Vendor", value: "vendor"},
+    { label: "Kurir", value: "kurir"},
+  ]
+
+  const optionsSelectVehicle = [
+    { label: "Truk", value: "truk" },
+    { label: "Mobil", value: "mobil" },
+  ]
 
   // Handle input submission
   const handleReasonSubmit = (e) => {
@@ -316,7 +326,17 @@ const InputConsumable = () => {
                             Apakah Anda Dalam Kondisi Sehat?
                           </CFormText>
                           <div>
-                            <SelectButton value={formQuestions.driverCondition} onChange={(e)=>setFormQuestions({ ...formQuestions, driverCondition: e.value})} options={[{label: "Ya", value: "yes"}, {label: "Tidak", value: "no"}]}/>
+                            <SelectButton 
+                              value={formQuestions.driverCondition} 
+                              onChange={(e)=>{
+                                if(e.value === 'no'){
+                                  setFormQuestions({ ...formQuestions, driverCondition: e.value, driverSymptom: ""})
+                                } else{
+                                  setFormQuestions({ ...formQuestions, driverCondition: e.value, driverSymptom: "-"})
+                                }
+                              }}
+                              options={[{label: "Ya", value: "yes"}, {label: "Tidak", value: "no"}]}
+                              />
                           </div>
                         </CCol>
                         <CCol md="3">
@@ -326,7 +346,8 @@ const InputConsumable = () => {
                           <CFormInput
                             type="text"
                             inputMode="numeric"
-                            placeholder="..."
+                            placeholder="Masukkan kondisi"
+                            disabled={formQuestions.driverCondition === 'yes'}
                             value={formQuestions.driverSymptom}
                             onChange={(e)=>setFormQuestions({ ...formQuestions, driverSymptom: e.target.value})}
                           />
@@ -356,22 +377,20 @@ const InputConsumable = () => {
                       </CFormText>
                         <CCol md="6">
                           <CFormText>Tipe Pengiriman</CFormText>
-                          <CFormInput
-                            type="text"
-                            inputMode="numeric"
-                            placeholder="Insert delivery type"
-                            value={formQuestions.deliveryType}
-                            onChange={(e)=>setFormQuestions({ ...formQuestions, deliveryType: e.target.value})}
+                          <Select
+                            placeholder='Pilih pengiriman'
+                            options={optionsSelectDelivery}
+                            value={optionsSelectDelivery.find((opt)=>opt.value === formQuestions.deliveryType) || ""}
+                            onChange={(e)=>setFormQuestions({ ...formQuestions, deliveryType: e !== null ? e.value : ""})}
                           />
                         </CCol>
                         <CCol md="5">
                           <CFormText>Jenis Kendaraan</CFormText>
-                          <CFormInput
-                            type="text"
-                            inputMode="numeric"
-                            placeholder="Insert vehicle type"
-                            value={formQuestions.vehicleType}
-                            onChange={(e)=>setFormQuestions({ ...formQuestions, vehicleType: e.target.value})}
+                          <Select
+                            placeholder='Pilih kendaraan'
+                            options={optionsSelectVehicle}
+                            value={optionsSelectVehicle.find((opt)=>opt.value === formQuestions.vehicleType) || ""}
+                            onChange={(e)=>setFormQuestions({ ...formQuestions, vehicleType: e !== null ? e.value : ""})}
                           />
                         </CCol>
                         <CCol md='1' className="d-flex align-items-center justify-content-center">
@@ -687,9 +706,11 @@ const InputConsumable = () => {
                           {apdStatus === "no" && (
                             <CRow className="d-flex justify-content-center align-items-center mt-3">
                               <CCol md="6">
+                                <CFormText>Alasan</CFormText>
                                 <CFormInput
                                   type="text"
                                   placeholder="Masukkan alasan..."
+                                  disabled={capturing}
                                   value={formQuestions.apdReason}
                                   onChange={(e)=>setFormQuestions({ ...formQuestions, apdReason: e.target.value})}
                                   // onChange={(e) => setReason(e.target.value)}
@@ -703,7 +724,7 @@ const InputConsumable = () => {
 
                    
 
-                    { apdStatus === "yes" && (
+                    { (apdStatus === "yes" || formQuestions.apdReason !== "") && (
                       <CRow className='px-2' style={{ flex: 1, justifyContent: 'center'}}>
                           <CCard style={{ height: "550px", width: "350px"}} className='px-0'>
                               <CCardBody>

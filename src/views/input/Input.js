@@ -54,6 +54,7 @@ import Swal from "sweetalert2";
 import CustomTableLoading from "../../components/LoadingTemplate";
 
 const Input = () => {
+  const colorMode = localStorage.getItem('coreui-free-react-admin-template-theme')
   const [loading, setLoading] = useState(false);
   const [loadingSubmit, setLoadingSubmit] = useState(false);
   const addToast = useToast();
@@ -217,6 +218,9 @@ const Input = () => {
 
         if (responseVendor.length === 0) {
           addToast("Vendor schedule not found", "danger", "error");
+          setTimeout(()=>{
+            handleClearInputDN();
+          }, 100)
           return;
         }
         setDataMaterialsByDN(responseDN);
@@ -474,7 +478,9 @@ const Input = () => {
       <p
         style={{
           color:
-            Number(remainQty.qty[rowIndex.rowIndex]) < 0 ? "#FF0000" : "black",
+            Number(remainQty.qty[rowIndex.rowIndex]) < 0 ? "#FF0000" : 
+            Number(remainQty.qty[rowIndex.rowIndex]) === 0 && colorMode === 'light' ? "black" : 
+            Number(remainQty.qty[rowIndex.rowIndex]) === 0 && colorMode === 'dark' ? "white" : 'black' ,
         }}
       >
         {remainQty.qty[rowIndex.rowIndex]}
@@ -621,7 +627,7 @@ const Input = () => {
   const renderCustomEmptyMsg = () => {
     return (
       <div
-        className="w-100 d-flex flex-column align-items-center justify-content-center py-3"
+        className="empty-msg w-100 d-flex flex-column align-items-center justify-content-center py-3"
         style={{ color: "black", opacity: "50%" }}
       >
         <FaInbox size={40} />
@@ -705,7 +711,7 @@ const Input = () => {
                       borderBottom: "1px solid black",
                     }}
                   >
-                    <p style={{ fontWeight: "bold", color: "black" }}>
+                    <p style={{ fontWeight: "bold" }}>
                       INPUT DN NUMBER
                     </p>
                   </CCardHeader>
@@ -761,6 +767,33 @@ const Input = () => {
                         }
                         options={optionsSelectRit}
                         onChange={handleChangeSelectRit}
+                        styles={{
+                          option: (styles, { data, isDisabled, isFocused, isSelected }) => {
+                            return {
+                              ...styles,
+                              backgroundColor: isDisabled
+                                ? undefined
+                                : isSelected && colorMode === 'dark'
+                                ? "rgb(72, 96, 129)"
+                                : isSelected && colorMode === 'light'
+                                ? "#6699FF"
+                                : isFocused && colorMode === 'dark'
+                                ? "rgb(72, 96, 129)"
+                                : isFocused && colorMode === 'light'
+                                ? "#6482AD"
+                                : undefined,
+                              color: colorMode === 'dark' ? 'white' : "black",
+                              ':active': {
+                                ...styles[':active'],
+                                backgroundColor: !isDisabled
+                                  ? isSelected
+                                    ? 'lightgrey'
+                                    : 'white'
+                                  : undefined,
+                              },
+                            };
+                          },
+                        }}
                       />
                     </CRow>
                     <CRow className="mt-1 px-2">
@@ -800,26 +833,14 @@ const Input = () => {
                       borderBottom: "1px solid black",
                     }}
                   >
-                    <p style={{ fontWeight: "bold", color: "black" }}>
+                    <p style={{ fontWeight: "bold" }}>
                       DELIVERY INFORMATION
                     </p>
                   </CCardHeader>
                   <CCardBody className="" style={{ position: "relative" }}>
                     {loading && (
-                      <div
-                        className="d-flex justify-content-center align-items-center flex-column"
-                        style={{
-                          position: "absolute",
-                          top: 0,
-                          left: 0,
-                          width: "100%",
-                          height: "100%",
-                          backgroundColor: "#ffffff9f",
-                          borderRadius: "0 0 5px 5px",
-                        }}
-                      >
-                        <CSpinner />
-                        Loading...
+                      <div className="position-absolute start-0 top-0 w-100 h-100">
+                        <CustomTableLoading/>
                       </div>
                     )}
                     <CRow className="">
@@ -998,7 +1019,6 @@ const Input = () => {
                   <CCardHeader
                     style={{
                       backgroundColor: "#F5EDED",
-                      color: "black",
                       borderBottom: "1px solid black",
                     }}
                   >
@@ -1124,18 +1144,22 @@ const Input = () => {
                   </CButton>
                 ) : (
                   // <CButton disabled={formInput.rit === 0 || qtyEachMaterials?.qty?.filter((data)=>data===null).length > 0} style={{ backgroundColor: "#5B913B"}} className='text-white' onClick={handleSubmitMaterials}>Submit</CButton>
-                  <CButton
-                    disabled={
-                      formInput.rit === 0 ||
-                      confirmedRemaining === "0 / 0" ||
-                      dataMaterialsByDN.length !== selectedRows.length
-                    }
-                    style={{ backgroundColor: "#5B913B" }}
-                    className="text-white"
-                    onClick={handleSubmitMaterials}
-                  >
-                    Submit
-                  </CButton>
+                  <CTooltip className={ dataMaterialsByDN.length === selectedRows.length && "d-none"} content="Lakukan konfirmasi material terlebih dahulu. Klik baris hingga menjadi biru">
+                    <span>
+                      <CButton
+                        disabled={
+                          formInput.rit === 0 ||
+                          confirmedRemaining === "0 / 0" ||
+                          dataMaterialsByDN.length !== selectedRows.length
+                        }
+                        style={{ backgroundColor: "#5B913B" }}
+                        className="text-white"
+                        onClick={handleSubmitMaterials}
+                      >
+                        Submit
+                      </CButton>
+                    </span>
+                  </CTooltip>
                 )}
               </CCol>
             </CRow>

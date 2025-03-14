@@ -22,6 +22,7 @@ import CustomTableLoading from '../../components/LoadingTemplate';
 
 const Book = () => {
   // const addToast = useToast()
+  const colorMode = localStorage.getItem('coreui-free-react-admin-template-theme')
   const [ loading, setLoading ] = useState(false)
   const { getDNInqueryData, submitUpdateMaterialByDNData } = useReceivingDataService()
   const [ dataDNInquery, setDataDNInquery ] = useState([])
@@ -370,16 +371,21 @@ const handleSubmitChangeQty = (rowIndex, rowData) => {
 
     const statusReceivedBodyTemplate = (rowData) => {
       const completedReceive = rowData.Materials.filter((data)=>data.status === 'completed')
+      const colorStyle = 
+        completedReceive.length !== rowData.Materials.length ? "red" :
+        completedReceive.length === rowData.Materials.length && colorMode === 'light' ? "black" :
+        completedReceive.length === rowData.Materials.length && colorMode === 'dark' ? "white" :
+        "black"
       return(
         <div>
-          <span style={{color: completedReceive.length !== rowData.Materials.length ? "red" : "black"}}>{completedReceive.length}</span> / <span>{rowData.Materials.length}</span>
+          <span style={{color: colorStyle}}>{completedReceive.length}</span> / <span>{rowData.Materials.length}</span>
         </div>
       )
     }
 
     const renderCustomEmptyMsg = () => {
         return(
-          <div className='w-100 d-flex flex-column align-items-center justify-content-center py-3' style={{ color: "black", opacity: "50%"}}>
+          <div className='empty-msg w-100 d-flex flex-column align-items-center justify-content-center py-3' style={{ color: "black", opacity: "50%"}}>
             <FaInbox size={40}/>
             <p>Data Not Found!</p>
           </div>

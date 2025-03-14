@@ -38,14 +38,35 @@ import {
   faTruck,
   faHelmetSafety,
   faFill,
+  faCheckSquare,
+  faXmarkSquare,
 } from "@fortawesome/free-solid-svg-icons";
 import { SelectButton } from "primereact/selectbutton";
 import { FaArrowLeft, FaCamera } from "react-icons/fa6";
 import { useNavigate } from "react-router-dom";
+import  Select  from 'react-select';
 
 const InputChemical = () => {
   const navigate = useNavigate()
-  const [formQuestions, setFormQuestions] = useState({})
+  const [formQuestions, setFormQuestions] = useState({
+        vendorCode: "",
+        vendorName: "",
+        truckStation: "",
+        driverName: "",
+        driverCondition: "",
+        driverSymptom: "",
+        vehicleType: "",
+        deliveryType: "",
+        driverLicense: "",
+        licenseDuration: "",
+        vehicleRegistration: "",
+        registrationCondition: "",
+        registrationDuration: "",
+        licensePlate: "",
+        licensePlateDuration: "",
+        apdReason: "",
+
+      })
   const [isInputPlatDisabled, setIsInputPlatDisabled] = useState(true);
   const [apdStatus, setApdStatus] = useState(null);
   const [reason, setReason] = useState("");
@@ -117,27 +138,24 @@ const InputChemical = () => {
   };
 
   useEffect(() => {
-    if (apdStatus === "yes") {
+    if (apdStatus === "yes" || formQuestions.apdReason !== "") {
       setShowCamera(true);
       // startCamera()
-    } else if (apdStatus === "no") {
+    } else if (apdStatus === "no" && formQuestions.apdReason === "") {
       setShowCamera(false);
       // stopCamera()
     }
-  }, [apdStatus]);
+  }, [apdStatus, formQuestions.apdReason]);
 
-  // Handle "Ya" button click
-  const handleYesClick = () => {
-    setApdStatus("yes");
-    setShowCamera(true);
-    startCamera();
-  };
+  const optionsSelectDelivery = [
+    { label: "Vendor", value: "vendor"},
+    { label: "Kurir", value: "kurir"},
+  ]
 
-  // Handle "Tidak" button click
-  const handleNoClick = () => {
-    setApdStatus("no");
-    setShowCamera(false);
-  };
+  const optionsSelectVehicle = [
+    { label: "Truk", value: "truk" },
+    { label: "Mobil", value: "mobil" },
+  ]
 
   // Handle input submission
   const handleReasonSubmit = (e) => {
@@ -147,16 +165,38 @@ const InputChemical = () => {
     }
   };
 
-  // useEffect(() => {
-  //   return () => {
-  //     // Cleanup on component unmount (stop the camera)
-  //     stopCamera();
-  //   };
-  // }, []);
-
-  const handleSubmit = () => {
-    console.log("form questions :", formQuestions);
-  };
+  useEffect(()=>{
+      if(apdStatus === 'yes' || formQuestions.apdReason !== ""){
+        setShowCamera(true)
+        // startCamera()
+      }else if (apdStatus === 'no' && formQuestions.apdReason === ""){
+        setShowCamera(false)
+        // stopCamera()
+      }
+    }, [apdStatus, formQuestions.apdReason])
+  
+    const handleSubmit = () => {
+      console.log("form questions :", formQuestions)
+      Swal.fire({
+        title: "Submit confirmation",
+        text: "Are you sure?",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Submit",
+      }).then(async (result) => {
+        if (result.isConfirmed) {
+          Swal.fire({
+            title: "Submitted!",
+            text: result.value,
+            icon: "success",
+            confirmButtonColor: "#3085d6",
+          });
+        }
+          
+    });
+    }
 
   return (
     <>
@@ -226,7 +266,7 @@ const InputChemical = () => {
                             onChange={(e)=>setFormQuestions({ ...formQuestions, vendorName: e.target.value})}
                           />
                         </CCol>
-                        <CCol md="4">
+                        <CCol md="3">
                           <CFormText>Truck Station</CFormText>
                           <CFormInput
                             type="text"
@@ -235,6 +275,17 @@ const InputChemical = () => {
                             value={formQuestions.truckStation}
                             onChange={(e)=>setFormQuestions({ ...formQuestions, truckStation: e.target.value})}
                           />
+                        </CCol>
+                        <CCol md='1' className="d-flex align-items-center justify-content-center">
+                          { 
+                            formQuestions.vendorCode !== "" && 
+                            formQuestions.vendorName !== "" && 
+                            formQuestions.truckStation !== "" 
+                            ? 
+                            <FontAwesomeIcon icon={faCheckSquare} style={{ fontSize: "30px", color: "green"}}/>
+                            :
+                            <FontAwesomeIcon icon={faXmarkSquare} style={{ fontSize: "30px", color: "red"}}/>
+                          }
                         </CCol>
                       </CRow>
                       <hr />
@@ -265,22 +316,39 @@ const InputChemical = () => {
                             <div>
                               <SelectButton
                                 value={formQuestions.driverCondition}
-                                onChange={(e)=>setFormQuestions({ ...formQuestions, driverCondition: e.value})}
+                                onChange={(e)=>{
+                                  if(e.value === 'no'){
+                                    setFormQuestions({ ...formQuestions, driverCondition: e.value, driverSymptom: ""})
+                                  } else {
+                                    setFormQuestions({ ...formQuestions, driverCondition: e.value, driverSymptom: "-"})
+                                  }
+                                }}
                                 options={[{ label: 'Ya', value: 'yes'}, { label: 'Tidak', value: 'no'}]}
                               />
                             </div>
                           </CCol>
-                          <CCol md="4">
+                          <CCol md="3">
                             <CFormText>
                               Kondisi yang dirasakan apabila Tidak Sehat
                             </CFormText>
                             <CFormInput
                               type="text"
-                              inputMode="numeric"
+                              disabled={formQuestions.driverCondition === "yes"}
                               placeholder="Masukkan kondisi Anda"
                               value={formQuestions.driverSymptom}
                               onChange={(e)=>setFormQuestions({ ...formQuestions, driverSymptom: e.target.value})}
                             />
+                          </CCol>
+                          <CCol md='1' className="d-flex align-items-center justify-content-center">
+                            { 
+                              (formQuestions.driverName !== "" && 
+                              formQuestions.driverCondition !== "" &&  
+                              formQuestions.driverSymptom !== "") || (formQuestions.driverName !== "" && formQuestions.driverCondition === "yes") 
+                              ? 
+                              <FontAwesomeIcon icon={faCheckSquare} style={{ fontSize: "30px", color: "green"}}/>
+                              :
+                              <FontAwesomeIcon icon={faXmarkSquare} style={{ fontSize: "30px", color: "red"}}/>
+                            }
                           </CCol>
                       </CRow>
                       <hr />
@@ -294,25 +362,33 @@ const InputChemical = () => {
                         >
                           3. Vehicle
                         </CFormText>
-                          <CCol md="5">
+                          <CCol md="6">
                             <CFormText>Tipe Pengiriman</CFormText>
-                            <CFormInput
-                              type="text"
-                              inputMode="numeric"
-                              placeholder="Masukkan tipe pengiriman"
-                              value={formQuestions.deliveryType}
-                              onChange={(e)=>setFormQuestions({ ...formQuestions, deliveryType: e.target.value})}
-                            />
+                            <Select 
+                              placeholder='Pilih pengiriman'
+                              onChange={(e)=>setFormQuestions({ ...formQuestions, deliveryType: e !== null ? e.value : ""})}
+                              value={optionsSelectDelivery.find((opt)=>opt.value === formQuestions.deliveryType) || ""}
+                              options={optionsSelectDelivery}
+                              />
                           </CCol>
                           <CCol md="5">
                             <CFormText>Jenis Kendaraan</CFormText>
-                            <CFormInput
-                              type="text"
-                              inputMode="numeric"
-                              placeholder="Masukkan jenis kendaraan"
-                              value={formQuestions.vehicleType}
-                              onChange={(e)=>setFormQuestions({ ...formQuestions, vehicleType: e.target.value})}
-                            />
+                            <Select 
+                              placeholder='Pilih kendaraan'
+                              onChange={(e)=>setFormQuestions({ ...formQuestions, vehicleType: e !== null ? e.value : ""})}
+                              value={optionsSelectVehicle.find((opt)=>opt.value === formQuestions.vehicleType) || ""}
+                              options={optionsSelectVehicle}
+                              />
+                          </CCol>
+                          <CCol md='1' className="d-flex align-items-center justify-content-center">
+                            { 
+                              formQuestions.deliveryType !== "" && 
+                              formQuestions.vehicleType !== ""
+                              ? 
+                              <FontAwesomeIcon icon={faCheckSquare} style={{ fontSize: "30px", color: "green"}}/>
+                              :
+                              <FontAwesomeIcon icon={faXmarkSquare} style={{ fontSize: "30px", color: "red"}}/>
+                            }
                           </CCol>
                         </CRow>
                       <hr />
@@ -391,12 +467,18 @@ const InputChemical = () => {
                           <div>
                             <SelectButton
                                 value={formQuestions.driverLicense}
-                                onChange={(e)=>setFormQuestions({ ...formQuestions, driverLicense: e.value})}
+                                onChange={(e)=>{
+                                  if(e.value === 'yes'){
+                                    setFormQuestions({ ...formQuestions, driverLicense: e.value, licenseDuration: ""})
+                                  }else{
+                                    setFormQuestions({ ...formQuestions, driverLicense: e.value, licenseDuration: "-"}) 
+                                  }
+                                }}
                                 options={[{ label: 'Ya', value: 'yes'}, { label: 'Tidak', value: 'no'}]}
                               />
                           </div>
                         </CCol>
-                        <CCol md="7">
+                        <CCol md="6">
                           <CFormText>Berapa Jangka Waktu SIM Anda?</CFormText>
                           <CFormInput
                             type="text"
@@ -406,6 +488,16 @@ const InputChemical = () => {
                             value={formQuestions.licenseDuration}
                             onChange={(e)=>setFormQuestions({ ...formQuestions, licenseDuration: e.target.value})}
                           />
+                        </CCol>
+                        <CCol md='1' className="d-flex align-items-center justify-content-center">
+                          { 
+                            formQuestions.driverLicense !== "" && 
+                            formQuestions.licenseDuration !== "" 
+                            ? 
+                            <FontAwesomeIcon icon={faCheckSquare} style={{ fontSize: "30px", color: "green"}}/>
+                            :
+                            <FontAwesomeIcon icon={faXmarkSquare} style={{ fontSize: "30px", color: "red"}}/>
+                          }
                         </CCol>
                       </CRow>
                       <hr />
@@ -425,7 +517,14 @@ const InputChemical = () => {
                           <div>
                             <SelectButton
                               value={formQuestions.vehicleRegistration}
-                              onChange={(e)=>setFormQuestions({ ...formQuestions, vehicleRegistration: e.value})}
+                              onChange={(e)=>{
+                                if(e.value === 'yes'){
+                                  setFormQuestions({ ...formQuestions, vehicleRegistration: e.value, registrationDuration: ""})
+                                }else{
+                                  setFormQuestions({ ...formQuestions, vehicleRegistration: e.value, registrationDuration: "-"})
+
+                                }
+                              }}
                               options={[{ label: 'Ya', value: 'yes'}, { label: 'Tidak', value: 'no'}]}
                             />
                           </div>
@@ -439,24 +538,42 @@ const InputChemical = () => {
                             <SelectButton
                               value={formQuestions.registrationCondition}
                               disabled={formQuestions.vehicleRegistration !== 'yes'}
-                              onChange={(e)=>setFormQuestions({ ...formQuestions, registrationCondition: e.value})}
+                              onChange={(e)=>{
+                                if(e.value === 'valid'){
+                                  setFormQuestions({ ...formQuestions, registrationCondition: e.value, registrationDuration: ""})
+                                } else {
+                                  setFormQuestions({ ...formQuestions, registrationCondition: e.value, registrationDuration: '-'})
+
+                                }
+                              }}
                               options={[{ label: 'Hidup', value: 'valid'}, { label: 'Mati', value: 'invalid'}]}
                             />
                           </div>
                         </CCol>
-                        <CCol md="4">
+                        <CCol md="3">
                           <CFormText>
                             Berapa lama Jangka Pajak STNK anda
                           </CFormText>
                           <CFormInput
                             type="text"
                             inputMode="numeric"
-                            placeholder="Insert DN Number"
+                            placeholder="Masukkan jangka waktu"
                             disabled={formQuestions.registrationCondition !== 'valid'}
                             value={formQuestions.registrationDuration}
                             onChange={(e)=>setFormQuestions({ ...formQuestions, registrationDuration: e.target.value})}
                           />
                         </CCol>
+                          <CCol md='1' className="d-flex align-items-center justify-content-center">
+                            { 
+                              (formQuestions.vehicleRegistration !== "" && 
+                              formQuestions.registrationCondition !== "" &&
+                              formQuestions.registrationDuration) || (formQuestions.vehicleRegistration === "no") || (formQuestions.registrationCondition === 'invalid')
+                              ? 
+                              <FontAwesomeIcon icon={faCheckSquare} style={{ fontSize: "30px", color: "green"}}/>
+                              :
+                              <FontAwesomeIcon icon={faXmarkSquare} style={{ fontSize: "30px", color: "red"}}/>
+                            }
+                          </CCol>
                       </CRow>
                       <hr />
                       <CRow className="mb-">
@@ -477,12 +594,18 @@ const InputChemical = () => {
                           <div>
                             <SelectButton
                                 value={formQuestions.licensePlate}
-                                onChange={(e)=>setFormQuestions({ ...formQuestions, licensePlate: e.value})}
+                                onChange={(e)=>{
+                                  if(e.value === 'yes'){
+                                    setFormQuestions({ ...formQuestions, licensePlate: e.value, licensePlateDuration: ""})
+                                  } else{
+                                    setFormQuestions({ ...formQuestions, licensePlate: e.value, licensePlateDuration: "-"})
+                                  }
+                                }}
                                 options={[{ label: 'Ya', value: 'yes'}, { label: 'Tidak', value: 'no'}]}
                               />
                           </div>
                         </CCol>
-                        <CCol md="7">
+                        <CCol md="6">
                           <CFormText>
                             Berapakah Akhir Periode Plat No Polisi anda?
                           </CFormText>
@@ -495,6 +618,16 @@ const InputChemical = () => {
                             onChange={(e)=>setFormQuestions({ ...formQuestions, licensePlateDuration: e.target.value})}
                           />
                         </CCol>
+                        <CCol md='1' className="d-flex align-items-center justify-content-center">
+                            { 
+                              formQuestions.licensePlate!== "" && 
+                              formQuestions.licensePlateDuration !== ""
+                              ? 
+                              <FontAwesomeIcon icon={faCheckSquare} style={{ fontSize: "30px", color: "green"}}/>
+                              :
+                              <FontAwesomeIcon icon={faXmarkSquare} style={{ fontSize: "30px", color: "red"}}/>
+                            }
+                          </CCol>
                       </CRow>
                       <hr />
                       <CCol className="d-flex justify-content-center gap-3">
@@ -564,6 +697,7 @@ const InputChemical = () => {
                             Apakah Anda Memakai APD?
                           </CFormText>
                           <SelectButton
+                            disabled={capturing}
                             value={apdStatus}
                             onChange={(e) => setApdStatus(e.value)}
                             options={[
@@ -576,9 +710,11 @@ const InputChemical = () => {
                           {apdStatus === "no" && (
                             <CRow className="d-flex justify-content-center align-items-center mt-3">
                               <CCol md="12">
+                                <CFormText>Alasan</CFormText>
                                 <CFormInput
                                   type="text"
                                   placeholder="Masukkan alasan..."
+                                  disabled={capturing}
                                   value={formQuestions.apdReason}
                                   onChange={(e) =>
                                     setFormQuestions({
@@ -598,7 +734,7 @@ const InputChemical = () => {
 
                       
 
-                      {apdStatus === "yes" && (
+                      {(apdStatus === "yes" || formQuestions.apdReason !== "") && (
                         <CRow
                           className="px-2"
                           style={{ flex: 1, justifyContent: "center" }}
