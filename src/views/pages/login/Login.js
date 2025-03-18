@@ -96,103 +96,62 @@ const Login = () => {
   >
       <CContainer>
         <CRow className="justify-content-center">
-          <CCol md={12} sm={12} lg={6}>
-            <div className='position-absolute top-0 mt-5 start-50 translate-middle'>
-              <CCard className=' px-3'>
-                <div className='d-flex align-items-center justify-content-center rounded'>
-                  <CButton onClick={() => setColorMode('light')} className='border-0'>
-                    <CIcon icon={icon.cilSun} size="lg" />
-                  </CButton>
-                  <CButton onClick={() => setColorMode('dark')} className='border-0'>
-                    <CIcon icon={icon.cilMoon} size="lg" />
-                  </CButton>
-                  <CButton onClick={() => setColorMode('auto')} className='border-0'>
-                    <CIcon icon={icon.cilContrast} size="lg" />
-                  </CButton>
-                </div>
-              </CCard>
-
-
-               {/* <CDropdown variant="nav-item" placement="bottom-end">
-                <CDropdownToggle caret={false}>
-                  {colorMode === 'dark' ? (
-                    <CIcon icon={icon.cilMoon} size="lg" />
-                  ) : colorMode === 'auto' ? (
-                    <CIcon icon={icon.cilContrast} size="lg" />
-                  ) : (
-                    <CIcon icon={icon.cilSun} size="lg" />
-                  )}
-                </CDropdownToggle>
-                <CDropdownMenu>
-                  <CDropdownItem
-                    active={colorMode === 'light'}
-                    className="d-flex align-items-center"
-                    as="button"
-                    type="button"
-                    onClick={() => setColorMode('light')}
-                  >
-                    <CIcon className="me-2" icon={icon.cilSun} size="lg" /> Light
-                  </CDropdownItem>
-                  <CDropdownItem
-                    active={colorMode === 'dark'}
-                    className="d-flex align-items-center"
-                    as="button"
-                    type="button"
-                    onClick={() => setColorMode('dark')}
-                  >
-                    <CIcon className="me-2" icon={icon.cilMoon} size="lg" /> Dark
-                  </CDropdownItem>
-                  <CDropdownItem
-                    active={colorMode === 'auto'}
-                    className="d-flex align-items-center"
-                    as="button"
-                    type="button"
-                    onClick={() => setColorMode('auto')}
-                  >
-                    <CIcon className="me-2" icon={icon.cilContrast} size="lg" /> Auto
-                  </CDropdownItem>
-                </CDropdownMenu>
-              </CDropdown> */}
-            </div>
+          <CCol md={12} sm={12} lg={8} xl={7}>
+           
             <CCardGroup className='d-flex flex-column-reverse flex-sm-row'>
-              <CCard className="p-4">
-                <CCardBody>
-                  <CForm onSubmit={Auth}>
-                    <h1>Login</h1>
-                    <p className="text-body-secondary">Sign In to your account</p>
-                    <CInputGroup className="mb-3">
-                      <CInputGroupText>
-                        <CIcon icon={cilUser} />
-                      </CInputGroupText>
-                      <CFormInput
-                        placeholder="Username"
-                        autoComplete="username"
-                        value={username}
-                        onChange={(e) => setUsername(e.target.value)}
-                      />
-                    </CInputGroup>
-                    <CInputGroup className="mb-4">
-                      <CInputGroupText>
-                        <CIcon icon={cilLockLocked} />
-                      </CInputGroupText>
-                      <CFormInput
-                        type="password"
-                        placeholder="Password"
-                        autoComplete="current-password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                      />
-                    </CInputGroup>
-                    <CRow>
-                      <CCol xs={6}>
-                        <CButton color={colorMode === 'light' ? "dark" : "secondary"} className="px-4" type="submit">
-                          Login
-                        </CButton>
-                      </CCol>
-                    </CRow>
-                  </CForm>
-                </CCardBody>
-              </CCard>
+             <div className='d-block d-sm-flex '>
+              <CCard className=' px-3 max-sm-width-100 max-width-50px'>
+                 <div className='d-flex pt-2 pt-sm-5 pb-2 flex-sm-column flex-row  align-items-center justify-content-center gap-3'>
+                   <CButton onClick={() => setColorMode('light')} color={ colorMode === 'light' &&'dark'} className='border-0'>
+                     <CIcon icon={icon.cilSun} size="lg" />
+                   </CButton>
+                   <CButton onClick={() => setColorMode('dark')} color={ colorMode === 'dark' && 'light'} className='border-0'>
+                     <CIcon icon={icon.cilMoon} size="lg" />
+                   </CButton>
+                   {/* <CButton onClick={() => setColorMode('auto')} className='border-0'>
+                     <CIcon icon={icon.cilContrast} size="lg" />
+                   </CButton> */}
+                 </div>
+               </CCard>
+               <CCard className="p-4">
+                 <CCardBody>
+                   <CForm onSubmit={Auth}>
+                     <h1>Login</h1>
+                     <p className="text-body-secondary">Sign In to your account</p>
+                     <CInputGroup className="mb-3">
+                       <CInputGroupText>
+                         <CIcon icon={cilUser} />
+                       </CInputGroupText>
+                       <CFormInput
+                         placeholder="Username"
+                         autoComplete="username"
+                         value={username}
+                         onChange={(e) => setUsername(e.target.value)}
+                       />
+                     </CInputGroup>
+                     <CInputGroup className="mb-4">
+                       <CInputGroupText>
+                         <CIcon icon={cilLockLocked} />
+                       </CInputGroupText>
+                       <CFormInput
+                         type="password"
+                         placeholder="Password"
+                         autoComplete="current-password"
+                         value={password}
+                         onChange={(e) => setPassword(e.target.value)}
+                       />
+                     </CInputGroup>
+                     <CRow>
+                       <CCol xs={6}>
+                         <CButton color={colorMode === 'light' ? "dark" : "secondary"} className="px-4" type="submit">
+                           Login
+                         </CButton>
+                       </CCol>
+                     </CRow>
+                   </CForm>
+                 </CCardBody>
+               </CCard>
+             </div>
               <CCard className="text-white py-5  px-1" style={{ width: '%' }}>
                 <CCardBody className="text-center">
                   <img src={colorMode === "light" ? LogoTWIIS : LogoTWIISDark} alt="Logo" className="sidebar-brand-full" height={80} />
