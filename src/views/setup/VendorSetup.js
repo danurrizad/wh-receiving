@@ -50,6 +50,7 @@ import { ColumnGroup } from 'primereact/columngroup'
 import Swal from 'sweetalert2'
 import { TimePicker } from 'rsuite'
 import CustomTableLoading from '../../components/LoadingTemplate'
+// import templateDeliverySchedule from '../../assets/files/template_delivery_schedule.xlsx'
 
 
 const VendorSetup = () => {
@@ -235,6 +236,17 @@ const VendorSetup = () => {
           saveAsExcelFile(excelBuffer, 'vendor_setup')
         })
       }
+
+      const downloadTemplate = (fileName) => {
+        const fileUrl = `/files/${fileName}`; // Access files in public/files/
+        const link = document.createElement("a");
+        link.href = fileUrl;
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+
       const handleDateChange = (selectedDate) => {
         setDate(selectedDate[0])
         setUploadData((prevData) => ({
@@ -506,7 +518,7 @@ const VendorSetup = () => {
                 </CCol>
               </CRow>
               <hr/>
-              <CRow>
+              <CRow className='mb-3'>
                 <CCol className='d-flex align-items-center'>
                   <Button
                     type="button"
@@ -536,6 +548,15 @@ const VendorSetup = () => {
                     severity="success"
                     className="rounded-2 me-2 mb-1 py-2 text-white"
                     onClick={exportExcel}
+                    data-pr-tooltip="XLS"
+                  />
+                  <Button
+                    type="button"
+                    label="Download Template"
+                    icon="pi pi-file-export"
+                    severity="success"
+                    className="rounded-2 me-2 mb-1 py-2 text-white"
+                    onClick={() => downloadTemplate('template_delivery_schedule.xlsx')}
                     data-pr-tooltip="XLS"
                   />
                 </CCol>
@@ -850,5 +871,4 @@ const VendorSetup = () => {
     </CContainer>
   )
 }
-
 export default VendorSetup
