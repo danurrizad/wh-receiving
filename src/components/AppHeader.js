@@ -149,14 +149,7 @@ const AppHeader = () => {
             </CHeaderNav>
             <CHeaderNav>
               <CNavItem className="d-flex align-items-center">
-              <AppHeaderDropdown colorMode={colorMode} imgProfile={imgProfile} />
-
-                {/* <CHeaderNav> */}
-            {/* </CHeaderNav> */}
-                <CNavLink className="d-flex flex-column justify-content-center h-100" style={{ textDecoration: 'none' }}>
-                  <span style={{ fontSize: '', marginTop: '0px'}}>{name === 'Danur SiPalingGhanzzz' ? 'Danur' : name}</span>
-                  <span style={{ fontSize: '10px', marginTop: '0px' }}>{roleName.toUpperCase()}</span>
-                </CNavLink>
+                <AppHeaderDropdown colorMode={colorMode} imgProfile={imgProfile} name={name} roleName={roleName}/>
               </CNavItem>
             </CHeaderNav>
           </div>

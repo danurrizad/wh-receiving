@@ -8,6 +8,7 @@ import {
   CDropdownItem,
   CDropdownMenu,
   CDropdownToggle,
+  CNavLink,
 } from '@coreui/react'
 import {
   cilBell,
@@ -31,7 +32,7 @@ import { useNavigate } from 'react-router-dom'
 import withReactContent from 'sweetalert2-react-content'
 import Swal from 'sweetalert2'
 
-const AppHeaderDropdown = ({ colorMode, imgProfile}) => {
+const AppHeaderDropdown = ({ colorMode, imgProfile, name, roleName}) => {
   const { logout } = useAuthDataService()
   const navigate = useNavigate()
   const MySwal = withReactContent(Swal)
@@ -59,8 +60,12 @@ const AppHeaderDropdown = ({ colorMode, imgProfile}) => {
     }
   return (
     <CDropdown variant="nav-item">
-      <CDropdownToggle placement="bottom-end" className="py-0 pe-0" caret={false}>
+      <CDropdownToggle placement="bottom-end" className="py-0 pe-0 d-flex align-items-center" caret={false}>
         <CAvatar src={imgProfile ? imgProfile : colorMode === 'light' ? profile : profileDark} size="md" />
+        <CNavLink className="d-flex flex-column justify-content-center h-100" style={{ textDecoration: 'none' }}>
+          <span style={{ fontSize: '', marginTop: '0px'}}>{name === 'Danur SiPalingGhanzzz' ? 'Danur' : name}</span>
+          <span style={{ fontSize: '10px', marginTop: '0px' }}>{roleName.toUpperCase()}</span>
+        </CNavLink>
       </CDropdownToggle>
       <CDropdownMenu className="pt-0" placement="bottom-end">
         <CDropdownHeader className="bg-body-secondary fw-semibold mb-2">Account</CDropdownHeader>
