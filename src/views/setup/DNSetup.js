@@ -43,6 +43,7 @@ import CustomTableLoading from '../../components/LoadingTemplate'
 import { MultiSelect } from 'primereact/multiselect'
 
 const DNSetup = () => {
+  const colorMode = localStorage.getItem('coreui-free-react-admin-template-theme')
   const [loading, setLoading] = useState(true);
   const addToast = useToast()
   const { getDNByDateData, getAllWarehouseData } = useReceivingDataService()
@@ -421,6 +422,35 @@ const header = () => (
                   <CFormLabel>Warehouse</CFormLabel>
                   <Select 
                     options={optionsWarehouse.list} 
+                    styles={{
+                      option: (styles, { data, isDisabled, isFocused, isSelected }) => {
+                        return {
+                          ...styles,
+                          backgroundColor: isDisabled
+                            ? undefined
+                            : isSelected ? "rgb(72, 96, 129)"
+                            : isFocused ? "#6482AD"
+                            : undefined,
+                          color: colorMode === 'dark' && (!isFocused || isSelected) ? "white" : 
+                          isFocused ? "white" : 
+                          isSelected ? "white" :
+                          colorMode === 'light' && (!isFocused) ? "black" : "",
+                          ':active': {
+                            ...styles[':active'],
+                            color: "white",
+                            backgroundColor: !isDisabled
+                              ? isSelected
+                                ? 'rgb(37, 50, 70)'
+                                : 'rgb(37, 50, 70)'
+                              : undefined,
+                          },
+                          ':hover': {
+                            ...styles[':hover'],
+                            color: "white"
+                          }
+                        };
+                      },
+                    }}
                     isClearable 
                     value={optionsWarehouse?.list?.find((opt)=>opt.value===optionsWarehouse.selected) || null} 
                     onChange={(e)=>{

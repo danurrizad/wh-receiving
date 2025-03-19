@@ -462,15 +462,23 @@ const VendorSetup = () => {
             : isSelected ? "rgb(72, 96, 129)"
             : isFocused ? "#6482AD"
             : undefined,
-          color: colorMode === 'light' ? 'black' : 'white',
+          color: colorMode === 'dark' && (!isFocused || isSelected) ? "white" : 
+          isFocused ? "white" : 
+          isSelected ? "white" :
+          colorMode === 'light' && (!isFocused) ? "black" : "",
           ':active': {
             ...styles[':active'],
+            color: "white",
             backgroundColor: !isDisabled
               ? isSelected
-                ? 'lightgrey'
-                : 'white'
+                ? 'rgb(37, 50, 70)'
+                : 'rgb(37, 50, 70)'
               : undefined,
           },
+          ':hover': {
+            ...styles[':hover'],
+            color: "white"
+          }
         };
       },
     }
@@ -507,6 +515,7 @@ const VendorSetup = () => {
                 <CCol xs={4} lg={2}>
                   <CFormText>Filter by Day</CFormText>
                   <Select 
+                    placeholder='All day'
                     options={optionsDay}
                     isClearable
                     value={optionsDay.find((opt)=>opt.value === selectedOptionsDay) || ""}
@@ -824,6 +833,7 @@ const VendorSetup = () => {
                     <CFormLabel>Warehouse</CFormLabel>
                     <Select
                       options={optionsWarehouse.list}
+                      styles={styleSelect}
                       isClearable
                       value={optionsWarehouse.list.find((data)=>data.value === optionsWarehouse.selected) || ""}
                       onChange={(e)=>{

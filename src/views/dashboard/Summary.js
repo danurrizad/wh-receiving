@@ -99,6 +99,7 @@ ChartJS.register(
 );
 
 const Summary = () => {
+  const colorMode = localStorage.getItem('coreui-free-react-admin-template-theme')
   const [loading, setLoading] = useState(false);
   const addToast = useToast();
   const [dataPieChart, setDataPieChart] = useState([]);
@@ -315,15 +316,23 @@ const Summary = () => {
                                 : isSelected ? "rgb(72, 96, 129)"
                                 : isFocused ? "#6482AD"
                                 : undefined,
-                              color: "white",
+                              color: colorMode === 'dark' && (!isFocused || isSelected) ? "white" : 
+                              isFocused ? "white" : 
+                              isSelected ? "white" :
+                              colorMode === 'light' && (!isFocused) ? "black" : "",
                               ':active': {
                                 ...styles[':active'],
+                                color: "white",
                                 backgroundColor: !isDisabled
                                   ? isSelected
-                                    ? 'lightgrey'
-                                    : 'white'
+                                    ? 'rgb(37, 50, 70)'
+                                    : 'rgb(37, 50, 70)'
                                   : undefined,
                               },
+                              ':hover': {
+                                ...styles[':hover'],
+                                color: "white"
+                              }
                             };
                           },
                         }}
@@ -563,15 +572,23 @@ const Summary = () => {
                                 : isSelected ? "rgb(72, 96, 129)"
                                 : isFocused ? "#6482AD"
                                 : undefined,
-                              color: "white",
+                              color: colorMode === 'dark' && (!isFocused || isSelected) ? "white" : 
+                              isFocused ? "white" : 
+                              isSelected ? "white" :
+                              colorMode === 'light' && (!isFocused) ? "black" : "",
                               ':active': {
                                 ...styles[':active'],
+                                color: "white",
                                 backgroundColor: !isDisabled
                                   ? isSelected
-                                    ? 'lightgrey'
-                                    : 'white'
+                                    ? 'rgb(37, 50, 70)'
+                                    : 'rgb(37, 50, 70)'
                                   : undefined,
                               },
+                              ':hover': {
+                                ...styles[':hover'],
+                                color: "white"
+                              }
                             };
                           },
                         }}

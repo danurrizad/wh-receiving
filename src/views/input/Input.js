@@ -773,24 +773,26 @@ const Input = () => {
                               ...styles,
                               backgroundColor: isDisabled
                                 ? undefined
-                                : isSelected && colorMode === 'dark'
-                                ? "rgb(72, 96, 129)"
-                                : isSelected && colorMode === 'light'
-                                ? "#6699FF"
-                                : isFocused && colorMode === 'dark'
-                                ? "rgb(72, 96, 129)"
-                                : isFocused && colorMode === 'light'
-                                ? "#6482AD"
+                                : isSelected ? "rgb(72, 96, 129)"
+                                : isFocused ? "#6482AD"
                                 : undefined,
-                              color: colorMode === 'dark' ? 'white' : "black",
+                              color: colorMode === 'dark' && (!isFocused || isSelected) ? "white" : 
+                              isFocused ? "white" : 
+                              isSelected ? "white" :
+                              colorMode === 'light' && (!isFocused) ? "black" : "",
                               ':active': {
                                 ...styles[':active'],
+                                color: "white",
                                 backgroundColor: !isDisabled
                                   ? isSelected
-                                    ? 'lightgrey'
-                                    : 'white'
+                                    ? 'rgb(37, 50, 70)'
+                                    : 'rgb(37, 50, 70)'
                                   : undefined,
                               },
+                              ':hover': {
+                                ...styles[':hover'],
+                                color: "white"
+                              }
                             };
                           },
                         }}
