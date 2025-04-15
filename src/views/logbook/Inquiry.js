@@ -408,7 +408,6 @@ const handleSubmitChangeQty = (rowIndex, rowData) => {
       }
 
     const handleSaveChangesMaterials = async() => {
-          // console.log("----------------------SUBMIT LOG---------------------", )
           const dnNumber = formUpdate.dnNumber
           const warehouseId = formUpdate.warehouseId
           const filteredQty = formUpdate.receivedQuantities.filter((data,index)=>Number(data) !== Number(dataMaterialsByDNInquery[index].receivedQuantity))
@@ -480,7 +479,6 @@ const handleSubmitChangeQty = (rowIndex, rowData) => {
                           value={queryFilter.plantId}
                           options={plants}
                           onChange={handleChangeFilterPlant}
-                          // onChange={(e)=>console.log(e.target.value)}
                           placeholder="All plant"
                           showClear
                           style={{ width: '100%', borderRadius: '5px', padding: '1.75px' }}

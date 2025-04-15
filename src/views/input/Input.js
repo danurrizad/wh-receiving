@@ -204,7 +204,6 @@ const Input = () => {
   };
 
   const handleChangeSelectRit = (e) => {
-    console.log(e)
     if (e) {
       setSelectedRit(e.value);
       setSelectedTruckStation(e.valueTruckStation)

@@ -7,10 +7,7 @@ const useChartData = ({dataChartSchedules, handleClickOpenMaterials}) => {
     const currentTimeX = currentHour + currentMinute; // Convert to x-axis format
  
     const setChartData  = () => {
-        // console.log("Current Items Data:", dataChartSchedules); // Debugging awal
         const labelsVendor = dataChartSchedules?.map((data) => data.vendorName);
-        // console.log("dataChartSchedules :", dataChartSchedules)
-
         const data = {
             labels: labelsVendor,
             datasets: [

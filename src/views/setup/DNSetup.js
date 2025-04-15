@@ -195,7 +195,7 @@ const header = () => (
       await uploadDN(optionsWarehouse.selected, formData)
 
     } catch (error) {
-      console.log("Error response upload :", error)          
+      console.error("Error response upload :", error)          
     } finally{
       setLoadingImport(false)
     }

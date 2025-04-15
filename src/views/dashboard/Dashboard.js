@@ -185,7 +185,6 @@ const Dashboard = () => {
   const fetchPlants = async () => {
     try {
       const response = await getMasterData(apiPlant);
-      // console.log("API Response:", response); // Log seluruh response
       if (response && response.data) {
         
         const plantOptions = response.data.map((plant) => ({
@@ -205,7 +204,6 @@ const Dashboard = () => {
   }, []);
 
   const calculateSummary = (data) => {
-    // console.log("remaining: ", data.filter((data)=>data.status === 'scheduled').length )
     setCardData({
       onSchedule: data.filter((data)=>data.status === 'on schedule').length,
       overdue: data.filter((data)=>data.status === 'overdue').length,
@@ -225,15 +223,6 @@ const Dashboard = () => {
 
       const formattedFrom = `${fromYear}-${fromMonth}-${fromDate}`
       const formattedTo = `${toYear}-${toMonth}-${toDate}`
-
-      // console.log({
-      //   queryFilterplantId: queryFilter.plantId,
-      //   vendorId: vendorId,
-      //   formattedFrom: formattedFrom,
-      //   formattedTo: formattedTo,
-      //   currentPage: currentPage,
-      //   limitPerPage: limitPerPage
-      // })
       
       const response = await getChartReceiving(
         queryFilter.plantId, 
@@ -313,7 +302,6 @@ const Dashboard = () => {
     setShowModalInput({...showModalInput, state: true})
     
     const dataDN = data?.deliveryNotes
-    // console.log("data:", data)
     const optionsDN = data.deliveryNotes.map((dn)=>{
       return{
         label: dn.dnNumber,
@@ -339,7 +327,6 @@ const Dashboard = () => {
 
   const handleChangeOptionsDN = (e) => {
     const matchesDN = dataDN.find((data)=>data.dnNumber === e.value)
-    console.log("matchesDN:", matchesDN)
     setDataMaterialsByDNInquery(matchesDN.Materials)
     setOptionsSelectDN({...optionsSelectDN, selected: e.value})
   }
@@ -732,7 +719,6 @@ const Dashboard = () => {
                     classNamePrefix="select-status"
                     id='status'
                     onChange={onChangeFilterStatus}
-                    // onChange={(e)=>console.log(groupedOptions)}
                     placeholder="All" // Default placeholder
                     isClearable
                     isSearchable={false}

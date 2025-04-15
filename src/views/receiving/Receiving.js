@@ -48,7 +48,6 @@ const Receiving = () => {
   
   
   const handleSubmitReceiving = (data) => {
-    console.log("data to be submitted :", data)
     setDataReceiving(dataReceivingDummy)
     setMaterialByDN({
       dn_no: "",
@@ -115,7 +114,6 @@ const Receiving = () => {
         const listSelectedData = dataReceivingDummy.filter((data)=>data.dn_no === e.target.value)
         if(listSelectedData.length !== 0){
           setErrMsg('')
-          console.log("list selected data :", listSelectedData)
           // setMaterialByDN({ ...materialByDN, dn_no: e.value, list_material_desc: listSelectedData.map((data)=>data.material_desc), list_rack_address: listSelectedData.map((data)=>data.rack_address)})
           if(listSelectedData.length === 1){
             setMaterialByDN({ ...materialByDN, dn_no: e.target.value, material_desc: listSelectedData[0].material_desc, rack_address: listSelectedData[0].rack_address, list: {material_desc: listSelectedData.map((data)=>data.material_desc), rack_address: listSelectedData.map((data)=>data.rack_address)} })
@@ -134,7 +132,6 @@ const Receiving = () => {
 
   const handleChangeInputDN = (e) => {
     const listSelectedData = dataReceivingDummy.filter((data)=>data.dn_no === e.target.value)
-    console.log("found material :", listSelectedData)
 
     if(listSelectedData.length !== 0){
       // if there is no duplicate material in a same DN
@@ -182,7 +179,6 @@ const Receiving = () => {
   
   useEffect(()=>{
     getDataReceiving()
-    // console.log("materialDN :", materialByDN)
   }, [])
 
   return (
@@ -204,7 +200,6 @@ const Receiving = () => {
                             onKeyDown={
                               (e)=>{
                                 if(e.key === 'Enter'){
-                                  console.log('here')
                                   handleEnterInputDN(e)
                                 }
                               }

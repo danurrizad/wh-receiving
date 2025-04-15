@@ -349,7 +349,6 @@ const Summary = () => {
                         oneTap
                         value={filterMonth}
                         onChange={(e) => {
-                          console.log(e);
                           setFilterMonth(
                             e !== null ? e : new Date(year, month, 1)
                           );

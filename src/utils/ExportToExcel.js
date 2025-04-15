@@ -29,7 +29,6 @@ export const handleExport = (dataItems, type) => {
     }));
     dataToExport.push(exportData);
   }
-  console.log("data to export :", dataToExport);
 
   // Convert JSON to worksheet
   const worksheet = XLSX.utils.json_to_sheet(dataToExport[0]);

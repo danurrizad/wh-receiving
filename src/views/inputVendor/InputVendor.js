@@ -210,7 +210,6 @@ const InputVendor = () => {
     try {
       setLoading(true);
       const response = await getMaterialByDNData(dnNumber);
-      // console.log("RESPONSE DN :", response)
 
       if (response.data.data.length !== 0) {
         const responseDN = response.data.data[0].deliveryNotes;
