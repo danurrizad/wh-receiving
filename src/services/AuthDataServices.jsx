@@ -6,7 +6,11 @@ const useAuthDataService = () => {
 
     const handleError = (error, message) => {
         console.error(message, error)
-        addToast(error.response.data.message, 'danger', 'error')
+        if(error.response){
+          addToast(error.response.data.message, 'danger', 'error')
+        }else{
+          addToast(error.message, 'danger', 'error')
+        }
         throw new Error(message + error.message)
       }
 
