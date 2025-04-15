@@ -205,6 +205,7 @@ const Dashboard = () => {
   }, []);
 
   const calculateSummary = (data) => {
+    // console.log("remaining: ", data.filter((data)=>data.status === 'scheduled').length )
     setCardData({
       onSchedule: data.filter((data)=>data.status === 'on schedule').length,
       overdue: data.filter((data)=>data.status === 'overdue').length,
@@ -217,6 +218,7 @@ const Dashboard = () => {
 
   const fetchChartReceivingData = async (status, vendorId, currentPage, limitPerPage) => {
     try {
+      
       // setLoading(true)
       const [fromDate, fromMonth, fromYear] = queryFilter.rangeDate[0].toLocaleDateString('en-GB').split("/").map(Number)
       const [toDate, toMonth, toYear] = queryFilter.rangeDate[1].toLocaleDateString('en-GB').split("/").map(Number)
@@ -224,6 +226,15 @@ const Dashboard = () => {
       const formattedFrom = `${fromYear}-${fromMonth}-${fromDate}`
       const formattedTo = `${toYear}-${toMonth}-${toDate}`
 
+      // console.log({
+      //   queryFilterplantId: queryFilter.plantId,
+      //   vendorId: vendorId,
+      //   formattedFrom: formattedFrom,
+      //   formattedTo: formattedTo,
+      //   currentPage: currentPage,
+      //   limitPerPage: limitPerPage
+      // })
+      
       const response = await getChartReceiving(
         queryFilter.plantId, 
         // status !== null ? status?.value : "", // status kosong
@@ -244,7 +255,7 @@ const Dashboard = () => {
       });
       
         const filteredResponse = response.data.filter((data)=>data.status !== 'no schedule')
-        // console.log("Response dashboard:", allResponse);
+        console.log("Response dashboard:", response.data.length);
 
         setDataSchedules(allResponse); // Simpan data dari API ke state
         updateChartData(filteredData.length > 0 ? filteredData : allResponse, pagination.page, pagination.rows);
@@ -410,13 +421,13 @@ const Dashboard = () => {
     const total = rowBody.statusMaterial?.split(" / ")[1] || "0"
     const color = 
       (complete !== total && colorMode === 'light') ? "red" : 
-      (complete !== total && colorMode === 'dark') ? "red" : 
+      (complete !== total && colorMode === 'dark') ? "#F64242" : 
       (complete === total && colorMode === 'light') ? "black" : 
       (complete === total && colorMode === 'dark') ? "white" : 
       "white"
     return(
       <div>
-        {rowBody.statusMaterial !== '0 / 0' ? <span style={{color: color}}>{complete}<span style={{color: colorMode === 'light' ? "black" : "white"}}> / {total}</span></span> : "0 / 0"}
+        {rowBody.statusMaterial !== '0 / 0' ? <span style={{color: color, fontWeight: colorMode === 'dark' && 'bold'}}>{complete}<span style={{color: colorMode === 'light' ? "black" : "white"}}> / {total}</span></span> : <span style={{ fontWeight: colorMode === 'dark' && "bold"}}>0 / 0</span>}
       </div>
     )
   }
@@ -563,9 +574,7 @@ const Dashboard = () => {
           };
           
           const handleFilter = (event) => {
-            console.log("EVENT:", event)
             if (event.filters) {
-              console.log("EVENT FILTERS: ", event.filters)
               const filtered = dataSchedules.filter((item) => {
                 return Object.keys(event.filters).every((key) => {
                   if (!event.filters[key].value) return true; // No filter applied
@@ -648,7 +657,7 @@ const Dashboard = () => {
               </button>
             </CTooltip>
             <CCardTitle className="text-center fs-4" style={{ flexGrow: 1 }}>
-              MONITORING RECEIVING WAREHOUSE
+              MATERIAL RECEIVING MONITORING
             </CCardTitle>
           </div>
         </CCardHeader>
@@ -922,14 +931,13 @@ const Dashboard = () => {
                     handlePageChange(e)
                   }}
                   onFilter={(e)=>{
-                    // console.log("e onfilter:", e)
                     handleFilter(e)
                   }} // Track filtering
                 >
                   <Column className='' header="No" body={(rowBody, { rowIndex }) => rowIndex + 1}></Column>
                   {/* <Column className='' field='dnNumber'  header="DN No"></Column> */}
-                  <Column className='' field='arrivalPlanDate'  header="Plan Date" ></Column>
-                  <Column className='' field='arrivalPlanTime'  header="Plan Time" body={planTimeBodyTemplate} ></Column>
+                  <Column className='' field='arrivalPlanDate' sortable  header="Plan Date" ></Column>
+                  <Column className='' field='arrivalPlanTime' sortable header="Plan Time" body={planTimeBodyTemplate} ></Column>
                   {/* <Column className='' field='vendorCode'  header="Vendor Code"></Column> */}
                   <Column className='' field='vendorName'  header="Vendor Name" ></Column>
                   <Column className='' field='statusMaterial'  header="Status Received" body={statusMaterialBodyTemplate}></Column>
