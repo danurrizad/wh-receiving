@@ -108,8 +108,15 @@ const Book = () => {
         const formattedFrom = startDate.toLocaleDateString('en-CA')
         const formattedTo = endDate.toLocaleDateString('en-CA')
         const response = await getDNInqueryData(idPlant, formattedFrom, formattedTo) 
-        console.log("response inquiry:", response)
-        setDataDNInquery(response.data.data)
+        
+        const allResponse = response.data.data.sort((a, b) => {
+          const [aHours, aMinutes] = a.arrivalPlanTime ? a.arrivalPlanTime.split(":").map(Number) : [ 23, 59];
+          const [bHours, bMinutes] = b.arrivalPlanTime ? b.arrivalPlanTime.split(":").map(Number) : [ 23, 59];
+          
+          return aHours * 60 + aMinutes - (bHours * 60 + bMinutes);
+      });
+        // setDataDNInquery(response.data.data)
+        setDataDNInquery(allResponse)
       }else{
         const response = await getDNInqueryData(idPlant, "", "") 
         setDataDNInquery(response.data.data)
@@ -150,23 +157,23 @@ const Book = () => {
     <ColumnGroup >
         <Row>
             <Column header="No" rowSpan={2} />
-            <Column header="DN No" sortable field='deliveryNotes.dnNumber' rowSpan={2} />
-            <Column header="Vendor Name" sortable field='deliveryNotes.supplierName' rowSpan={2} />
-            <Column header="Truck Station" sortable field='deliveryNotes.truckStation' rowSpan={2} />
-            <Column header="Rit" sortable field='deliveryNotes.rit' rowSpan={2} />
+            <Column header="DN No" sortable field='dnNumber' rowSpan={2} />
+            <Column header="Vendor Name" sortable field='supplierName' rowSpan={2} />
+            <Column header="Truck Station" sortable field='truckStation' rowSpan={2} />
+            <Column header="Rit" sortable field='rit' rowSpan={2} />
             <Column header="Plan" colSpan={2} align='center' />
             <Column header="Arrival" colSpan={2} align='center' />
-            <Column header="Departure" sortable field='deliveryNotes.departureActualTime' rowSpan={2} />
-            <Column header="Status Arrival" sortable field='deliveryNotes.status' rowSpan={2} />
-            <Column header={`Delay Time`} sortable field='deliveryNotes.delayTime' rowSpan={2} style={{ width: "2%"}}/>
+            <Column header="Departure" sortable field='departureActualTime' rowSpan={2} />
+            <Column header="Status Arrival" sortable field='status' rowSpan={2} />
+            <Column header={`Delay Time`} sortable field='delayTime' rowSpan={2} style={{ width: "2%"}}/>
             <Column header="Status Received" sortable rowSpan={2} />
             <Column header="Materials" rowSpan={2} />
         </Row>
         <Row>
-            <Column header="Date" sortable field="deliveryNotes.arrivalPlanDate" />
-            <Column header="Time" sortable field="deliveryNotes.arrivalPlanTime" />
-            <Column header="Date" sortable field="deliveryNotes.arrivalActualDate" />
-            <Column header="Time" sortable field="deliveryNotes.arrivalActualTime" />
+            <Column header="Date" sortable field="arrivalPlanDate" />
+            <Column header="Time" sortable field="arrivalPlanTime" />
+            <Column header="Date" sortable field="arrivalActualDate" />
+            <Column header="Time" sortable field="arrivalActualTime" />
         </Row>
     </ColumnGroup>
   );
@@ -226,6 +233,14 @@ const Book = () => {
           {status}
         </button>
       </CTooltip>
+    )
+  }
+
+  const delayTimeBodyTemplate = (rowData) => {
+    const delayTime = rowData.delayTime
+    const status = rowData.status
+    return(
+      <p>{status === 'on schedule' ? '-' : delayTime}</p>
     )
   }
 
@@ -491,12 +506,10 @@ const handleSubmitChangeQty = (rowIndex, rowData) => {
                 <CCard className='p-0 overflow-hidden' >
                   <CCardBody className="p-0">
                     <DataTable
-                      // resizableColumns 
-                      // columnResizeMode="fit"
                       loading={loading}
                       loadingIcon={<CustomTableLoading/>}
                       headerColumnGroup={headerGroup}
-                      className='p-datatable-gridlines p-datatable-sm custom-datatable '
+                      className='p-datatable-gridlines p-datatable-sm custom-datatable'
                       style={{ minHeight: "200px"}}
                       removableSort
                       globalFilterFields={['dnNumber', 'supplierName', 'truckStation', '']}
@@ -516,20 +529,20 @@ const handleSubmitChangeQty = (rowIndex, rowData) => {
                       filterDisplay="row"
                     >
                       <Column className='' header="No" body={(rowBody, {rowIndex})=>rowIndex+1}/>
-                      <Column className='' field='dnNumber'  header="DN No"/>
-                      <Column className='' field='supplierName'  header="Vendor Name" />
-                      <Column className='' field='truckStation'  header="Truck Station" />
-                      <Column className='' field='rit'  header="Rit" />
-                      <Column className='' field='arrivalPlanDate'  header="Plan Date" />
-                      <Column className='' field='arrivalPlanTime'  header="Plan Time" body={plantTimeBodyTemplate} />
-                      <Column className='' field='arrivalActualDate'  header="Arv. Date" />
-                      <Column className='' field='arrivalActualTime'  header="Arv. Time" />
+                      <Column className='' sortable field='dnNumber'  header="DN No"/>
+                      <Column className='' sortable field='supplierName'  header="Vendor Name" />
+                      <Column className='' sortable field='truckStation'  header="Truck Station" />
+                      <Column className='' sortable field='rit'  header="Rit" />
+                      <Column className='' sortable field='arrivalPlanDate'  header="Plan Date" />
+                      <Column className='' sortable field='arrivalPlanTime'  header="Plan Time" body={plantTimeBodyTemplate} />
+                      <Column className='' sortable field='arrivalActualDate'  header="Arv. Date" />
+                      <Column className='' sortable field='arrivalActualTime'  header="Arv. Time" />
                       {/* <Column className='' field='deliveryNotes.departureActualDate'  header="Departure Date" /> */}
-                      <Column className='' field='departureActualTime'  header="Dpt. Time" />
-                      <Column className='' field='status'  header="Status Arrival" body={statusVendorBodyTemplate} />
-                      <Column className='' field='delayTime'  header="Delay Time" style={{ textTransform: "lowercase", width: "1%"}} />
-                      <Column className='' field=''  header="Status Received" body={statusReceivedBodyTemplate} style={{width: "1%"}}/>
-                      <Column className='' field=''  header="Materials" body={materialsBodyTemplate} />
+                      <Column className='' sortable field='departureActualTime'  header="Dpt. Time" />
+                      <Column className='' sortable field='status'  header="Status Arrival" body={statusVendorBodyTemplate} />
+                      <Column className='' sortable field='delayTime'  header="Delay Time" body={delayTimeBodyTemplate} style={{ textTransform: "lowercase", width: "1%"}} />
+                      <Column className='' sortable field=''  header="Status Received" body={statusReceivedBodyTemplate} style={{width: "1%"}}/>
+                      <Column className='' sortable field=''  header="Materials" body={materialsBodyTemplate} />
                   
                     </DataTable>
                   </CCardBody>
