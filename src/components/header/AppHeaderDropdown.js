@@ -73,7 +73,7 @@ const AppHeaderDropdown = ({ colorMode, imgProfile, name, roleName}) => {
         <CDropdownDivider />
         <CDropdownItem onClick={handleLogout} style={{ cursor: "pointer", textDecoration: "none"}}>
           <CIcon icon={cilAccountLogout} className="me-2" />
-          Logout
+          Logout  
         </CDropdownItem>
       </CDropdownMenu>
     </CDropdown>

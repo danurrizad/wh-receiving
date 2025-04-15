@@ -23,6 +23,7 @@ import {
   cilMenu,
 } from '@coreui/icons'
 import LogoTWIIS2 from 'src/assets/images/logo-twiis-2.png'
+import LogoTWIISDark from 'src/assets/images/logo-twiis.png'
 import LogoReceiving from 'src/assets/images/LOGO-RECEIVING-2.png'
 import LogoReceivingDark from 'src/assets/images/LOGO-RECEIVING-2-DARK.png'
 import useVerify from '../hooks/UseVerify'
@@ -71,22 +72,23 @@ const AppHeader = () => {
             <CIcon icon={cilMenu} size="lg" />
           </CHeaderToggler>
           <CHeaderNav className='d-sm-block d-none'>
-            <CImage src={ colorMode === 'light' ? LogoReceiving : LogoReceivingDark} width={200}/>
+            { !sidebarShow && <CImage src={ colorMode === 'light' ? LogoTWIIS2 : LogoTWIISDark} width={100} style={{ transitionDuration: 1000, transition: "all"}}/> }
+            <CImage src={ colorMode === 'light' ? LogoReceiving : LogoReceivingDark} width={155} style={{ paddingBottom: 0}}/>
           </CHeaderNav>
         </div>
 
         
-        <div className='d-flex flex-md-row flex-column-reverse align-items-center'>
-          <CHeaderNav className="ms-auto">
+        <div className='d-flex flex-md-row flex-column-reverse align-items-md-center align-items-end'>
+          <CHeaderNav>
             <CNavItem>
-              <CNavLink className="" style={{ textDecoration: 'none' }}>
-                {dateState.toLocaleString('en-US', {
+              <CNavLink className="text-date" style={{ textDecoration: 'none' }}>
+                {dateState.toLocaleString('en-UK', {
                   dateStyle: 'full',
                 })}
               </CNavLink>
             </CNavItem>
-            <CNavItem>
-              <CNavLink className="" style={{ textDecoration: 'none' }}>
+            <CNavItem >
+              <CNavLink className="text-date" style={{ textDecoration: 'none' }}>
                 {dateState.toLocaleString('en-US', {
                   hour: 'numeric',
                   minute: 'numeric',
