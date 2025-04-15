@@ -72,6 +72,8 @@ const Input = () => {
   const [disableInputDN, setDisableInputDN] = useState(false);
 
   const [selectedRit, setSelectedRit] = useState(0);
+  const [selectedTruckStation, setSelectedTruckStation] = useState("")
+  const [selectedValue, setSelectedValue] = useState("")
   const [formInput, setFormInput] = useState({
     dn_no: "",
     material_desc: "",
@@ -94,8 +96,10 @@ const Input = () => {
   const [remainQty, setRemainQty] = useState({});
   const optionsSelectRit = dataVendorByDN.map((data) => {
     return {
-      label: `${data.rit} (${data.arrivalPlanTime} - ${data.departurePlanTime})`,
+      label: `${data.rit} (${data.arrivalPlanTime} - ${data.departurePlanTime}) | ${data.truckStation}`,
       value: Number(data.rit),
+      valueTruckStation: data.truckStation,
+      selectedValue: `${data.rit}&${data.truckStation}`
     };
   });
 
@@ -175,6 +179,7 @@ const Input = () => {
       departure_time_actual: "",
     });
     setSelectedRit(0);
+    setSelectedTruckStation("")
     setDataMaterialsByDN([]);
     setDataVendorByDN([]);
     setQtyEachMaterials({});
@@ -199,10 +204,15 @@ const Input = () => {
   };
 
   const handleChangeSelectRit = (e) => {
+    console.log(e)
     if (e) {
       setSelectedRit(e.value);
+      setSelectedTruckStation(e.valueTruckStation)
+      setSelectedValue(e.selectedValue)
     } else {
       setSelectedRit(0);
+      setSelectedTruckStation('')
+      setSelectedValue("")
     }
   };
 
@@ -215,7 +225,6 @@ const Input = () => {
         const responseDN = response.data.data[0].deliveryNotes;
         const responseVendor = response.data.data[0].vendorSchedules;
         const responseStateArrived = response.data.viewOnly;
-
         if (responseVendor.length === 0) {
           addToast("Vendor schedule not found", "danger", "error");
           setTimeout(()=>{
@@ -261,7 +270,7 @@ const Input = () => {
   const getArrivalNow = (rit) => {
     setLoading(true);
     const { date, time } = getCurrentDateTime();
-    const matchesVendor = dataVendorByDN.find((data) => data.rit === rit);
+    const matchesVendor = dataVendorByDN.find((data) => data.rit === rit && data.truckStation === selectedTruckStation);
     const statusSchedule = getStatusBasedOnTime(matchesVendor);
     setFormInput({
       ...formInput,
@@ -398,10 +407,10 @@ const Input = () => {
 
   const createFormBody = (formInput, qtyEachMaterials) => {
     const { date, time } = getCurrentDateTime();
-    const filteredQty = qtyEachMaterials.qty.filter(
-      (data, index) =>
-        Number(data) !== Number(dataMaterialsByDN[index].receivedQuantity)
-    );
+    // const filteredQty = qtyEachMaterials.qty.filter(
+    //   (data, index) =>
+    //     Number(data) !== Number(dataMaterialsByDN[index].receivedQuantity)
+    // );
 
     return {
       dnNumber: Number(formInput.dn_no),
@@ -410,9 +419,7 @@ const Input = () => {
       departureActualDate: date,
       departureActualTime: time,
       rit: formInput.rit,
-
-      // incomingIds: qtyEachMaterials.incomingId.filter((data,index)=>Number(qtyEachMaterials.qty[index]) !== Number(dataMaterialsByDN[index].receivedQuantity) && Number(data)),
-      // receivedQuantities: filteredQty.map(Number),
+      truckStation: formInput.truckStation,
 
       incomingIds: qtyEachMaterials.incomingId,
       receivedQuantities: qtyEachMaterials.qty.map(Number),
@@ -441,8 +448,7 @@ const Input = () => {
           });
           const formBody = createFormBody(formInput, qtyEachMaterials);
           const warehouseId = dataMaterialsByDN[0].warehouseId;
-
-          const response = await submitMaterialByDNData(warehouseId, formBody);
+          await submitMaterialByDNData(warehouseId, formBody);
           handleClearInputDN();
           return "Material quantities received!";
         } catch (error) {
@@ -700,7 +706,7 @@ const Input = () => {
             <CRow className="d-flex justify-content-between">
               <CCol
                 sm={6}
-                lg={2}
+                lg={3}
                 style={{ position: "relative" }}
                 className="flex-grow-1"
               >
@@ -750,8 +756,9 @@ const Input = () => {
                       </div>
                     </CRow>
                     <CRow className="">
-                      <CFormText>Rit</CFormText>
+                      <CFormText>Rit | Truck Station</CFormText>
                       <Select
+                        isMulti={false}
                         isDisabled={
                           optionsSelectRit.length === 0 ||
                           stateVendorArrived ||
@@ -759,12 +766,15 @@ const Input = () => {
                         }
                         isClearable
                         className="px-2"
-                        placeholder="Select Rit"
+                        placeholder="Select Rit and Truck Station"
                         value={
                           optionsSelectRit.find(
-                            (opt) => opt.value === selectedRit
-                          ) || 0
+                            (opt) => opt.value === selectedRit && opt.valueTruckStation === selectedTruckStation
+                          ) || null
                         }
+                        // value={ optionsSelectRit.find((opt)=>opt.selectedValue === selectedValue) | ""}
+                        getOptionValue={(e) => `${e.value}-${e.valueTruckStation}`}
+                        getOptionLabel={(e) => e.label}
                         options={optionsSelectRit}
                         onChange={handleChangeSelectRit}
                         styles={{
@@ -825,7 +835,7 @@ const Input = () => {
               </CCol>
               <CCol
                 sm={{ span: 12, order: "last" }}
-                lg={{ span: 8, order: 2 }}
+                lg={{ span: 7, order: 2 }}
                 className="flex-grow-1 pt-3 pt-lg-0"
               >
                 <CCard className="h-100" style={{ border: "1px solid black" }}>
@@ -1012,7 +1022,7 @@ const Input = () => {
               <CCol
                 sm={{ span: 6, order: 2 }}
                 lg={{ span: 2, order: 3 }}
-                className="flex-grow-1"
+                className="flex-grow-1 mt-3 mt-sm-0"
               >
                 <CCard
                   className="h-100 overflow-hidden"
