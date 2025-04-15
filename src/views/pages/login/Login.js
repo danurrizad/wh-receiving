@@ -100,7 +100,7 @@ const Login = () => {
            
             <CCardGroup className='d-flex flex-column-reverse flex-sm-row'>
              <div className='d-block d-sm-flex '>
-              <CCard className=' px-3 max-sm-width-100 max-width-50px'>
+              <CCard className=' px-3 max-sm-width-100 max-width-50px rounded-2 rounded-end-0 card-theme-toggle'>
                  <div className='d-flex pt-2 pt-sm-5 pb-2 flex-sm-column flex-row  align-items-center justify-content-center gap-3'>
                    <CButton onClick={() => setColorMode('light')} color={ colorMode === 'light' &&'dark'} className='border-0'>
                      <CIcon icon={icon.cilSun} size="lg" />
@@ -108,12 +108,12 @@ const Login = () => {
                    <CButton onClick={() => setColorMode('dark')} color={ colorMode === 'dark' && 'light'} className='border-0'>
                      <CIcon icon={icon.cilMoon} size="lg" />
                    </CButton>
-                   {/* <CButton onClick={() => setColorMode('auto')} className='border-0'>
+                   {/* <CButton onClick={() => setColorMode('auto')} color={ colorMode === 'auto' && 'light'} className='border-0'>
                      <CIcon icon={icon.cilContrast} size="lg" />
                    </CButton> */}
                  </div>
                </CCard>
-               <CCard className="p-4">
+               <CCard className="p-4 rounded-0 card-login">
                  <CCardBody>
                    <CForm onSubmit={Auth}>
                      <h1>Login</h1>
