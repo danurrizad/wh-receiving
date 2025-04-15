@@ -216,7 +216,7 @@ const Dashboard = () => {
   }
   
 
-  const fetchChartReceivingData = async (status, vendorId, currentPage, limitPerPage) => {
+  const fetchChartReceivingData = async (status, vendorId) => {
     try {
       
       // setLoading(true)
@@ -242,8 +242,8 @@ const Dashboard = () => {
         vendorId,
         formattedFrom, 
         formattedTo,
-        currentPage,
-        limitPerPage
+        // currentPage,
+        // limitPerPage
       );
       if (response) {
         
@@ -255,7 +255,6 @@ const Dashboard = () => {
       });
       
         const filteredResponse = response.data.filter((data)=>data.status !== 'no schedule')
-        console.log("Response dashboard:", response.data.length);
 
         setDataSchedules(allResponse); // Simpan data dari API ke state
         updateChartData(filteredData.length > 0 ? filteredData : allResponse, pagination.page, pagination.rows);
@@ -293,7 +292,7 @@ const Dashboard = () => {
   useEffect(() => {
     const intervalId = setInterval(() => {
       // addToast("10 detik")
-      fetchChartReceivingData(selectedStatus, optionsSelectVendor.selected, currentPage, limitPerPage.code);
+      fetchChartReceivingData(selectedStatus, optionsSelectVendor.selected);
     }, 10000);
   
     return () => clearInterval(intervalId); // Cleanup on unmount
@@ -302,13 +301,13 @@ const Dashboard = () => {
   useEffect(() => {
     async function fetchFirstLoad() {
       setLoading(true)
-      await fetchChartReceivingData(selectedStatus, optionsSelectVendor.selected, currentPage, limitPerPage.code);
+      await fetchChartReceivingData(selectedStatus, optionsSelectVendor.selected);
       setLoading(false)
     } 
 
     fetchFirstLoad()
 
-  }, [queryFilter.plantId, optionsSelectVendor.selected, queryFilter.rangeDate, currentPage]);  
+  }, [queryFilter.plantId, optionsSelectVendor.selected, queryFilter.rangeDate]);  
 
   const handleClickOpenMaterials = (data) => {
     setShowModalInput({...showModalInput, state: true})

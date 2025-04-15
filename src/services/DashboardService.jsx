@@ -25,11 +25,10 @@ const useDashboardReceivingService = () => {
         }
     }
 
-    const getChartReceiving = async(plant,status,vendor,startdate,enddate,page,limit) => {
+    const getChartReceiving = async(plant,status,vendor,startdate,enddate) => {
         try {
         const response =  await axiosJWT.get
-        (`/arrival-chart?plantId=${plant}&status=${status}&vendorId=${vendor}&startDate=${startdate}&endDate=${enddate}&page=${page}&limit=${limit}`) 
-        // console.log("params in service: ", plant,status,vendor,startdate,enddate,page,limit)
+        (`/arrival-chart?plantId=${plant}&status=${status}&vendorId=${vendor}&startDate=${startdate}&endDate=${enddate}`) 
             return response.data; 
     } catch (error) {
         handleError(error, "Error fetching chart data:");
