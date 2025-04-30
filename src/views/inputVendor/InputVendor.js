@@ -30,84 +30,54 @@ import {
   CToaster,
   CSpinner,
 } from "@coreui/react";
-import {
-  dataReceivingDummy,
-  dataSchedulesDummy,
-  dataDummy,
-} from "../../utils/DummyData";
-import { Button, DatePicker } from "rsuite";
 import Select from "react-select";
-import CreatableSelect from "react-select/creatable";
-import BarcodeScannerComponent from "react-qr-barcode-scanner";
-import { DataTable } from "primereact/datatable";
-import { Column } from "primereact/column";
 import useReceivingDataService from "./../../services/ReceivingDataServices";
 import { useToast } from "../../App";
-import { InputText } from "primereact/inputtext";
-import {
-  FaCircleCheck,
-  FaCircleExclamation,
-  FaCircleXmark,
-  FaInbox,
-} from "react-icons/fa6";
-import Swal from "sweetalert2";
 import CustomTableLoading from "../../components/LoadingTemplate";
+import useVendorDataService from "../../services/VendorDataService";
+import useMasterDataService from "../../services/MasterDataService";
 
 const InputVendor = () => {
   const colorMode = localStorage.getItem('coreui-free-react-admin-template-theme')
   const [loading, setLoading] = useState(false);
   const [loadingSubmit, setLoadingSubmit] = useState(false);
   const addToast = useToast();
-  const [errMsg, setErrMsg] = useState("");
-  const inputRefs = useRef({});
 
-  const { getMaterialByDNData, submitMaterialByDNData } =
-    useReceivingDataService();
+  const { getMaterialByDNData, submitMaterialByDNData } = useReceivingDataService();
+  const { getVendorScheduleByCode, submitVendorArrival } = useVendorDataService()
+  const { getMasterData } = useMasterDataService()
 
-  const [dataVendorByDN, setDataVendorByDN] = useState([]);
-  const [dataMaterialsByDN, setDataMaterialsByDN] = useState([]);
+  const [warehouse, setWarehouse] = useState([])
+  const [dataVendor, setDataVendor] = useState([]);
   const [stateVendorArrived, setStateVendorArrived] = useState(false);
-  const [selectedRows, setSelectedRows] = useState([]);
-  const [confirmedRemaining, setConfirmedRemaining] = useState("0/0");
-  const [disableInputDN, setDisableInputDN] = useState(false);
+  const [disableInputVendor, setDisableInputVendor] = useState(false);
 
   const [selectedRit, setSelectedRit] = useState(0);
+  const [selectedTruckStation, setSelectedTruckStation] = useState("")
   const [formInput, setFormInput] = useState({
-    dn_no: "",
-    material_desc: "",
-    vendor_code: "",
-    vendor_name: "",
-    status: "",
-
-    arrival_date_plan: "",
-    arrival_time_plan: "",
-    departure_time_plan: "",
-    rit: 0,
-    truckStation: "",
-
-    arrival_date_actual: "",
-    arrival_time_actual: "",
-    departure_date_actual: "",
-    departure_time_actual: "",
+    rit: 0
   });
-  const [qtyEachMaterials, setQtyEachMaterials] = useState({});
-  const [remainQty, setRemainQty] = useState({});
-  const optionsSelectRit = dataVendorByDN.map((data) => {
+    
+  const optionsSelectRit = dataVendor?.Delivery_Schedules?.map((data) => {
+      const timePartArrival = data.arrival.split("T")[1];
+      const timeArrival = timePartArrival.slice(0, 5);
+
+      const timePartDeparture = data.departure.split("T")[1];
+      const timeDeparture = timePartDeparture.slice(0, 5);
+
     return {
-      label: `${data.rit} (${data.arrivalPlanTime} - ${data.departurePlanTime}) | ${data.truckStation}`,
+      label: `${data.rit} (${timeArrival} - ${timeDeparture}) | ${data.truckStation}`,
       value: Number(data.rit),
+      valueTruckStation: data.truckStation
     };
   });
 
   const getCurrentDateTime = () => {
     const now = new Date();
-    // Format date as YYYY-MM-DD
     const date = now.toISOString().split("T")[0];
-    // Get hours and minutes
     const padZero = (num) => String(num).padStart(2, "0");
     const hours = padZero(now.getHours());
     const minutes = padZero(now.getMinutes());
-    // Format time as HH:MM - HH:MM
     const time = `${hours}:${minutes}`;
 
     return { date, time };
@@ -119,249 +89,152 @@ const InputVendor = () => {
     date.setHours(hours, minutes);
     date.setMinutes(date.getMinutes() + minutesToAdd);
 
-    // Format the result as HH:mm
     return date.toTimeString().slice(0, 5);
   }
 
-  const getStatusBasedOnTime = (matchesVendor) => {
-    const { date, time } = getCurrentDateTime();
 
-    const addedTime = addMinutes(matchesVendor.arrivalPlanTime, 15);
+  const getStatusBasedOnTime = (matchesSchedule) => {
+    const { date, time } = getCurrentDateTime();
+    
+    const timePartArrival = matchesSchedule.arrival.split("T")[1];
+    const timeArrival = timePartArrival.slice(0, 5);
+
+    const addedTime = addMinutes(timeArrival, 15);
 
     // Compare times
-    if (date < matchesVendor.arrivalPlanDate) {
-      return "on schedule";
-    } else if (date <= matchesVendor.arrivalPlanDate && time <= addedTime) {
+    // if (date < matchesSchedule.arrivalPlanDate) {
+    //   return "on schedule";
+    if (time <= addedTime) {
       return "on schedule"; // Status if current time is within the range
     } else {
       return "overdue"; // Status if current time is outside the range
     }
   };
 
-  const handleChangeInputDN = async (e) => {
+  const handleChangeInputVendor = async (e) => {
     const inputValue = e.target.value;
 
     // Allow only numeric input and respect maxLength
     if (/^\d*$/.test(inputValue) && inputValue.length <= 10) {
-      setFormInput({ ...formInput, dn_no: e.target.value });
-      if (inputValue.length === 10) {
-        await getMaterialByDN(inputValue);
+      setFormInput({ ...formInput, vendorCode: e.target.value });
+      if (inputValue.length === 6) {
+        // await getMaterialByDN(inputValue);
+        await fetchVendorShceduleByCode(inputValue)
+        // if(optionsSelectRit.length === 1){
+        //   setSelectedRit(optionsSelectRit[0].value)
+        //   setSelectedTruckStation(optionsSelectRit[0].valueTruckStation)
+        // }
       }
     }
 
     if (inputValue.length === 0) {
-      handleClearInputDN();
+      handleClearInputVendor();
     }
   };
 
-  const handleClearInputDN = () => {
+  const handleClearInputVendor = () => {
     setFormInput({
-      ...formInput,
-      dn_no: "",
-      material_desc: "",
-      vendor_code: "",
-      vendor_name: "",
-      status: "",
-
-      arrival_date_plan: "",
-      arrival_time_plan: "",
-      departure_time_plan: "",
+      vendorCode: "",
       rit: 0,
       truckStation: "",
-
-      arrival_date_actual: "",
-      arrival_time_actual: "",
-      departure_date_actual: "",
-      departure_time_actual: "",
+      plantName: "",
+      arrivalActualTime: "",
+      arrivalPlanTime: ""
     });
     setSelectedRit(0);
-    setDataMaterialsByDN([]);
-    setDataVendorByDN([]);
-    setQtyEachMaterials({});
-    setRemainQty({});
+    setSelectedTruckStation("")
+    setDataVendor([]);
     setStateVendorArrived(false);
-    setSelectedRows([]);
-    setDisableInputDN(false);
+    setDisableInputVendor(false);
   };
 
-  const handleOnEnterInputDN = async (e) => {
+  const handleOnEnterInputVendor = async (e) => {
     if (e.key === "Enter") {
-      if (formInput.dn_no === "") {
+      if (formInput.vendorCode === "") {
         addToast("Please insert the DN number!", "error", "error");
       } else {
-        await getMaterialByDN(formInput.dn_no);
+        await fetchVendorShceduleByCode(formInput.vendorCode);
       }
     }
     if (e.key === "-") {
-      setFormInput({ ...formInput, dn_no: 2100203724 });
-      await getMaterialByDN(2100203724);
+      setFormInput({ ...formInput, vendorCode: 252654 });
+      await fetchVendorShceduleByCode(252654);
     }
   };
 
-  const handleChangeSelectRit = (e) => {
+  const handleChangeSelectRitTruckStation = (e) => {
     if (e) {
       setSelectedRit(e.value);
+      setSelectedTruckStation(e.valueTruckStation)
     } else {
       setSelectedRit(0);
+      setSelectedTruckStation("")
     }
   };
 
-  const getMaterialByDN = async (dnNumber) => {
+  const fetchVendorShceduleByCode = async(vendorCode) => {
     try {
-      setLoading(true);
-      const response = await getMaterialByDNData(dnNumber);
-
-      if (response.data.data.length !== 0) {
-        const responseDN = response.data.data[0].deliveryNotes;
-        const responseVendor = response.data.data[0].vendorSchedules;
-        const responseStateArrived = response.data.viewOnly;
-
-        if (responseVendor.length === 0) {
-          addToast("Vendor schedule not found", "danger", "error");
-          setTimeout(()=>{
-            handleClearInputDN();
-          }, 100)
-          return;
-        }
-        setDataMaterialsByDN(responseDN);
-        setDataVendorByDN(responseVendor);
-        setQtyEachMaterials({
-          incomingId: responseDN.map((data) => Number(data.incomingId)),
-          qty: responseDN.map((data) =>
-            data.receivedQuantity === null
-              ? data.reqQuantity
-              : data.receivedQuantity
-          ),
-        });
-        setRemainQty({
-          qty: responseDN.map((data) => ""),
-          status: responseDN.map((data) => data.status),
-        });
-        setStateVendorArrived(responseStateArrived);
-
-        if (responseStateArrived) {
-          setSelectedRit(1);
-          setConfirmedRemaining(`${responseDN.length}/${responseDN.length}`);
-        } else {
-          setConfirmedRemaining(`0/${responseDN.length}`);
-        }
-      } else {
-        addToast("Invalid DN Number!", "danger", "error");
-      }
+      const response = await getVendorScheduleByCode(vendorCode)
+      console.log("response schedule vendor: ", response)
+      const responseVendor = response.data.vendor[0];
+      setDataVendor(responseVendor);
     } catch (error) {
-      console.error("error :", error);
-      if (dataMaterialsByDN.length !== 0) {
-        handleClearInputDN();
-      }
-    } finally {
-      setLoading(false);
+      console.error(error)
     }
-  };
-
-  const getArrivalNow = (rit) => {
-    setLoading(true);
-    const { date, time } = getCurrentDateTime();
-    const matchesVendor = dataVendorByDN.find((data) => data.rit === rit);
-    const statusSchedule = getStatusBasedOnTime(matchesVendor);
-    setFormInput({
-      ...formInput,
-      arrival_date_plan: matchesVendor.arrivalPlanDate,
-      arrival_time_plan: matchesVendor.arrivalPlanTime,
-      departure_time_plan: matchesVendor.departurePlanTime,
-      truckStation: matchesVendor.truckStation,
-      rit: matchesVendor.rit,
-
-      arrival_date_actual: date,
-      arrival_time_actual: time,
-      status: statusSchedule,
-    });
-    addToast("Vendor arrival submitted!", 'success')
-    setLoading(false);
-  };
-
-  const [enabledRows, setEnabledRows] = React.useState([]); // Array of enabled row IDs
-
-  const handleDisableInput = (rowData) => {
-    setTimeout(() => {
-      setEnabledRows((prev) => prev.filter((id) => id !== rowData.description)); // Remove row ID from enabled rows
-    }, 100);
-  };
-
-
-  const handleSubmitChangeQty = (rowIndex, rowData) => {
-    handleDisableInput(rowData);
-
-    const remainInData = rowData.remain;
-    const reqQty = rowData.reqQuantity;
-    const inputAct = Number(qtyEachMaterials.qty[rowIndex.rowIndex]);
-    const newRemainQty = inputAct - reqQty;
-
-    setRemainQty((prevState) => ({
-      ...prevState,
-      qty: prevState.qty.map((value, index) =>
-        index === rowIndex.rowIndex ? Number(newRemainQty) : value
-      ),
-      status: prevState.status.map((value, index) =>
-        index === rowIndex.rowIndex && newRemainQty === 0
-          ? "completed"
-          : index === rowIndex.rowIndex && rowData.remain === null
-            ? "not complete"
-            : index === rowIndex.rowIndex && newRemainQty === rowData.remain
-              ? "partial"
-              : index === rowIndex.rowIndex &&
-                  newRemainQty !== rowData.remain &&
-                  newRemainQty < 0
-                ? "partial"
-                : index === rowIndex.rowIndex &&
-                    newRemainQty !== rowData.remain &&
-                    newRemainQty > 0
-                  ? "completed"
-                  : value
-      ),
-    }));
-
-    const alreadySelected = selectedRows.find(
-      (rows) => rows.incomingId === rowData.incomingId
-    );
-    if (!alreadySelected) {
-      setSelectedRows([...selectedRows, rowData]);
-    }
-  };
-
-
-
-  const createFormBody = (formInput, qtyEachMaterials) => {
-    const { date, time } = getCurrentDateTime();
-    const filteredQty = qtyEachMaterials.qty.filter(
-      (data, index) =>
-        Number(data) !== Number(dataMaterialsByDN[index].receivedQuantity)
-    );
-
-    return {
-      dnNumber: Number(formInput.dn_no),
-      arrivalActualDate: formInput.arrival_date_actual,
-      arrivalActualTime: formInput.arrival_time_actual,
-      departureActualDate: date,
-      departureActualTime: time,
-      rit: formInput.rit,
-
-      // incomingIds: qtyEachMaterials.incomingId.filter((data,index)=>Number(qtyEachMaterials.qty[index]) !== Number(dataMaterialsByDN[index].receivedQuantity) && Number(data)),
-      // receivedQuantities: filteredQty.map(Number),
-
-      incomingIds: qtyEachMaterials.incomingId,
-      receivedQuantities: qtyEachMaterials.qty.map(Number),
-    };
-  };
-
- 
+  }
 
   
 
+  const getArrivalNow = async(rit, truckStation) => {
+    setLoading(true);
+    const { date, time } = getCurrentDateTime();
+    const matchesSchedule = dataVendor.Delivery_Schedules.find((data) => data.rit === rit && data.truckStation === truckStation);
+    const statusSchedule = getStatusBasedOnTime(matchesSchedule);
+
+    const timePartArrival = matchesSchedule.arrival.split("T")[1];
+    const timeArrival = timePartArrival.slice(0, 5);
+    
+    const timePartDeparture = matchesSchedule.departure.split("T")[1];
+    const timeDeparture = timePartDeparture.slice(0, 5);
+
+    const body = {
+      supplierId: Number(dataVendor.id),
+      arrivalPlanTime: timeArrival,
+      arrivalActualTime: time,
+      departurePlanTime: timeDeparture,
+      truckStation: matchesSchedule.truckStation,
+      rit: matchesSchedule.rit,
+      plantId: matchesSchedule.plantId
+    };
+
+    try {
+      const response = await submitVendorArrival(body)
+      // console.log("Response submit: ", response)
+      addToast(response.data.message, 'success')
+      setFormInput({
+        ...formInput,
+        supplierId: dataVendor.id,
+        arrivalPlanTime: timeArrival,
+        departurePlanTime: timeDeparture,
+        rit: matchesSchedule.rit,
+        truckStation: matchesSchedule.truckStation,
+        arrivalActualTime: time,
+        status: statusSchedule,
+        plantName: matchesSchedule.Plant.plantName
+      });
+    } catch (error) {
+      console.error("ERRORRR SUBMITTING: ", error)
+    } finally {
+      setLoading(false)
+    }
+  };
+
 
   const renderTruckStation = () => {
-    const arrivedVendor = dataVendorByDN.find(
+    const arrivedVendor = dataVendor?.Delivery_Schedules?.find(
       (data) => data.status !== "scheduled"
     );
+    return formInput?.truckStation || "-"
     return arrivedVendor
       ? arrivedVendor.truckStation
       : formInput.truckStation !== ""
@@ -369,9 +242,10 @@ const InputVendor = () => {
         : "-";
   };
   const renderRit = () => {
-    const arrivedVendor = dataVendorByDN.find(
+    const arrivedVendor = dataVendor?.Delivery_Schedules?.find(
       (data) => data.status !== "scheduled"
     );
+    return formInput?.rit || "-"
     return arrivedVendor
       ? arrivedVendor.rit
       : formInput.rit !== 0
@@ -379,21 +253,26 @@ const InputVendor = () => {
         : "-";
   };
 
-  const renderArrivalDatePlan = () => {
-    const arrivedVendor = dataVendorByDN.find(
-      (data) => data.status !== "scheduled"
-    );
-    return arrivedVendor
-      ? arrivedVendor.arrivalPlanDate
-      : formInput.arrival_date_plan !== ""
-        ? formInput?.arrival_date_plan
-        : " -";
-  };
+  const renderPlant = () => {
+    return formInput?.plantName || "-"
+  }
+
+  // const renderArrivalDatePlan = () => {
+  //   const arrivedVendor = dataVendor?.Delivery_Schedules?.find(
+  //     (data) => data.status !== "scheduled"
+  //   );
+  //   return arrivedVendor
+  //     ? arrivedVendor.arrivalPlanDate
+  //     : formInput.arrivalPlanDate !== ""
+  //       ? formInput?.arrivalPlanDate
+  //       : " -";
+  // };
 
   const renderArrivalTimePlan = () => {
-    const arrivedVendor = dataVendorByDN.find(
+    const arrivedVendor = dataVendor?.Delivery_Schedules?.find(
       (data) => data.status !== "scheduled"
     );
+    return formInput?.arrivalPlanTime || "-"
     return arrivedVendor
       ? `${arrivedVendor.arrivalPlanTime} - ${arrivedVendor.departurePlanTime}`
       : formInput.arrival_time_plan !== ""
@@ -401,54 +280,23 @@ const InputVendor = () => {
         : " -";
   };
 
-  const renderArrivalDateAct = () => {
-    const arrivedVendor = dataVendorByDN.find(
-      (data) => data.status !== "scheduled"
-    );
-    return arrivedVendor
-      ? arrivedVendor.arrivalActualDate
-      : formInput.arrival_date_actual
-        ? formInput.arrival_date_actual
-        : " -";
-  };
-
   const renderArrivalTimeAct = () => {
-    const arrivedVendor = dataVendorByDN.find(
-      (data) => data.status !== "scheduled"
-    );
+    // const arrivedVendor = dataVendor.find(
+    //   (data) => data.status !== "scheduled"
+    // );
+    return formInput?.arrivalActualTime || "-"
     return arrivedVendor
       ? arrivedVendor.arrivalActualTime
-      : formInput.arrival_time_actual
-        ? formInput.arrival_time_actual
-        : " -";
-  };
-
-  const renderDepartureDateAct = () => {
-    const arrivedVendor = dataVendorByDN.find(
-      (data) => data.status !== "scheduled"
-    );
-    return arrivedVendor
-      ? arrivedVendor.departureActualDate
-      : formInput.departure_date_actual
-        ? formInput.departure_date_actual
-        : " -";
-  };
-
-  const renderDepartureTimeAct = () => {
-    const arrivedVendor = dataVendorByDN.find(
-      (data) => data.status !== "scheduled"
-    );
-    return arrivedVendor
-      ? arrivedVendor.departureActualTime
-      : formInput.departure_time_actual
-        ? formInput.departure_time_actual
+      : formInput.arrivalActualTime
+        ? formInput.arrivalActualTime
         : " -";
   };
 
   const renderStatusVendor = () => {
-    const arrivedVendor = dataVendorByDN.find(
+    const arrivedVendor = dataVendor?.Delivery_Schedules?.find(
       (data) => data.status !== "scheduled"
     );
+    return formInput?.status?.toUpperCase() || ""
     return arrivedVendor
       ? arrivedVendor.status.toUpperCase()
       : formInput.status
@@ -456,15 +304,7 @@ const InputVendor = () => {
         : " -";
   };
 
- 
 
-  useEffect(() => {
-    if (!stateVendorArrived) {
-      setConfirmedRemaining(
-        `${selectedRows.length}/${dataMaterialsByDN.length}`
-      );
-    }
-  }, [selectedRows]);
 
   return (
     <CContainer fluid>
@@ -505,7 +345,7 @@ const InputVendor = () => {
                         <CFormInput
                           min={0} // Minimum value
                           max={99} // Maximum value (5 digits)
-                          disabled={formInput.rit !== 0 || disableInputDN}
+                          disabled={formInput?.rit !== 0 || disableInputVendor}
                           className=""
                           style={{
                             borderColor: "maroon",
@@ -513,13 +353,13 @@ const InputVendor = () => {
                           type="text"
                           inputMode="numeric"
                           placeholder="Insert Vendor Code"
-                          value={formInput.dn_no}
-                          onChange={handleChangeInputDN}
-                          onKeyDown={handleOnEnterInputDN}
+                          value={formInput?.vendorCode}
+                          onChange={handleChangeInputVendor}
+                          onKeyDown={handleOnEnterInputVendor}
                         />
-                        {formInput.dn_no.length !== 0 && (
+                        {formInput?.vendorCode?.length !== 0 && (
                           <CButton
-                            onClick={handleClearInputDN}
+                            onClick={handleClearInputVendor}
                             style={{
                               border: "0",
                               position: "absolute",
@@ -536,20 +376,22 @@ const InputVendor = () => {
                       <CFormText>Rit | Truck Station</CFormText>
                       <Select
                         isDisabled={
-                          optionsSelectRit.length === 0 ||
+                          optionsSelectRit?.length === 0 ||
                           stateVendorArrived ||
-                          formInput.rit !== 0
+                          formInput?.rit !== 0
                         }
                         isClearable
                         className="px-2"
                         placeholder="Select Rit and Truck Station"
                         value={
-                          optionsSelectRit.find(
-                            (opt) => opt.value === selectedRit
-                          ) || 0
+                          optionsSelectRit?.find(
+                            (opt) => opt.value === selectedRit && opt.valueTruckStation === selectedTruckStation
+                          ) || null
                         }
+                        getOptionValue={(e) => `${e.value}-${e.valueTruckStation}`}
+                        getOptionLabel={(e) => e.label}
                         options={optionsSelectRit}
-                        onChange={handleChangeSelectRit}
+                        onChange={handleChangeSelectRitTruckStation}
                         styles={{
                           option: (styles, { data, isDisabled, isFocused, isSelected }) => {
                             return {
@@ -585,20 +427,20 @@ const InputVendor = () => {
                       <CButton
                         disabled={selectedRit === 0 || stateVendorArrived}
                         onClick={() =>
-                          formInput.rit === 0
-                            ? getArrivalNow(selectedRit)
-                            : handleClearInputDN()
+                          formInput?.rit === 0
+                            ? getArrivalNow(selectedRit, selectedTruckStation)
+                            : handleClearInputVendor()
                         }
                         className=""
                         style={{
                           color: "white",
                           backgroundColor:
-                            formInput.arrival_date_actual === ""
+                            !formInput?.arrivalActualTime || formInput?.arrivalActualTime === ""
                               ? "#7FA1C3"
                               : "#758694",
                         }}
                       >
-                        {formInput.arrival_date_actual === ""
+                        {!formInput?.arrivalActualTime || formInput?.arrivalActualTime === ""
                           ? "Submit"
                           : "Clear"}
                       </CButton>
@@ -619,7 +461,7 @@ const InputVendor = () => {
                     }}
                   >
                     <p style={{ fontWeight: "bold" }}>
-                      DELIVERY INFORMATION
+                      VENDOR INFORMATION
                     </p>
                   </CCardHeader>
                   <CCardBody className="" style={{ position: "relative" }}>
@@ -640,14 +482,15 @@ const InputVendor = () => {
                           VENDOR NAME
                         </p>
                         <CFormLabel>
-                          {dataVendorByDN.length !== 0
-                            ? dataVendorByDN[0]?.supplierName
+                          {dataVendor.length !== 0
+                            ? dataVendor?.supplierName
                             : "-"}
                         </CFormLabel>
                       </CCol>
                     </CRow>
+
                     <CRow className="mt-1 w-100">
-                      <CCol xs={3}>
+                      <CCol xs={6} sm={4}>
                         <p
                           style={{
                             fontWeight: "bold",
@@ -658,7 +501,9 @@ const InputVendor = () => {
                           TRUCK STATION
                         </p>
                         <CFormLabel>{renderTruckStation()}</CFormLabel>
+                      </CCol>
 
+                      <CCol xs={6} sm={4}>
                         <p
                           style={{
                             fontWeight: "bold",
@@ -670,8 +515,24 @@ const InputVendor = () => {
                         </p>
                         <CFormLabel>{renderRit()}</CFormLabel>
                       </CCol>
+                      <CCol xs={6} sm={4}>
+                        <p
+                          style={{
+                            fontWeight: "bold",
+                            fontSize: "10px",
+                            color: "#6482AD",
+                          }}
+                        >
+                          PLANT
+                        </p>
+                        <CFormLabel>{renderPlant()}</CFormLabel>
+                      </CCol>
+                    </CRow>
 
-                      <CCol>
+
+
+                    <CRow className="mt-1 w-100">
+                      <CCol xs={6} sm={4}>
                         <p
                           style={{
                             fontWeight: "bold",
@@ -679,38 +540,12 @@ const InputVendor = () => {
                             color: "#6482AD",
                           }}
                         >
-                          RECEIVE PLAN{" "}
+                          PLANNING
                         </p>
-                        <CFormLabel
-                          className="col-12"
-                          style={{ fontWeight: "light" }}
-                        >
-                          Date :{" "}
-                          <span style={{ fontWeight: "normal" }}>
-                            {renderArrivalDatePlan()}
-                          </span>
-                        </CFormLabel>
-                        <p
-                          style={{
-                            fontWeight: "bold",
-                            fontSize: "10px",
-                            color: "transparent",
-                            userSelect: "none",
-                          }}
-                        >
-                          Divider{" "}
-                        </p>
-                        <CFormLabel
-                          className="col-12"
-                          style={{ fontWeight: "light" }}
-                        >
-                          Time :{" "}
-                          <span style={{ fontWeight: "normal" }}>
-                            {renderArrivalTimePlan()}
-                          </span>
-                        </CFormLabel>
+                        <CFormLabel>{renderArrivalTimePlan()}</CFormLabel>
                       </CCol>
-                      <CCol>
+
+                      <CCol xs={6} sm={4}>
                         <p
                           style={{
                             fontWeight: "bold",
@@ -718,76 +553,12 @@ const InputVendor = () => {
                             color: "#6482AD",
                           }}
                         >
-                          ARRIVAL{" "}
+                          ARRIVAL
                         </p>
-                        <CFormLabel
-                          className="col-12"
-                          style={{ fontWeight: "light" }}
-                        >
-                          Date :{" "}
-                          <span style={{ fontWeight: "normal" }}>
-                            {renderArrivalDateAct()}
-                          </span>
-                        </CFormLabel>
-                        <p
-                          style={{
-                            fontWeight: "bold",
-                            fontSize: "10px",
-                            color: "transparent",
-                            userSelect: "none",
-                          }}
-                        >
-                          Divider{" "}
-                        </p>
-                        <CFormLabel
-                          className="col-12"
-                          style={{ fontWeight: "light" }}
-                        >
-                          Time :{" "}
-                          <span style={{ fontWeight: "normal" }}>
-                            {renderArrivalTimeAct()}
-                          </span>
-                        </CFormLabel>
+                        
+                        <CFormLabel>{renderArrivalTimeAct()}</CFormLabel>
                       </CCol>
-                      {/* <CCol>
-                        <p
-                          style={{
-                            fontWeight: "bold",
-                            fontSize: "10px",
-                            color: "#6482AD",
-                          }}
-                        >
-                          DEPARTURE{" "}
-                        </p>
-                        <CFormLabel
-                          className="col-12"
-                          style={{ fontWeight: "light" }}
-                        >
-                          Date :{" "}
-                          <span style={{ fontWeight: "normal" }}>
-                            {renderDepartureDateAct()}
-                          </span>
-                        </CFormLabel>
-                        <p
-                          style={{
-                            fontWeight: "bold",
-                            fontSize: "10px",
-                            color: "transparent",
-                            userSelect: "none",
-                          }}
-                        >
-                          Divider{" "}
-                        </p>
-                        <CFormLabel
-                          className="col-12"
-                          style={{ fontWeight: "lighter" }}
-                        >
-                          Time :{" "}
-                          <span style={{ fontWeight: "normal" }}>
-                            {renderDepartureTimeAct()}
-                          </span>
-                        </CFormLabel>
-                      </CCol> */}
+                      
                     </CRow>
                   </CCardBody>
                 </CCard>
@@ -807,20 +578,20 @@ const InputVendor = () => {
                       borderBottom: "1px solid black",
                     }}
                   >
-                    <p style={{ fontWeight: "bold" }}>DELIVERY STATUS</p>
+                    <p style={{ fontWeight: "bold" }}>VENDOR STATUS</p>
                   </CCardHeader>
                   <CCardBody
                     style={{
                       backgroundColor:
                         stateVendorArrived &&
-                        dataVendorByDN[0]?.status === "on schedule"
+                        dataVendor[0]?.status === "on schedule"
                           ? "#00DB42"
-                          : formInput.status === "on schedule"
+                          : formInput?.status === "on schedule"
                             ? "#00DB42"
                             : stateVendorArrived &&
-                                dataVendorByDN[0]?.status === "overdue"
+                                dataVendor[0]?.status === "overdue"
                               ? "#FBC550"
-                              : formInput.status === "overdue"
+                              : formInput?.status === "overdue"
                                 ? "#FBC550"
                                 : "transparent",
                     }}

@@ -16,6 +16,7 @@ import {
   CInputGroup,
   CInputGroupText,
   CRow,
+  CSpinner,
   useColorModes,
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
@@ -36,6 +37,7 @@ const MySwal = withReactContent(Swal)
 
 const Login = () => {
   const { colorMode, setColorMode } = useColorModes('coreui-free-react-admin-template-theme')
+  const [loading, setLoading] = useState(false)
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [msg, setMsg] = useState('')
@@ -60,6 +62,7 @@ const Login = () => {
 
   const Auth = async (e) => {
     e.preventDefault()
+    setLoading(true)
 
     if (!username || !password) {
       setMsg('Username dan password harus diisi')
@@ -80,6 +83,8 @@ const Login = () => {
       } else {
         console.error('Error:', error.message)
       }
+    } finally{
+      setLoading(false)
     }
   }
 
@@ -143,8 +148,8 @@ const Login = () => {
                      </CInputGroup>
                      <CRow>
                        <CCol xs={6}>
-                         <CButton color={colorMode === 'light' ? "dark" : "secondary"} className="px-4" type="submit">
-                           Login
+                         <CButton color={colorMode === 'light' ? "dark" : "secondary"} className={`w-100 d-flex align-items-center justify-content-center gap-2 ${loading && "disabled"}`} type="submit">
+                           { loading && <CSpinner size='sm'/>} Login
                          </CButton>
                        </CCol>
                      </CRow>

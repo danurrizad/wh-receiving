@@ -116,7 +116,7 @@ const Summary = () => {
     setLineChartRedData,
     getLineChartRedOptions,
   } = useBarChartDataService({ dataBarChart });
-  const { getChartReceiving, getChartHistoryReceiving } =
+  const { getChartReceiving, getChartReceivingDaily, getChartHistoryReceiving } =
     useDashboardReceivingService();
   const { getMasterData } = useMasterDataService();
 
@@ -166,16 +166,18 @@ const Summary = () => {
 
   const fetchPieChartReceiving = async (plantId) => {
     try {
-      const response = await getChartReceiving(
+      const response = await getChartReceivingDaily(
         plantId,
-        "",
-        "",
         filterDate.toLocaleDateString("en-CA"),
-        filterDate.toLocaleDateString("en-CA"),
-        "",
-        ""
       );
-      setDataPieChart(response.summaryMaterial);
+      const data = response.data
+      console.log("RESPONSE DAILY CHART :", response)
+      setDataPieChart({
+        completed: data?.statusCount?.find(data=>data.status === 'completed')?.total || 0,
+        notDelivered: data?.statusCount?.find(data=>data.status === 'not complete')?.total || 0,
+        notCompleted: data?.statusCount?.find(data=>data.status === 'partial')?.total || 0,
+        total: data?.totalAll || 0,
+      });
     } catch (error) {
       console.error(error);
       setDataPieChart([]);
@@ -649,7 +651,7 @@ const Summary = () => {
                     </CCardHeader>
                     <CCardBody className="d-flex align-items-end gap-2 w-100">
                       <h2>
-                        {dataPieChart.length !== 0 ? dataPieChart.completed : 0}
+                        {dataPieChart?.length !== 0 ? dataPieChart?.completed : 0}
                       </h2>
                       <h4 className="mb-1">Materials</h4>
                       <div className="d-flex justify-content-end w-100">
@@ -674,8 +676,8 @@ const Summary = () => {
                     </CCardHeader>
                     <CCardBody className="d-flex align-items-end gap-2">
                       <h2>
-                        {dataPieChart.length !== 0
-                          ? dataPieChart.notCompleted
+                        {dataPieChart?.length !== 0
+                          ? dataPieChart?.notCompleted
                           : 0}
                       </h2>
                       <h4 className="mb-1">Materials</h4>
@@ -701,8 +703,8 @@ const Summary = () => {
                     </CCardHeader>
                     <CCardBody className="d-flex align-items-end gap-2">
                       <h2>
-                        {dataPieChart.length !== 0
-                          ? dataPieChart.notDelivered
+                        {dataPieChart?.length !== 0
+                          ? dataPieChart?.notDelivered
                           : 0}
                       </h2>
                       <h4 className="mb-1">Materials</h4>
@@ -728,7 +730,7 @@ const Summary = () => {
                     </CCardHeader>
                     <CCardBody className="d-flex align-items-end gap-2">
                       <h2>
-                        {dataPieChart.length !== 0 ? dataPieChart.total : 0}
+                        {dataPieChart?.length !== 0 ? dataPieChart?.total : 0}
                       </h2>
                       <h4 className="mb-1">Materials</h4>
                       <div className="d-flex justify-content-end w-100">

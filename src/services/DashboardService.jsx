@@ -25,10 +25,29 @@ const useDashboardReceivingService = () => {
         }
     }
 
-    const getChartReceiving = async(plant,status,vendor,startdate,enddate) => {
+    // const getChartReceiving = async(plant,status,vendor,startdate,enddate) => {
+    //     try {
+    //     const response =  await axiosJWT.get
+    //     (`/arrival-chart?plantId=${plant}&status=${status}&vendorId=${vendor}&startDate=${startdate}&endDate=${enddate}`) 
+    //         return response.data; 
+    // } catch (error) {
+    //     handleError(error, "Error fetching chart data:");
+    //     }
+    // }
+
+    const getChartReceiving = async(plant, status, vendor) => {
         try {
         const response =  await axiosJWT.get
-        (`/arrival-chart?plantId=${plant}&status=${status}&vendorId=${vendor}&startDate=${startdate}&endDate=${enddate}`) 
+        (`/arrival-monitoring?plantId=${plant}&status=${status}&vendorId=${vendor}`) 
+            return response.data; 
+    } catch (error) {
+        handleError(error, "Error fetching chart data:");
+        }
+    }
+
+    const getChartReceivingDaily = async(plantId, date) => {
+        try {
+            const response =  await axiosJWT.get(`chart-material-arrive?plantId=${plantId}&date=${date}`) 
             return response.data; 
     } catch (error) {
         handleError(error, "Error fetching chart data:");
@@ -51,6 +70,7 @@ const useDashboardReceivingService = () => {
     return{
         getCardStatusArrival,
         getChartReceiving,
+        getChartReceivingDaily,
         getChartHistoryReceiving
     }
 }

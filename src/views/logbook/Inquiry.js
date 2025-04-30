@@ -13,7 +13,7 @@ import { useToast } from '../../App';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { FilterMatchMode, FilterOperator } from 'primereact/api';
-import { FaArrowUpRightFromSquare, FaCircleCheck, FaCircleExclamation, FaCircleXmark, FaInbox } from 'react-icons/fa6';
+import { FaArrowUpRightFromSquare, FaCircleCheck, FaCircleExclamation, FaCircleXmark, FaInbox, FaTruckArrowRight } from 'react-icons/fa6';
 import Swal from 'sweetalert2'
 import { Row } from 'primereact/row';
 import { ColumnGroup } from 'primereact/columngroup';
@@ -21,11 +21,11 @@ import CustomTableLoading from '../../components/LoadingTemplate';
 
 
 const Book = () => {
-  // const addToast = useToast()
   const colorMode = localStorage.getItem('coreui-free-react-admin-template-theme')
   const [ loading, setLoading ] = useState(false)
   const { getDNInqueryData, submitUpdateMaterialByDNData } = useReceivingDataService()
   const [ dataDNInquery, setDataDNInquery ] = useState([])
+  const [ dataArrivals, setDataArrivals] = useState({})
   const [ dataMaterialsByDNInquery, setDataMaterialsByDNInquery ] = useState([])
 
   const [ formUpdate, setFormUpdate ] = useState({})
@@ -35,11 +35,10 @@ const Book = () => {
     state: false,
     enableSubmit: false
   })
-  const [ showModalScanner, setShowModalScanner ] = useState(false)
+  const [ showModalArrivals, setShowModalArrivals] = useState(false)
 
   const [queryFilter, setQueryFilter] = useState({
     plantId: "",
-
     rangeDate: [
       new Date(), 
       new Date()
@@ -104,23 +103,11 @@ const Book = () => {
     try {
       setLoading(true)
       const idPlant = getPlantId(plantId)
-      if(startDate !== null && endDate !== null) {
-        const formattedFrom = startDate.toLocaleDateString('en-CA')
-        const formattedTo = endDate.toLocaleDateString('en-CA')
-        const response = await getDNInqueryData(idPlant, formattedFrom, formattedTo) 
-        
-        const allResponse = response.data.data.sort((a, b) => {
-          const [aHours, aMinutes] = a.arrivalPlanTime ? a.arrivalPlanTime.split(":").map(Number) : [ 23, 59];
-          const [bHours, bMinutes] = b.arrivalPlanTime ? b.arrivalPlanTime.split(":").map(Number) : [ 23, 59];
-          
-          return aHours * 60 + aMinutes - (bHours * 60 + bMinutes);
-      });
-        // setDataDNInquery(response.data.data)
-        setDataDNInquery(allResponse)
-      }else{
-        const response = await getDNInqueryData(idPlant, "", "") 
-        setDataDNInquery(response.data.data)
-      }
+      const formattedFrom = startDate?.toLocaleDateString('en-CA') || ""
+      const formattedTo = endDate?.toLocaleDateString('en-CA') || ""
+      const response = await getDNInqueryData(idPlant, formattedFrom, formattedTo)    
+      console.log("response:", response)     
+      setDataDNInquery(response.data.data)
     } catch (error) {
       console.error(error)
       setDataDNInquery([])
@@ -153,28 +140,40 @@ const Book = () => {
     })
   }
 
+  const handleClickOpenArrivals = (data) => {
+    setShowModalArrivals(true)
+    const dataDN = data
+    const dataArrivalVendor = data.VendorMovements
+    setDataArrivals({
+      dnNumber: dataDN.dnNumber,
+      vendorName: dataDN.supplierName,
+      arrivals: dataArrivalVendor
+    })
+  }
+
   const headerGroup = (
     <ColumnGroup >
         <Row>
             <Column header="No" rowSpan={2} />
             <Column header="DN No" sortable field='dnNumber' rowSpan={2} />
             <Column header="Vendor Name" sortable field='supplierName' rowSpan={2} />
-            <Column header="Truck Station" sortable field='truckStation' rowSpan={2} />
+            {/* <Column header="Truck Station" sortable field='truckStation' rowSpan={2} />
             <Column header="Rit" sortable field='rit' rowSpan={2} />
             <Column header="Plan" colSpan={2} align='center' />
             <Column header="Arrival" colSpan={2} align='center' />
             <Column header="Departure" sortable field='departureActualTime' rowSpan={2} />
             <Column header="Status Arrival" sortable field='status' rowSpan={2} />
-            <Column header={`Delay Time`} sortable field='delayTime' rowSpan={2} style={{ width: "2%"}}/>
+            <Column header={`Delay Time`} sortable field='delayTime' rowSpan={2} style={{ width: "2%"}}/> */}
             <Column header="Status Received" sortable rowSpan={2} />
             <Column header="Materials" rowSpan={2} />
+            <Column header="Arrival" rowSpan={2} />
         </Row>
-        <Row>
+        {/* <Row>
             <Column header="Date" sortable field="arrivalPlanDate" />
             <Column header="Time" sortable field="arrivalPlanTime" />
             <Column header="Date" sortable field="arrivalActualDate" />
             <Column header="Time" sortable field="arrivalActualTime" />
-        </Row>
+        </Row> */}
     </ColumnGroup>
   );
 
@@ -188,12 +187,30 @@ const Book = () => {
     )
   }
 
-  const plantTimeBodyTemplate = (rowData) => {
-    const timeFrom = rowData.arrivalPlanTime
-    const timeTo = rowData.departurePlanTime
+  const arrivalsBodyTemplate = (rowBody) => {
+    return(
+      <div className='d-flex align-items-center justify-content-center'>
+        <CButton onClick={()=>handleClickOpenArrivals(rowBody)} color='info' className='d-flex justify-content-center align-items-center p-2'>
+          <FaTruckArrowRight style={{ color: "white"}}/>
+        </CButton>
+      </div>
+    )
+  }
+
+  const planTimeBodyTemplate = (rowData) => {
+    const timeFrom = rowData.arrivalPlanTime.split("T")[1].slice(0, 5)
+    const timeTo = rowData.departurePlanTime.split("T")[1].slice(0, 5)
     return(
       <div>
         {timeFrom} - {timeTo}
+      </div>
+    )
+  }
+
+  const actualTimeBodyTemplate = (rowData) => {
+    return(
+      <div>
+        {rowData.arrivalActualTime.split("T")[1].slice(0, 5)}
       </div>
     )
   }
@@ -385,7 +402,7 @@ const handleSubmitChangeQty = (rowIndex, rowData) => {
     }
 
     const statusReceivedBodyTemplate = (rowData) => {
-      const completedReceive = rowData.Materials.filter((data)=>data.status === 'completed')
+      const completedReceive = rowData?.Materials?.filter((data)=>data.status === 'completed')
       const colorStyle = 
         completedReceive.length !== rowData.Materials.length ? "red" :
         completedReceive.length === rowData.Materials.length && colorMode === 'light' ? "black" :
@@ -461,7 +478,7 @@ const handleSubmitChangeQty = (rowIndex, rowData) => {
         <CRow>
           <CCard className='p-0 mb-4' style={{ border: "1px solid #6482AD"}}>
             <CCardHeader style={{ backgroundColor: "rgb(100, 130, 173)", color: "white"}}>
-              <CCardTitle className='text-center'>INQUIRY DATA</CCardTitle>
+              <CCardTitle className='text-center'>INQUIRY MATERIAL RECEIVED</CCardTitle>
             </CCardHeader>
             <CCardBody>
               <CRow className='d-flex align-items-end'>
@@ -506,7 +523,7 @@ const handleSubmitChangeQty = (rowIndex, rowData) => {
                     <DataTable
                       loading={loading}
                       loadingIcon={<CustomTableLoading/>}
-                      headerColumnGroup={headerGroup}
+                      // headerColumnGroup={headerGroup}
                       className='p-datatable-gridlines p-datatable-sm custom-datatable'
                       style={{ minHeight: "200px"}}
                       removableSort
@@ -527,20 +544,13 @@ const handleSubmitChangeQty = (rowIndex, rowData) => {
                       filterDisplay="row"
                     >
                       <Column className='' header="No" body={(rowBody, {rowIndex})=>rowIndex+1}/>
+                      <Column className='' sortable field='deliveryDate'  header="Delivery Date"/>
                       <Column className='' sortable field='dnNumber'  header="DN No"/>
                       <Column className='' sortable field='supplierName'  header="Vendor Name" />
-                      <Column className='' sortable field='truckStation'  header="Truck Station" />
-                      <Column className='' sortable field='rit'  header="Rit" />
-                      <Column className='' sortable field='arrivalPlanDate'  header="Plan Date" />
-                      <Column className='' sortable field='arrivalPlanTime'  header="Plan Time" body={plantTimeBodyTemplate} />
-                      <Column className='' sortable field='arrivalActualDate'  header="Arv. Date" />
-                      <Column className='' sortable field='arrivalActualTime'  header="Arv. Time" />
-                      {/* <Column className='' field='deliveryNotes.departureActualDate'  header="Departure Date" /> */}
-                      <Column className='' sortable field='departureActualTime'  header="Dpt. Time" />
-                      <Column className='' sortable field='status'  header="Status Arrival" body={statusVendorBodyTemplate} />
-                      <Column className='' sortable field='delayTime'  header="Delay Time" body={delayTimeBodyTemplate} style={{ textTransform: "lowercase", width: "1%"}} />
+                      <Column className='' sortable field='plantName'  header="Plant"/>
                       <Column className='' sortable field=''  header="Status Received" body={statusReceivedBodyTemplate} style={{width: "1%"}}/>
                       <Column className='' sortable field=''  header="Materials" body={materialsBodyTemplate} />
+                      <Column className='' sortable field=''  header="Arrival" body={arrivalsBodyTemplate} />
                   
                     </DataTable>
                   </CCardBody>
@@ -553,7 +563,7 @@ const handleSubmitChangeQty = (rowIndex, rowData) => {
 
         {/* -----------------------------------------------------------------------------------MODAL RENDERING--------------------------------------------------------------------------------------- */}
 
-        {/* Modal Upload File */}
+        {/* Modal Materials */}
         <CModal 
           visible={showModalInput.state}
           onClose={() => setShowModalInput({state: false, enableSubmit: false})}
@@ -581,7 +591,6 @@ const handleSubmitChangeQty = (rowIndex, rowData) => {
               className='p-datatable-gridlines p-datatable-sm custom-datatable text-wrap'
               removableSort
               size='small'
-              // emptyMessage={renderCustomEmptyMsg}
               scrollable
               scrollHeight="50vh"
               showGridlines
@@ -593,7 +602,6 @@ const handleSubmitChangeQty = (rowIndex, rowData) => {
               currentPageReportTemplate="Showing {first} to {last} of {totalRecords}"
               value={dataMaterialsByDNInquery}
               filterDisplay="row"
-              // loading={loading}
             >
               <Column className='' header="No" body={(rowBody, {rowIndex})=>rowIndex+1}/>
               <Column className='' field='materialNo'  header="Material No"/>
@@ -612,6 +620,57 @@ const handleSubmitChangeQty = (rowIndex, rowData) => {
           
         </CModal>
        
+       {/* Modal Arrival */}
+       <CModal
+        visible={showModalArrivals}
+        onClose={() => setShowModalArrivals(false)}
+        size='lg'
+        backdrop="static"
+       >
+        <CModalHeader>
+          <CModalTitle>Vendor Arrivals</CModalTitle>
+        </CModalHeader>
+        <CModalBody>
+        <CRow>
+            <CCol sm='3'>
+              <CFormText>DN NO</CFormText>  
+              <CFormLabel>{dataArrivals?.dnNumber}</CFormLabel>
+            </CCol>
+            <CCol>
+              <CFormText>VENDOR NAME</CFormText>  
+              <CFormLabel>{dataArrivals?.vendorName}</CFormLabel>
+            </CCol>
+          </CRow>
+          <CRow>
+            <DataTable
+              value={dataArrivals?.arrivals}
+              loading={loading}
+              loadingIcon={<CustomTableLoading/>}
+              className='p-datatable-gridlines p-datatable-sm custom-datatable text-wrap'
+              removableSort
+              size='small'
+              scrollable
+              scrollHeight="50vh"
+              showGridlines
+              stripedRows
+              paginator
+              rows={10}
+              rowsPerPageOptions={[10, 25, 50]}
+              paginatorTemplate="CurrentPageReport FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown"
+              currentPageReportTemplate="Showing {first} to {last} of {totalRecords}"
+              filterDisplay="row"
+            >
+              <Column className='' sortable field='movementDate'  header="Arv. Date" />
+              <Column className='' sortable field='truckStation'  header="Truck Station" />
+              <Column className='' sortable field='rit'  header="Rit" />
+              <Column className='' sortable field='arrivalPlanTime'  header="Plan Time" body={planTimeBodyTemplate} />
+              <Column className='' sortable field='arrivalActualTime'  header="Arv. Time" body={actualTimeBodyTemplate}/>
+              <Column className='' sortable field='status'  header="Status Arrival" body={statusVendorBodyTemplate} />
+              {/* <Column className='' sortable field='delayTime'  header="Delay Time" body={delayTimeBodyTemplate} style={{ textTransform: "lowercase", width: "1%"}} /> */}
+            </DataTable>
+          </CRow>
+        </CModalBody>
+       </CModal>
     </CContainer>
   )
 }

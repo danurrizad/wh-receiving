@@ -9,6 +9,7 @@ const useVerify = () => {
   const [name, setName] = useState('')
   const [roleName, setRoleName] = useState('')
   const [warehouseId, setWarehouseId] = useState(0)
+  const [plantId, setPlantId] = useState(null)
   const [token, setToken] = useState('')
   const [expire, setExpire] = useState(0)
   const [isWarehouse, setIsWarehouse] = useState(0)
@@ -28,6 +29,7 @@ const useVerify = () => {
       setName(decoded.name)
       setRoleName(decoded.roleName)
       setWarehouseId(decoded.anotherWarehouseId)
+      setPlantId(decoded.plantId)
       setExpire(decoded.exp)
       setIsWarehouse(decoded.isWarehouse)
       setImgProfile(decoded.img)
@@ -53,6 +55,7 @@ const useVerify = () => {
           setName(decoded.name)
           setRoleName(decoded.roleName)
           setWarehouseId(decoded.anotherWarehouseId)
+          setPlantId(decoded.plantId)
           setExpire(decoded.exp)
           setIsWarehouse(decoded.isWarehouse)
           setImgProfile(decoded.img)
@@ -71,7 +74,7 @@ const useVerify = () => {
     },
   )
 
-  return { name, roleName, warehouseId, token, isWarehouse, imgProfile, axiosJWT }
+  return { name, roleName, warehouseId, plantId, token, isWarehouse, imgProfile, axiosJWT }
 }
 
 export default useVerify
