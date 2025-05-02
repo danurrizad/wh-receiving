@@ -339,7 +339,7 @@ const Dashboard = () => {
           status === "delayed" ? "Vendor belum tiba dan melebihi jadwal" : 
           status === "scheduled" ? "Vendor belum tiba" : 
           status === "overdue" ? "Vendor telah tiba dengan melebihi jadwal" : 
-          status === "on scheduled" ? "Vendor telah tiba tepat waktu" : 
+          status === "on schedule" ? "Vendor telah tiba tepat waktu" : 
           ""
         } 
         placement="top"
@@ -585,6 +585,7 @@ const Dashboard = () => {
                       control: (base) => {
                         return ({
                           ...base,
+                          width: '100%',
                           maxWidth: '100%',
                           borderRadius: '5px',
                           padding: '2px',
