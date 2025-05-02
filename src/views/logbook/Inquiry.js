@@ -198,8 +198,8 @@ const Book = () => {
   }
 
   const planTimeBodyTemplate = (rowData) => {
-    const timeFrom = rowData.arrivalPlanTime.split("T")[1].slice(0, 5)
-    const timeTo = rowData.departurePlanTime.split("T")[1].slice(0, 5)
+    const timeFrom = rowData?.arrivalPlanTime?.split("T")[1].slice(0, 5) || ""
+    const timeTo = rowData?.departurePlanTime?.split("T")[1].slice(0, 5) || ""
     return(
       <div>
         {timeFrom} - {timeTo}
@@ -222,6 +222,7 @@ const Book = () => {
       status === "scheduled" ? "#6E9CFF" : 
       status === "overdue" ? "#FBC550" : 
       status === "on schedule" ? "#43AB43" : 
+      status === "unscheduled" ? "gray" : 
       "transparent"
     return(
       <CTooltip 
@@ -230,6 +231,7 @@ const Book = () => {
           status === "scheduled" ? "Vendor belum tiba" : 
           status === "overdue" ? "Vendor telah tiba dengan melebihi jadwal" : 
           status === "on schedule" ? "Vendor telah tiba tepat waktu" : 
+          status === "unscheduled" ? "Vendor tanpa jadwal telah tiba" : 
           ""
         } 
         placement="top"
@@ -402,11 +404,11 @@ const handleSubmitChangeQty = (rowIndex, rowData) => {
     }
 
     const statusReceivedBodyTemplate = (rowData) => {
-      const completedReceive = rowData?.Materials?.filter((data)=>data.status === 'completed')
+      const completedReceive = rowData?.Materials?.filter((data)=>data.status === 'completed') || []
       const colorStyle = 
-        completedReceive.length !== rowData.Materials.length ? "red" :
-        completedReceive.length === rowData.Materials.length && colorMode === 'light' ? "black" :
-        completedReceive.length === rowData.Materials.length && colorMode === 'dark' ? "white" :
+        completedReceive?.length !== rowData.Materials.length ? "red" :
+        completedReceive?.length === rowData.Materials.length && colorMode === 'light' ? "black" :
+        completedReceive?.length === rowData.Materials.length && colorMode === 'dark' ? "white" :
         "black"
       return(
         <div>
