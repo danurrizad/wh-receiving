@@ -54,23 +54,98 @@ const InputVendor = () => {
 
   const [selectedRit, setSelectedRit] = useState(0);
   const [selectedTruckStation, setSelectedTruckStation] = useState("")
+  const [formManual, setFormManual] = useState({})
   const [formInput, setFormInput] = useState({
     rit: 0
   });
-    
-  const optionsSelectRit = dataVendor?.Delivery_Schedules?.map((data) => {
-      const timePartArrival = data.arrival.split("T")[1];
-      const timeArrival = timePartArrival.slice(0, 5);
+  
+  const [showModal, setShowModal] = useState(false)
+  let manualOptions = [
+    {
+      label: "Insert manual",
+      valueTruckStation: "manual"
+    }
+  ]
+  const [optionsSelectRit, setOptionsSelectRit] = useState([])
+  const [allRit, setAllRit] = useState([])
+  const [allPlant, setAllPlant] = useState([])
+  const [allTruckStation, setAllTruckStation] = useState([])
 
-      const timePartDeparture = data.departure.split("T")[1];
-      const timeDeparture = timePartDeparture.slice(0, 5);
+  const fetchVendorByCode = async(vendorCode) => {
+    try {
+      const response = await getMasterData(`supplier-code?vendorCode=${vendorCode}`)
+      console.log('response vendor by code: ', response)
+      setDataVendor({
+        id: response.data.data.id,
+        supplierName: response.data.data.supplierName
+      })
+    } catch (error) {
+      console.error(error)
+    }
+  }
 
-    return {
-      label: `${data.rit} (${timeArrival} - ${timeDeparture}) | ${data.truckStation}`,
-      value: Number(data.rit),
-      valueTruckStation: data.truckStation
-    };
-  });
+  const fetchPlant = async() => {
+    try {
+      const response = await getMasterData('plant')
+      const options = response.data.map((data)=>{
+        return{
+          label: data.plantName,
+          value: data.id
+        }
+      })
+      setAllPlant(options)
+    } catch (error) {
+      console.error(error)
+    }
+  }
+
+  const fetchRitandTruckStation = async(plantId) => {
+    try {
+      const response = await getMasterData(`truck-station/${plantId}`)
+      const optionsTruckStations = response.data.data.truckStations.map((data)=>{
+        return{
+          label: data,
+          value: data
+        }
+      })
+      const optionsRit = response.data.data.rits.map((data)=>{
+        return{
+          label: data,
+          value: data
+        }
+      })
+      setAllTruckStation(optionsTruckStations)
+      setAllRit(optionsRit)
+    } catch (error) {
+      console.error(error)
+      setAllTruckStation([])
+      setAllRit([])
+    }
+  }
+
+  const handleSelectPlant = async(e) => {
+    if(e === null){
+      setFormManual({ 
+        ...formManual, 
+        plantName: "",
+        plantId: "",
+        truckStation: ""
+      })
+      setAllTruckStation([])
+      setAllRit([])
+    }else{
+      setFormManual({ 
+        ...formManual, 
+        plantName: e !== null ? e.label : "", 
+        plantId: e !== null ? e.value : "",
+      })
+      fetchRitandTruckStation(e.value)
+    }
+  }
+
+  useEffect(()=>{
+    fetchPlant()
+  }, [])
 
   const getCurrentDateTime = () => {
     const now = new Date();
@@ -101,9 +176,6 @@ const InputVendor = () => {
 
     const addedTime = addMinutes(timeArrival, 15);
 
-    // Compare times
-    // if (date < matchesSchedule.arrivalPlanDate) {
-    //   return "on schedule";
     if (time <= addedTime) {
       return "on schedule"; // Status if current time is within the range
     } else {
@@ -118,8 +190,7 @@ const InputVendor = () => {
     if (/^\d*$/.test(inputValue) && inputValue.length <= 10) {
       setFormInput({ ...formInput, vendorCode: e.target.value });
       if (inputValue.length === 6) {
-        // await getMaterialByDN(inputValue);
-        await fetchVendorShceduleByCode(inputValue)
+        await fetchVendorScheduleByCode(inputValue)
         // if(optionsSelectRit.length === 1){
         //   setSelectedRit(optionsSelectRit[0].value)
         //   setSelectedTruckStation(optionsSelectRit[0].valueTruckStation)
@@ -153,59 +224,97 @@ const InputVendor = () => {
       if (formInput.vendorCode === "") {
         addToast("Please insert the DN number!", "error", "error");
       } else {
-        await fetchVendorShceduleByCode(formInput.vendorCode);
+        await fetchVendorScheduleByCode(formInput.vendorCode);
       }
     }
     if (e.key === "-") {
       setFormInput({ ...formInput, vendorCode: 252654 });
-      await fetchVendorShceduleByCode(252654);
+      await fetchVendorScheduleByCode(252654);
     }
   };
 
   const handleChangeSelectRitTruckStation = (e) => {
     if (e) {
-      setSelectedRit(e.value);
-      setSelectedTruckStation(e.valueTruckStation)
+      if(e.valueTruckStation === 'manual'){
+        setShowModal(true)
+        setFormManual({
+          rit: null,
+          truckStation: "",
+          plantId: "",
+          plantName: ""
+        })
+      }else{
+        setShowModal(false)
+        setSelectedRit(e.value);
+        setSelectedTruckStation(e.valueTruckStation)
+      }
     } else {
       setSelectedRit(0);
       setSelectedTruckStation("")
     }
   };
 
-  const fetchVendorShceduleByCode = async(vendorCode) => {
+  
+
+  const fetchVendorScheduleByCode = async(vendorCode) => {
     try {
       const response = await getVendorScheduleByCode(vendorCode)
       console.log("response schedule vendor: ", response)
       const responseVendor = response.data.vendor[0];
+      if(!response){
+        fetchVendorByCode(vendorCode)
+      }
+
+      const options = responseVendor?.Delivery_Schedules?.map((data) => {
+          const timePartArrival = data.arrival.split("T")[1];
+          const timeArrival = timePartArrival.slice(0, 5);
+    
+          const timePartDeparture = data.departure.split("T")[1];
+          const timeDeparture = timePartDeparture.slice(0, 5);
+    
+        return {
+          label: `${data.rit} (${timeArrival} - ${timeDeparture}) | ${data.truckStation}`,
+          value: Number(data.rit),
+          valueTruckStation: data.truckStation
+        };
+      })
+      if(options){
+        setOptionsSelectRit(options)
+      }else{
+        setOptionsSelectRit(manualOptions)
+      }
       setDataVendor(responseVendor);
     } catch (error) {
+      setOptionsSelectRit(manualOptions)
+      fetchVendorByCode(vendorCode)
       console.error(error)
     }
   }
 
-  
 
   const getArrivalNow = async(rit, truckStation) => {
     setLoading(true);
     const { date, time } = getCurrentDateTime();
-    const matchesSchedule = dataVendor.Delivery_Schedules.find((data) => data.rit === rit && data.truckStation === truckStation);
-    const statusSchedule = getStatusBasedOnTime(matchesSchedule);
+    const matchesSchedule = dataVendor?.Delivery_Schedules?.find((data) => data.rit === rit && data.truckStation === truckStation) || null;
+    const statusSchedule = matchesSchedule ? getStatusBasedOnTime(matchesSchedule) : 'unscheduled';
 
-    const timePartArrival = matchesSchedule.arrival.split("T")[1];
-    const timeArrival = timePartArrival.slice(0, 5);
+    const timePartArrival = matchesSchedule?.arrival?.split("T")[1] || null;
+    const timeArrival = timePartArrival?.slice(0, 5) || null;
     
-    const timePartDeparture = matchesSchedule.departure.split("T")[1];
-    const timeDeparture = timePartDeparture.slice(0, 5);
+    const timePartDeparture = matchesSchedule?.departure?.split("T")[1] || null;
+    const timeDeparture = timePartDeparture?.slice(0, 5) || null;
 
     const body = {
       supplierId: Number(dataVendor.id),
       arrivalPlanTime: timeArrival,
       arrivalActualTime: time,
       departurePlanTime: timeDeparture,
-      truckStation: matchesSchedule.truckStation,
-      rit: matchesSchedule.rit,
-      plantId: matchesSchedule.plantId
+      truckStation: matchesSchedule?.truckStation || formManual.truckStation,
+      rit: matchesSchedule?.rit || formManual.rit,
+      plantId: matchesSchedule?.plantId || formManual.plantId
     };
+
+    console.log("BODY TO SUBMIT ARRIVAL :", body)
 
     try {
       const response = await submitVendorArrival(body)
@@ -216,11 +325,11 @@ const InputVendor = () => {
         supplierId: dataVendor.id,
         arrivalPlanTime: timeArrival,
         departurePlanTime: timeDeparture,
-        rit: matchesSchedule.rit,
-        truckStation: matchesSchedule.truckStation,
+        rit: matchesSchedule?.rit || formManual.rit,
+        truckStation: matchesSchedule?.truckStation || formManual.truckStation,
         arrivalActualTime: time,
         status: statusSchedule,
-        plantName: matchesSchedule.Plant.plantName
+        plantName: matchesSchedule?.Plant?.plantName || formManual.plantName 
       });
     } catch (error) {
       console.error("ERRORRR SUBMITTING: ", error)
@@ -231,83 +340,135 @@ const InputVendor = () => {
 
 
   const renderTruckStation = () => {
-    const arrivedVendor = dataVendor?.Delivery_Schedules?.find(
-      (data) => data.status !== "scheduled"
-    );
     return formInput?.truckStation || "-"
-    return arrivedVendor
-      ? arrivedVendor.truckStation
-      : formInput.truckStation !== ""
-        ? formInput?.truckStation
-        : "-";
   };
   const renderRit = () => {
-    const arrivedVendor = dataVendor?.Delivery_Schedules?.find(
-      (data) => data.status !== "scheduled"
-    );
     return formInput?.rit || "-"
-    return arrivedVendor
-      ? arrivedVendor.rit
-      : formInput.rit !== 0
-        ? formInput?.rit
-        : "-";
   };
 
   const renderPlant = () => {
     return formInput?.plantName || "-"
   }
 
-  // const renderArrivalDatePlan = () => {
-  //   const arrivedVendor = dataVendor?.Delivery_Schedules?.find(
-  //     (data) => data.status !== "scheduled"
-  //   );
-  //   return arrivedVendor
-  //     ? arrivedVendor.arrivalPlanDate
-  //     : formInput.arrivalPlanDate !== ""
-  //       ? formInput?.arrivalPlanDate
-  //       : " -";
-  // };
-
   const renderArrivalTimePlan = () => {
-    const arrivedVendor = dataVendor?.Delivery_Schedules?.find(
-      (data) => data.status !== "scheduled"
-    );
     return formInput?.arrivalPlanTime || "-"
-    return arrivedVendor
-      ? `${arrivedVendor.arrivalPlanTime} - ${arrivedVendor.departurePlanTime}`
-      : formInput.arrival_time_plan !== ""
-        ? `${formInput?.arrival_time_plan} - ${formInput?.departure_time_plan}`
-        : " -";
   };
 
   const renderArrivalTimeAct = () => {
-    // const arrivedVendor = dataVendor.find(
-    //   (data) => data.status !== "scheduled"
-    // );
     return formInput?.arrivalActualTime || "-"
-    return arrivedVendor
-      ? arrivedVendor.arrivalActualTime
-      : formInput.arrivalActualTime
-        ? formInput.arrivalActualTime
-        : " -";
   };
 
   const renderStatusVendor = () => {
-    const arrivedVendor = dataVendor?.Delivery_Schedules?.find(
-      (data) => data.status !== "scheduled"
-    );
     return formInput?.status?.toUpperCase() || ""
-    return arrivedVendor
-      ? arrivedVendor.status.toUpperCase()
-      : formInput.status
-        ? formInput.status.toUpperCase()
-        : " -";
   };
 
+  const handleAddManual = () => {
+    try {
+      if(!formManual.rit || !formManual.truckStation){
+        addToast("Please fill all required fields!", "danger", "error")
+        return
+      }
+      manualOptions.push({ 
+          label: `${formManual.rit} | ${formManual.truckStation}`, 
+          value: formManual.rit, valueTruckStation: formManual.truckStation
+      })
+  
+      setOptionsSelectRit(manualOptions)
+      setSelectedRit(formManual.rit)
+      setSelectedTruckStation(formManual.truckStation)
+      setShowModal(false)
+    } catch (error) {
+      
+    }
+  }
 
+  const renderModal = () => {
+    return(
+      <CModal
+        visible={showModal}
+        onClose={()=>setShowModal(false)}
+      >
+        <CModalHeader>
+          <CModalTitle>Add Manual Schedule</CModalTitle>
+        </CModalHeader>
+        <CModalBody>
+          <CRow className="mb-3">
+            <CCol xs={3}>
+              <CFormLabel>Plant</CFormLabel>
+            </CCol>
+            <CCol>
+              <Select
+                options={allPlant}
+                onChange={handleSelectPlant}
+                value={allPlant.find((opt)=>opt.value === formManual.plantId) || ""}
+                getOptionValue={(e) => e.value}
+                getOptionLabel={(e) => e.label}
+                isClearable
+              />
+            </CCol>
+          </CRow>
+          <CRow className="mb-3">
+            <CCol xs={3}>
+              <CFormLabel>Rit</CFormLabel>
+            </CCol>
+            <CCol>
+              <Select
+                isDisabled={formManual.plantId === "" || formManual.plantId === null}
+                value={allRit.find((opt)=>opt.value === formManual.rit) || ""}
+                options={allRit}
+                onChange={(e)=>setFormManual({ ...formManual, rit: e !== null ? e.value : ""})}
+                getOptionValue={(e) => e.value}
+                getOptionLabel={(e) => e.label}
+                isClearable
+              />
+            </CCol>
+          </CRow>
+          <CRow className="mb-3">
+            <CCol xs={3}>
+              <CFormLabel>Truck Station</CFormLabel>
+            </CCol>
+            <CCol>
+              <Select
+                isDisabled={formManual.plantId === "" || formManual.plantId === null}
+                options={allTruckStation}
+                onChange={(e)=>setFormManual({ ...formManual, truckStation: e !== null ? e.value : ""})}
+                value={allTruckStation.find((opt)=>opt.value === formManual.truckStation) || ""}
+                getOptionValue={(e) => e.value}
+                getOptionLabel={(e) => e.label}
+                isClearable
+              />
+            </CCol>
+          </CRow>
+        </CModalBody>
+        <CModalFooter>
+          <CButton 
+            style={{
+              color: "white",
+              backgroundColor: "#758694",
+            }} 
+            onClick={()=>setShowModal(false)}
+          >
+            Cancel
+          </CButton>
+          <CButton 
+            color="success"
+            style={{
+              color: "white",
+            }}
+            onClick={handleAddManual}
+          >
+            Add
+          </CButton>
+        </CModalFooter>
+      </CModal>
+    )
+  }
 
   return (
     <CContainer fluid>
+
+      { renderModal() }
+
       <CRow className="mb-4">
         <CCard className="p-0" style={{ border: "1px solid #6482AD" }}>
           <CCardHeader
@@ -376,7 +537,8 @@ const InputVendor = () => {
                       <CFormText>Rit | Truck Station</CFormText>
                       <Select
                         isDisabled={
-                          optionsSelectRit?.length === 0 ||
+                          // optionsSelectRit === undefined ||
+                          // optionsSelectRit?.length === 0 ||
                           stateVendorArrived ||
                           formInput?.rit !== 0
                         }
@@ -388,9 +550,13 @@ const InputVendor = () => {
                             (opt) => opt.value === selectedRit && opt.valueTruckStation === selectedTruckStation
                           ) || null
                         }
+                        // value={'manual'}
                         getOptionValue={(e) => `${e.value}-${e.valueTruckStation}`}
                         getOptionLabel={(e) => e.label}
                         options={optionsSelectRit}
+                        // options={
+                        //   [{label: "Insert manual", value: 'manual'}]
+                        // }
                         onChange={handleChangeSelectRitTruckStation}
                         styles={{
                           option: (styles, { data, isDisabled, isFocused, isSelected }) => {
@@ -593,7 +759,9 @@ const InputVendor = () => {
                               ? "#FBC550"
                               : formInput?.status === "overdue"
                                 ? "#FBC550"
-                                : "transparent",
+                                : formInput?.status === 'unscheduled'
+                                ? "gray"
+                                  : "transparent",
                     }}
                     className="d-flex justify-content-center align-items-center"
                   >
@@ -610,8 +778,6 @@ const InputVendor = () => {
                 </CCard>
               </CCol>
             </CRow>
-           
-          
           </CCardBody>
         </CCard>
       </CRow>
