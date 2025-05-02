@@ -97,11 +97,11 @@ const Input = () => {
   const [qtyEachMaterials, setQtyEachMaterials] = useState({});
   const [remainQty, setRemainQty] = useState({});
   const optionsSelectRit = dataArrivedVendor?.map((data) => {
-    const timeArrival = data.arrivalPlanTime.split("T")[1].slice(0, 5)
-    const timeDeparture = data.departurePlanTime.split("T")[1].slice(0, 5)
+    const timeArrival = data?.arrivalPlanTime?.split("T")[1].slice(0, 5) || ""
+    const timeDeparture = data?.departurePlanTime?.split("T")[1].slice(0, 5) || ""
 
     return {
-      label: `${data.rit} (${timeArrival} - ${timeDeparture}) | ${data.truckStation}`,
+      label: timeArrival !== "" ? `${data.rit} (${timeArrival} - ${timeDeparture}) | ${data.truckStation}` : `${data.rit} | ${data.truckStation}`,
       valueRit: Number(data.rit),
       valueTruckStation: data.truckStation,
     };
@@ -180,8 +180,8 @@ const Input = () => {
       }
     }
     if (e.key === "-") {
-      setFormInput({ ...formInput, dn_no: 2100207430 });
-      await getMaterialByDN(2100207430);
+      setFormInput({ ...formInput, dn_no: 2100206670 });
+      await getMaterialByDN(2100206670);
     } else if (e.key === "="){
       setFormInput({ ...formInput, dn_no: 2100207058 });
       await getMaterialByDN(2100207058);
@@ -193,7 +193,7 @@ const Input = () => {
     if (e) {
       setSelectedRit(e.valueRit);
       setSelectedTruckStation(e.valueTruckStation)
-      const matchesVendor = dataArrivedVendor.find(data=>data.rit === e.valueRit && data.truckStation)
+      const matchesVendor = dataArrivedVendor.find(data=>data.rit === e.valueRit && data.truckStation === e.valueTruckStation)
       setDataVendorByDN(matchesVendor)
     } else {
       setSelectedRit(0);
