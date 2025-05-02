@@ -91,7 +91,7 @@ const InquiryVendor = () => {
     }
   }
 
-  const [statuses] = useState(['On Schedule', 'Overdue'])
+  const [statuses] = useState(['On Schedule', 'Overdue', 'Unscheduled'])
 
   const onGlobalFilterChange = (e) => {
     const value = e;
@@ -126,8 +126,8 @@ const InquiryVendor = () => {
 
 
   const planTimeBodyTemplate = (rowData) => {
-    const timeFrom = rowData.arrivalPlanTime.split("T")[1].slice(0, 5)
-    const timeTo = rowData.departurePlanTime.split("T")[1].slice(0, 5)
+    const timeFrom = rowData?.arrivalPlanTime?.split("T")[1].slice(0, 5) || ""
+    const timeTo = rowData?.departurePlanTime?.split("T")[1].slice(0, 5) || ""
     return(
       <div>
         {timeFrom} - {timeTo}
@@ -150,6 +150,7 @@ const InquiryVendor = () => {
       status === "scheduled" ? "#6E9CFF" : 
       status === "overdue" ? "#FBC550" : 
       status === "on schedule" ? "#43AB43" : 
+      status === "unscheduled" ? "gray" : 
       "transparent"
     return(
       <CTooltip 
@@ -158,6 +159,7 @@ const InquiryVendor = () => {
           status === "scheduled" ? "Vendor belum tiba" : 
           status === "overdue" ? "Vendor telah tiba dengan melebihi jadwal" : 
           status === "on schedule" ? "Vendor telah tiba tepat waktu" : 
+          status === "unscheduled" ? "Vendor tanpa jadwal telah tiba" : 
           ""
         } 
         placement="top"
