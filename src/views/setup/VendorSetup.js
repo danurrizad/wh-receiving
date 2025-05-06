@@ -1,6 +1,4 @@
-import React,{useState,Suspense, useRef, useEffect} from 'react'
-import CIcon from '@coreui/icons-react'
-import * as icon from '@coreui/icons'
+import React,{useState,Suspense, useEffect} from 'react'
 
 import { Button } from 'primereact/button'
 import Flatpickr from 'react-flatpickr'
@@ -21,32 +19,17 @@ import {
   CFormLabel,
   CContainer,
   CCardTitle,
-  CTable,
-  CTableHead,
-  CTableRow,
-  CTableHeaderCell,
-  CTableBody,
-  CToaster,
-  CTableDataCell,
   CFormText,
 } from '@coreui/react'
 import { FaInbox, FaPenToSquare, FaTrashCan } from 'react-icons/fa6'
 import useScheduleDataService from '../../services/ScheduleDataService'
 import useMasterDataService from '../../services/MasterDataService'
 import { useToast } from '../../App'
-import { classNames } from 'primereact/utils';
-import { FilterMatchMode, FilterOperator } from 'primereact/api';
+import { FilterMatchMode } from 'primereact/api';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { InputText } from 'primereact/inputtext';
-import { IconField } from 'primereact/iconfield';
-import { InputIcon } from 'primereact/inputicon';
-import { Dropdown } from 'primereact/dropdown';
-import { MultiSelect } from 'primereact/multiselect';
-import { Tag } from 'primereact/tag';
-import { TriStateCheckbox } from 'primereact/tristatecheckbox';
 import Select from 'react-select';
-import { ColumnGroup } from 'primereact/columngroup'
 import Swal from 'sweetalert2'
 import { TimePicker } from 'rsuite'
 import CustomTableLoading from '../../components/LoadingTemplate'
@@ -76,7 +59,6 @@ const VendorSetup = () => {
         try {
           setLoading(true)
           const response = await getScheduleAllData(plantId, day)
-          // console.log("response schedule all:", response)
           setDataSchedule(response.data.data)
         } catch (error) {
           console.error(error)
@@ -172,7 +154,6 @@ const VendorSetup = () => {
       const getOptionsSupplier = async() => {
         try {
           const response = await getMasterData('supplier-public')
-          // console.log(response)
           setOptionsSupplier({
             ...optionsSupplier,
             list: response.data.map((data)=>{
@@ -301,22 +282,13 @@ const VendorSetup = () => {
           const formData = new FormData()
           formData.append('file', file)
           formData.append('importDate', importDate)
-          // console.log("formData :", formData)
 
-          // Log FormData contents
-            for (let [key, value] of formData.entries()) {
-              console.log(`${key} blabla:`, value);
-          }
-
-          // const response = await uploadFileScheduleData(formData)
           const response = await uploadMasterData(`upload-delivery-schedule/${warehouseId}`, formData)
-          console.log("Response upload :", response)
-          // addToast(TemplateToast("success", "success", response.message))
           addToast("File uploaded", 'success', 'success')
 
 
         } catch (error) {
-          console.log("Error response upload :", error)          
+          console.error("Error response upload :", error)          
         } finally{
           setLoading(false)
         }
@@ -343,7 +315,6 @@ const VendorSetup = () => {
       }
 
     const showModalUpdate = (data) => {
-      console.log(data)
       setFormModal({
         ...formModal,
         supplierId: Number(data?.Supplier?.id),
@@ -415,7 +386,6 @@ const VendorSetup = () => {
     }
 
     const handleClickAdd = async() => {
-      // console.log("form modal add :", formModal)
       try {
         setLoadingImport(true)
         const response = await postMasterData('delivery-schedule', formModal)
@@ -430,13 +400,9 @@ const VendorSetup = () => {
     }
 
     const handleClickUpdate = async() => {
-      // console.log("form modal :", formModal)
-      // console.log("form modal id :", formModalId)
-
       try {
         setLoadingImport(true)
         const response = await updateMasterDataById(`delivery-schedule`, formModalId, formModal)
-        // console.log("response update:", response)
         addToast(response.message, 'success', 'success')
         getScheduleAll(optionsPlant.selected, selectedOptionsDay)
         setModalUpdate(false)

@@ -3,8 +3,6 @@ import CIcon from "@coreui/icons-react";
 import * as icon from "@coreui/icons";
 import {
   CButton,
-  CTooltip,
-  CButtonGroup,
   CCard,
   CCardBody,
   CCardHeader,
@@ -14,24 +12,14 @@ import {
   CFormInput,
   CFormLabel,
   CFormText,
-  CInputGroup,
   CModal,
   CModalBody,
   CModalFooter,
   CModalHeader,
   CModalTitle,
   CRow,
-  CTable,
-  CTableBody,
-  CTableDataCell,
-  CTableHead,
-  CTableHeaderCell,
-  CTableRow,
-  CToaster,
-  CSpinner,
 } from "@coreui/react";
 import Select from "react-select";
-import useReceivingDataService from "./../../services/ReceivingDataServices";
 import { useToast } from "../../App";
 import CustomTableLoading from "../../components/LoadingTemplate";
 import useVendorDataService from "../../services/VendorDataService";
@@ -40,14 +28,11 @@ import useMasterDataService from "../../services/MasterDataService";
 const InputVendor = () => {
   const colorMode = localStorage.getItem('coreui-free-react-admin-template-theme')
   const [loading, setLoading] = useState(false);
-  const [loadingSubmit, setLoadingSubmit] = useState(false);
   const addToast = useToast();
 
-  const { getMaterialByDNData, submitMaterialByDNData } = useReceivingDataService();
   const { getVendorScheduleByCode, submitVendorArrival } = useVendorDataService()
   const { getMasterData } = useMasterDataService()
 
-  const [warehouse, setWarehouse] = useState([])
   const [dataVendor, setDataVendor] = useState([]);
   const [stateVendorArrived, setStateVendorArrived] = useState(false);
   const [disableInputVendor, setDisableInputVendor] = useState(false);
@@ -74,7 +59,6 @@ const InputVendor = () => {
   const fetchVendorByCode = async(vendorCode) => {
     try {
       const response = await getMasterData(`supplier-code?vendorCode=${vendorCode}`)
-      console.log('response vendor by code: ', response)
       setDataVendor({
         id: response.data.data.id,
         supplierName: response.data.data.supplierName
@@ -86,7 +70,7 @@ const InputVendor = () => {
 
   const fetchPlant = async() => {
     try {
-      const response = await getMasterData('plant')
+      const response = await getMasterData('plant-public')
       const options = response.data.map((data)=>{
         return{
           label: data.plantName,
@@ -259,7 +243,6 @@ const InputVendor = () => {
   const fetchVendorScheduleByCode = async(vendorCode) => {
     try {
       const response = await getVendorScheduleByCode(vendorCode)
-      console.log("response schedule vendor: ", response)
       const responseVendor = response.data.vendor[0];
       if(!response){
         fetchVendorByCode(vendorCode)
@@ -314,11 +297,9 @@ const InputVendor = () => {
       plantId: matchesSchedule?.plantId || formManual.plantId
     };
 
-    console.log("BODY TO SUBMIT ARRIVAL :", body)
 
     try {
       const response = await submitVendorArrival(body)
-      // console.log("Response submit: ", response)
       addToast(response.data.message, 'success')
       setFormInput({
         ...formInput,

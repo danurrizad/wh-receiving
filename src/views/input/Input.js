@@ -4,7 +4,6 @@ import * as icon from "@coreui/icons";
 import {
   CButton,
   CTooltip,
-  CButtonGroup,
   CCard,
   CCardBody,
   CCardHeader,
@@ -14,31 +13,9 @@ import {
   CFormInput,
   CFormLabel,
   CFormText,
-  CInputGroup,
-  CModal,
-  CModalBody,
-  CModalFooter,
-  CModalHeader,
-  CModalTitle,
   CRow,
-  CTable,
-  CTableBody,
-  CTableDataCell,
-  CTableHead,
-  CTableHeaderCell,
-  CTableRow,
-  CToaster,
-  CSpinner,
 } from "@coreui/react";
-import {
-  dataReceivingDummy,
-  dataSchedulesDummy,
-  dataDummy,
-} from "../../utils/DummyData";
-import { Button, DatePicker } from "rsuite";
 import Select from "react-select";
-import CreatableSelect from "react-select/creatable";
-import BarcodeScannerComponent from "react-qr-barcode-scanner";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import useReceivingDataService from "./../../services/ReceivingDataServices";
@@ -57,12 +34,10 @@ import useVendorDataService from "../../services/VendorDataService";
 const Input = () => {
   const colorMode = localStorage.getItem('coreui-free-react-admin-template-theme')
   const [loading, setLoading] = useState(false);
-  const [loadingSubmit, setLoadingSubmit] = useState(false);
   const addToast = useToast();
   const inputRefs = useRef({});
 
   const { getMaterialByDNData, submitMaterialByDNData } = useReceivingDataService();
-  const { getArrivedVendor } = useVendorDataService()
 
   const [dataArrivedVendor, setDataArrivedVendor] = useState([]);
   const [dataVendorByDN, setDataVendorByDN] = useState([]);
@@ -75,7 +50,6 @@ const Input = () => {
 
   const [selectedRit, setSelectedRit] = useState(0);
   const [selectedTruckStation, setSelectedTruckStation] = useState("");
-  const [selectedVendor, setSelectedVendor] = useState("");
   const [formInput, setFormInput] = useState({
     dn_no: "",
     material_desc: "",
@@ -211,10 +185,7 @@ const Input = () => {
         const responseDN = response.data.material;
         const responseVendor = response.data.arrivedVendor;
         const responseSelectedArrivedVendor = response.data.selectedArrivedVendor;
-        console.log("response data: ", response.data)
-        console.log("response DN: ", responseDN)
-        console.log("response Vendor: ", responseVendor)
-        console.log("response Selected Arrived Vendor: ", responseSelectedArrivedVendor)
+
         if (responseVendor?.length === 0) {
           addToast("Please input vendor first", "danger", "error");
           setTimeout(()=>{
@@ -404,20 +375,16 @@ const Input = () => {
       confirmButtonText: "Submit",
       preConfirm: async () => {
         try {
-          setLoadingSubmit(true);
           Swal.showLoading();
           const formBody = createFormBody(dataMaterialsByDN, dataVendorByDN, qtyEachMaterials);
           const warehouseId = dataMaterialsByDN[0].warehouseId;
-          console.log("formBody: ", formBody)
           await submitMaterialByDNData(warehouseId, formBody);
           handleClearInputDN();
           return "Material quantities received!";
         } catch (error) {
           console.error(error);
           return error;
-        } finally {
-          setLoadingSubmit(false);
-        }
+        } 
       },
     }).then(async (result) => {
       if (result.isConfirmed) {
@@ -532,11 +499,8 @@ const Input = () => {
 
   const handleSelectRow = (e) => {
     const alreadySelected = selectedRows?.find((data)=>data.incomingId === e.value[(e.value.length)-1].incomingId) 
-    console.log("alreadySelected: ", alreadySelected)
     const availableRow = dataMaterialsByDN?.filter((data)=>data.viewOnly === false)
-    console.log("availableRow: ", availableRow)
     const matchesAvailable = availableRow?.find((data)=>data.incomingId === e.value[(e.value.length)-1].incomingId)
-    console.log("matchesAvailable: ", matchesAvailable)
     if (dataVendorByDN.length !== 0 && !alreadySelected && matchesAvailable) {
       setSelectedRows(e.value);
     }
@@ -949,22 +913,12 @@ const Input = () => {
                       header="Status Qty"
                       body={statusBodyTemplate}
                     />
-                    {/* <Column className='' field="" header="Action" body={actionBodyTemplate} /> */}
                   </DataTable>
                 </CCardBody>
               </CCard>
             </CRow>
             <CRow className="d-flex justify-content-end">
               <CCol xs="auto">
-                {/* {stateVendorArrived ? (
-                  <CButton
-                    style={{ backgroundColor: "#758694" }}
-                    className="text-white"
-                    onClick={handleClearInputDN}
-                  >
-                    Clear
-                  </CButton>
-                ) : ( */}
                   <CTooltip 
                     className={ (dataMaterialsByDN?.filter(data=>!data.viewOnly).length === selectedRows.length && dataVendorByDN?.length !== 0) || selectedArrivedVendor !== null || dataMaterialsByDN?.length === 0 && "d-none"} 
                     content={
@@ -988,7 +942,6 @@ const Input = () => {
                       </CButton>
                     </span>
                   </CTooltip>
-                {/* )} */}
               </CCol>
             </CRow>
           </CCardBody>

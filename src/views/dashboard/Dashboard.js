@@ -1,36 +1,24 @@
 import React, { useState, useEffect,useRef } from 'react'
 import '../../scss/_tabels.scss'
 import Select from 'react-select'
-import Flatpickr from 'react-flatpickr'
 import 'flatpickr/dist/flatpickr.css'
-import { DatePicker, DateRangePicker, Input } from 'rsuite';
-import { IconField } from 'primereact/iconfield'
-import { InputIcon } from 'primereact/inputicon'
-import { InputText } from 'primereact/inputtext'
-import { Dropdown } from 'primereact/dropdown'
 import 'primereact/resources/themes/nano/theme.css'
 import 'primereact/resources/primereact.min.css'
-import 'primeicons/primeicons.css'; // Icon bawaan PrimeReact
+import 'primeicons/primeicons.css';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import 'primeicons/primeicons.css';
-import { FilterMatchMode, FilterOperator } from 'primereact/api';
-import useReceivingDataService from '../../services/ReceivingDataServices'
-import { cilChart,cilCog} from '@coreui/icons';
-import { FaAnglesLeft, FaAnglesRight, FaArrowUpRightFromSquare, FaChevronLeft, FaChevronRight, FaCircleCheck, FaCircleExclamation, FaCircleInfo, FaCircleXmark, FaInbox } from 'react-icons/fa6';
+import { FilterMatchMode } from 'primereact/api';
+import { cilCog} from '@coreui/icons';
+import { FaArrowUpRightFromSquare, FaCircleCheck, FaCircleExclamation, FaCircleXmark, FaInbox } from 'react-icons/fa6';
 import {
-  CAvatar,
   CModal ,
   CModalHeader,
   CModalTitle,
   CModalBody,
   CButton,
-  CButtonGroup,
-  CPagination,
-  CPaginationItem,
   CCard,
   CCardBody,
-  CBadge,
   CCardHeader,
   CCardText,
   CCardTitle,
@@ -38,23 +26,14 @@ import {
   CContainer,
   CFormLabel,
   CFormText,
-  CProgress,
   CTooltip,
   CRow,
-  CTable,
-  CTableBody,
-  CTableDataCell,
-  CTableHead,
-  CTableHeaderCell,
-  CTableRow,
-  CFormInput,
+  CAccordion,
+  CAccordionItem,
+  CAccordionHeader,
+  CAccordionBody,
 } from '@coreui/react'
-import {
-  cilCalendar,
-} from '@coreui/icons'
 import useDashboardReceivingService from '../../services/DashboardService'
-import useChartData from '../../services/ChartDataServices'
-import usePieChartDataService from '../../services/PieChartDataService.jsx'
 import useMasterDataService from '../../services/MasterDataService'
 import {
   Chart as ChartJS,
@@ -70,11 +49,8 @@ import {
 } from 'chart.js';
 import ChartDataLabels from "chartjs-plugin-datalabels";
 import annotationPlugin from "chartjs-plugin-annotation";
-import { Bar, Pie } from 'react-chartjs-2';
 import CIcon from '@coreui/icons-react'
-import { useToast } from '../../App'
 import CustomTableLoading from '../../components/LoadingTemplate'
-import useBarChartDataService from './../../services/BarChartDataService';
 import useVerify from '../../hooks/UseVerify.jsx'
 
 
@@ -111,7 +87,6 @@ const Dashboard = () => {
   const [dataSchedules, setDataSchedules] = useState([]); // Menyimpan data dari API
 
   const [pagination, setPagination] = useState({ page: 0, rows: 10 });
-  const totalPage = Math.ceil(dataSchedules.length / pagination.rows)
   const [filteredData, setFilteredData] = useState([]);
 
   //  const [totalPages, setTotalPages] = useState(1);
@@ -132,7 +107,6 @@ const Dashboard = () => {
   });
   const [ dataMaterialsByDNInquery, setDataMaterialsByDNInquery ] = useState([])
   const [ dataDN, setDataDN ] = useState([])
-  const [ optionsSelectDN, setOptionsSelectDN ] = useState({})
  
   const [queryFilter, setQueryFilter] = useState({
     plantId: plantId ? plantId : "",
@@ -210,7 +184,6 @@ const Dashboard = () => {
       );
       
       if (response) {
-        console.log("response dhboard :", response)
         const allResponse = response.data
         setDataSchedules(allResponse)
         calculateSummary(allResponse)
@@ -273,31 +246,15 @@ const Dashboard = () => {
 
   const handleClickOpenMaterials = (data) => {
     setShowModalInput({...showModalInput, state: true})
-    
-    const dataDN = data?.deliveryNotes
-    const optionsDN = data.deliveryNotes.map((dn)=>{
-      return{
-        label: dn.dnNumber,
-        value: dn.dnNumber
-      }
-    })
-    setOptionsSelectDN({...optionsSelectDN, list: optionsDN, selected: optionsDN[0]?.value})
-    setDataDN(dataDN)
-    setDataMaterialsByDNInquery(dataDN.length !== 0 ? dataDN[0].Materials : [])
-
     setFormUpdate({
-      dnNumber: optionsDN[0]?.value,
-      totalDN: dataDN.length,
-      vendorName: data.vendorName,
-      rit: data.rit,
+      vendorName: data.vendorName
     })
-  }
-
-
-  const handleChangeOptionsDN = (e) => {
-    const matchesDN = dataDN.find((data)=>data.dnNumber === e.value)
-    setDataMaterialsByDNInquery(matchesDN.Materials)
-    setOptionsSelectDN({...optionsSelectDN, selected: e.value})
+    setDataDN(data.DeliveryNotes)
+    let materials = []
+    data.DeliveryNotes.map((data)=>{
+      materials.push(data.Materials)
+    })
+    setDataMaterialsByDNInquery(materials)
   }
   
   const planTimeBodyTemplate = (rowData) => {
@@ -374,8 +331,9 @@ const Dashboard = () => {
       "white"
     // return rowBody.itemReceived
     return(
-      <div>
-        {total !== 0 && <span style={{color: color, fontWeight: colorMode === 'dark' && 'bold'}}>{complete}<span style={{color: colorMode === 'light' ? "black" : "white"}}> / {total}</span></span>}
+      <div className='d-flex align-items-center justify-content-between gap-2'>
+        { total !== 0 && <span style={{color: color, fontWeight: colorMode === 'dark' && 'bold'}}>{complete}<span style={{color: colorMode === 'light' ? "black" : "white"}}> / {total}</span></span>}
+        { total !== 0 && materialsBodyTemplate(rowBody) }
       </div>
     )
   }
@@ -416,7 +374,7 @@ const Dashboard = () => {
         }
 
         const selectStatusStyles = {
-          option: (base, {data, isDisabled, isSelected}) => ({
+          option: (base, {data}) => ({
             ...base,
             backgroundColor: data.color,
             display: 'flex',
@@ -446,13 +404,10 @@ const Dashboard = () => {
           }),
           placeholder: (base) => ({
             ...base,
-            // color: "red", // Warna merah untuk placeholder
-            // fontWeight: "bold",
           }),
           singleValue: (base, state) => ({
             ...base,
             color: "white",
-            // color: state.data.value === "delayed" ? "red" : "green", // Warna sesuai status
             backgroundColor: 
               state.data.value === "delayed" ? "#F64242" : 
               state.data.value === "scheduled" ? "#6E9CFF" : 
@@ -546,8 +501,6 @@ const Dashboard = () => {
               <button
                 className="btn d-flex align-items-center justify-content-center btn-toggle"
                 style={{
-                  // backgroundColor: "#B0B0B0",
-                  // backgroundColor: "white",
                   borderRadius: "50%",
                   width: "40px",
                   height: "40px",
@@ -774,22 +727,14 @@ const Dashboard = () => {
                   }} // Track filtering
                 >
                   <Column className='' header="No" body={(rowBody, { rowIndex }) => rowIndex + 1}></Column>
-                  {/* <Column className='' field='dnNumber'  header="DN No"></Column> */}
-                  {/* <Column className='' field='arrivalPlanDate' sortable  header="Plan Date" ></Column> */}
                   <Column className='' field='arrivalPlanTime' sortable header="Plan Time" body={planTimeBodyTemplate} ></Column>
-                  {/* <Column className='' field='vendorCode'  header="Vendor Code"></Column> */}
                   <Column className='' field='vendorName'  header="Vendor Name" ></Column>
                   <Column className='' field='truckStation'  header="Truck Station" ></Column>
                   <Column className='' field='rit'  header="Rit" ></Column>
                   <Column className='' field='plantName'  header="Plant" ></Column>
-                  {/* <Column className='' field='arrivalActualDate'  header="Arriv. Date" ></Column> */}
                   <Column className='' field='arrivedTime'  header="Arriv. Time" body={actualTimeBodyTemplate}></Column>
-                  {/* <Column className='' field='deliveryNotes.departureActualDate'  header="Departure Date" /> */}
-                  {/* <Column className='' field='departureActualTime'  headernput="Dept. Time" ></Column> */}
                   <Column className='' field='statusMaterial'  header="Item Received" body={statusMaterialBodyTemplate}></Column>
                   <Column className='' field='status'  header="Status Arrival" body={statusVendorBodyTemplate} ></Column>
-                  {/* <Column className='' field=''  header="Materials" body={materialsBodyTemplate} ></Column> */}
-              
                 </DataTable>
               </CCardBody>
             </CCard>
@@ -812,48 +757,51 @@ const Dashboard = () => {
                     <CFormText>VENDOR NAME</CFormText>  
                     <CFormLabel>{formUpdate.vendorName}</CFormLabel>
                   </CCol>
-                  <CCol sm='3'>
-                    <CFormText>TOTAL DN</CFormText>  
-                    <CFormLabel>{formUpdate.totalDN}</CFormLabel>
-                  </CCol>
-                  <CCol sm='3'>
-                    <CFormText>DN NO</CFormText>  
-                    <Select 
-                      options={optionsSelectDN.list} 
-                      onChange={handleChangeOptionsDN} 
-                      value={optionsSelectDN?.list?.find((opt)=>opt.value === optionsSelectDN.selected)}
-                    />
-                    {/* <CFormLabel>{formUpdate.dnNumber}</CFormLabel> */}
-                  </CCol>
                 </CRow>
                 <CRow className='pt-1'>
-                  <DataTable
-                    className="p-datatable-sm custom-datatable text-nowrap"
-                    loading={loading}
-                    loadingIcon={<CustomTableLoading/>}
-                    tableStyle={{ minWidth: '50rem' }}
-                    removableSort
-                    size="small"
-                    scrollable
-                    scrollHeight="50vh"
-                    showGridlines
-                    paginator
-                    rows={10}
-                    rowsPerPageOptions={[10, 25, 50]}
-                    paginatorTemplate="CurrentPageReport FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown"
-                    currentPageReportTemplate="Showing {first} to {last} of {totalRecords}"
-                    value={dataMaterialsByDNInquery}
-                    filterDisplay="row"
+                  <CAccordion style={{ 
+                    '--cui-accordion-active-bg': '#6482AD',
+                    '--cui-accordion-active-color': 'white',
+                    '--cui-accordion-btn-focus-box-shadow': 'none',
+                    }}
                   >
-                    <Column header="No" body={(rowBody, {rowIndex})=>rowIndex+1} />
-                    <Column field='materialNo'  header="Material No" />
-                    <Column field='description'  header="Material Description" />
-                    <Column field='address'  header="Rack Address" />
-                    <Column field="reqQuantity" header="Req. Qty" body={(data) => <div className="text-center">{data.reqQuantity}</div>} />
-                    <Column field="actQuantity" header="Act. Qty" body={(data) => <div className="text-center">{data.actQuantity}</div>} />
-                    <Column field="remain" header="Remain" body={remainBodyTemplate} align="center" />
-                    <Column field='status'  header="Status" body={statusQtyBodyTemplate} />
-                  </DataTable>
+                    {dataDN?.length !== 0 && dataDN?.map((data, index)=>{
+                      return(
+                        <CAccordionItem itemKey={index+1} key={index}>
+                          <CAccordionHeader>DN: {data.dnNumber} | STATUS: <div style={{ color: data.completeItems !== data.totalItems && 'red', padding: "0 5px"}}> {data.completeItems} </div> / {data.totalItems}</CAccordionHeader>
+                          <CAccordionBody>
+                            <DataTable
+                              className="p-datatable-sm custom-datatable text-nowrap"
+                              loading={loading}
+                              loadingIcon={<CustomTableLoading/>}
+                              tableStyle={{ minWidth: '50rem' }}
+                              removableSort
+                              size="small"
+                              scrollable
+                              scrollHeight="50vh"
+                              showGridlines
+                              paginator
+                              rows={10}
+                              rowsPerPageOptions={[10, 25, 50]}
+                              paginatorTemplate="CurrentPageReport FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown"
+                              currentPageReportTemplate="Showing {first} to {last} of {totalRecords}"
+                              value={dataMaterialsByDNInquery[index]}
+                              filterDisplay="row"
+                            >
+                              <Column header="No" body={(rowBody, {rowIndex})=>rowIndex+1} />
+                              <Column field='materialNo'  header="Material No" />
+                              <Column field='description'  header="Material Description" />
+                              <Column field='address'  header="Rack Address" />
+                              <Column field="reqQuantity" header="Req. Qty" body={(data) => <div className="text-center">{data.reqQuantity}</div>} />
+                              <Column field="actQuantity" header="Act. Qty" body={(data) => <div className="text-center">{data.actQuantity}</div>} />
+                              <Column field="remain" header="Remain" body={remainBodyTemplate} align="center" />
+                              <Column field='status'  header="Status" body={statusQtyBodyTemplate} />
+                            </DataTable>
+                          </CAccordionBody>
+                        </CAccordionItem>
+                      )
+                    })}
+                  </CAccordion>
                 </CRow>
                 <CRow  className='mt-1 px-2'></CRow>
               </CModalBody>
@@ -861,73 +809,6 @@ const Dashboard = () => {
           </CCardBody>   
        </CCard>
       </CRow>
-        
-        {/* {isVisible && (
-        <CRow ref={vendorScheduleRef} className='mb-3 mt-5 '>
-          <CCard  className='px-0 ' style={{maxHeight: `${showCard.schedule ? "2000px" : "50px"}`, overflow: "hidden", transitionDuration: '500ms', border: "1px solid #6482AD"}}>
-            <CCardHeader style={{ position: "relative", cursor: "pointer", backgroundColor: "#6482AD", color: "white"}} onClick={()=>setShowCard({ ...showCard, schedule: !showCard.schedule})}>
-              <CCardTitle className='text-center fs-4'> DETAIL VENDOR ARRIVAL SCHEDULE </CCardTitle>
-            </CCardHeader>
-            <CCardBody>
-              <CRow>
-
-                <CCol xs={12} sm={12}  >
-                  <CCard className='p-3' style={{ maxHeight:"70vh", overflow: "auto"  }} >
-                    <CRow>
-                      <CCol className='d-flex gap-2'>
-                        <CTooltip content="Vendor belum tiba" placement="top">
-                          <button style={{ backgroundColor: "transparent"}}>
-                            <h6><CBadge style={{width: "160px", border: "2px solid #6F9CFF", backgroundColor: "transparent", color: "#6F9CFF"}}>SCHEDULED PLAN</CBadge> </h6>
-                          </button>
-                        </CTooltip>
-
-                        <CTooltip content="Vendor telah tiba" placement="top">
-                          <button style={{ backgroundColor: "transparent"}}>
-                            <h6><CBadge style={{width: "160px", border: "2px solid #6F9CFF", backgroundColor: "#6F9CFF"}}>ARRIVED</CBadge> </h6>
-                          </button>
-                        </CTooltip>
-
-                        <CTooltip content="Vendor belum tiba dan melebihi jadwal" placement="top">
-                          <button style={{ backgroundColor: "transparent"}}>
-                            <h6><CBadge style={{width: "160px", border: "2px solid #FF0000", backgroundColor: "#FF0000"}}>DELAYED PLAN</CBadge></h6>
-                          </button>
-                        </CTooltip>
-
-                        <CTooltip content="Kedatangan terlambat" placement="top">
-                          <button style={{ backgroundColor: "transparent"}}>
-                            <h6><CBadge style={{width: "160px", border: "2px solid #FBC550", backgroundColor: "#FBC550", color: "black"}}>OVERDUE ARRIVAL</CBadge> </h6>
-                          </button>
-                        </CTooltip>
-                        
-                        <CTooltip content="Kedatangan tepat waktu" placement="top">
-                          <button style={{ backgroundColor: "transparent"}}>
-                            <h6><CBadge style={{width: "160px", border: "2px solid #49C05F", backgroundColor: "#49C05F"}}>ON SCHEDULE ARRIVAL</CBadge></h6>
-                          </button>
-                        </CTooltip>
-                        
-                      </CCol>
-                    </CRow>
-                    <hr style={{ border: "1px solid #D3D4D4"}}></hr>
-                    <CRow className='' style={{ overflow: "auto", height: "2000px"}}>
-                      <div style={{height: "100%"}}>
-                        <Bar 
-                          options={getChartOption()} 
-                          data={setChartData()} 
-                          height={600}
-                        />
-                      </div>
-                    </CRow>
-                  </CCard>
-                </CCol>
-              </CRow>
-            </CCardBody>
-          </CCard>
-        </CRow>
-      )} */}
-
-
-  {/* Modal List Materials */}
-
   </CContainer>
   )
 }

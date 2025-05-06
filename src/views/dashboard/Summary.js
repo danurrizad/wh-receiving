@@ -171,7 +171,6 @@ const Summary = () => {
         filterDate.toLocaleDateString("en-CA"),
       );
       const data = response.data
-      console.log("RESPONSE DAILY CHART :", response)
       setDataPieChart({
         completed: data?.statusCount?.find(data=>data.status === 'completed')?.total || 0,
         notDelivered: data?.statusCount?.find(data=>data.status === 'not complete')?.total || 0,
