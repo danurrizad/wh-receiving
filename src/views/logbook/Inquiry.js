@@ -1,23 +1,19 @@
 import React, { useState, useEffect, useRef} from 'react'
 import CIcon from '@coreui/icons-react'
 import * as icon from '@coreui/icons'
-import { CButton, CButtonGroup, CCard, CCardBody, CCardHeader, CCardTitle, CCol, CContainer, CFormInput, CFormLabel, CFormText, CInputGroup, CModal, CModalBody, CModalFooter, CModalHeader, CModalTitle, CRow, CTable, CTableBody, CTableDataCell, CTableHead, CTableHeaderCell, CTableRow, CToaster, CTooltip } from '@coreui/react'
+import { CButton, CCard, CCardBody, CCardHeader, CCardTitle, CCol, CContainer, CFormLabel, CFormText, CModal, CModalBody, CModalHeader, CModalTitle, CRow, CTooltip } from '@coreui/react'
 import {  DateRangePicker, Input } from 'rsuite';
-import { handleExport } from '../../utils/ExportToExcel'
-import BarcodeScannerComponent from "react-qr-barcode-scanner";
-import Receiving from '../receiving/Receiving';
 import useReceivingDataService from '../../services/ReceivingDataServices'
 import { Dropdown } from 'primereact/dropdown'
 import { InputText } from 'primereact/inputtext'
-import { useToast } from '../../App';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
-import { FilterMatchMode, FilterOperator } from 'primereact/api';
+import { FilterMatchMode } from 'primereact/api';
 import { FaArrowUpRightFromSquare, FaCircleCheck, FaCircleExclamation, FaCircleXmark, FaInbox, FaTruckArrowRight } from 'react-icons/fa6';
 import Swal from 'sweetalert2'
-import { Row } from 'primereact/row';
-import { ColumnGroup } from 'primereact/columngroup';
 import CustomTableLoading from '../../components/LoadingTemplate';
+import { Button } from 'primereact/button';
+import { exportExcelInquiryDN } from '../../utils/ExportToExcel';
 
 
 const Book = () => {
@@ -106,7 +102,6 @@ const Book = () => {
       const formattedFrom = startDate?.toLocaleDateString('en-CA') || ""
       const formattedTo = endDate?.toLocaleDateString('en-CA') || ""
       const response = await getDNInqueryData(idPlant, formattedFrom, formattedTo)    
-      console.log("response:", response)     
       setDataDNInquery(response.data.data)
     } catch (error) {
       console.error(error)
@@ -151,31 +146,6 @@ const Book = () => {
     })
   }
 
-  const headerGroup = (
-    <ColumnGroup >
-        <Row>
-            <Column header="No" rowSpan={2} />
-            <Column header="DN No" sortable field='dnNumber' rowSpan={2} />
-            <Column header="Vendor Name" sortable field='supplierName' rowSpan={2} />
-            {/* <Column header="Truck Station" sortable field='truckStation' rowSpan={2} />
-            <Column header="Rit" sortable field='rit' rowSpan={2} />
-            <Column header="Plan" colSpan={2} align='center' />
-            <Column header="Arrival" colSpan={2} align='center' />
-            <Column header="Departure" sortable field='departureActualTime' rowSpan={2} />
-            <Column header="Status Arrival" sortable field='status' rowSpan={2} />
-            <Column header={`Delay Time`} sortable field='delayTime' rowSpan={2} style={{ width: "2%"}}/> */}
-            <Column header="Status Received" sortable rowSpan={2} />
-            <Column header="Materials" rowSpan={2} />
-            <Column header="Arrival" rowSpan={2} />
-        </Row>
-        {/* <Row>
-            <Column header="Date" sortable field="arrivalPlanDate" />
-            <Column header="Time" sortable field="arrivalPlanTime" />
-            <Column header="Date" sortable field="arrivalActualDate" />
-            <Column header="Time" sortable field="arrivalActualTime" />
-        </Row> */}
-    </ColumnGroup>
-  );
 
   const materialsBodyTemplate = (rowBody) => {
     return(
@@ -255,11 +225,23 @@ const Book = () => {
     )
   }
 
-  const delayTimeBodyTemplate = (rowData) => {
-    const delayTime = rowData.delayTime
-    const status = rowData.status
+  const updatedDateBodyTemplate = (rowData) => {
+    const date = new Date(rowData.updatedAt)
+    const dateString = date.toLocaleDateString('en-CA')
     return(
-      <p>{status === 'on schedule' ? '-' : delayTime}</p>
+      <p>{dateString}</p>
+    )
+  }
+
+  const updatedTimeBodyTemplate = (rowData) => {
+    const date = new Date(rowData.updatedAt)
+    const time = date.toLocaleTimeString('id-ID', { 
+      hour: '2-digit', 
+      minute: '2-digit',
+      hour12: false
+    }).replace('.', ':');
+    return(
+      <p>{time}</p>
     )
   }
 
@@ -484,15 +466,24 @@ const handleSubmitChangeQty = (rowIndex, rowData) => {
             </CCardHeader>
             <CCardBody>
               <CRow className='d-flex align-items-end'>
-                
-                <CCol md='12' xl='4 ' className=''>
-                    <CFormText>Search</CFormText>
-                    <Input value={globalFilterValue} className='' onChange={(e)=>onGlobalFilterChange(e)} placeholder="Keyword Search"/>
+                <CCol xs='12' xl='2' className='' >
+                  <Button
+                    type="button"
+                    label="Export To Excel"
+                    icon="pi pi-file-excel"
+                    severity="success"
+                    className="rounded-2 me-2 mb-1 py-2 text-white w-full"
+                    onClick={()=>exportExcelInquiryDN(dataDNInquery)}
+                    data-pr-tooltip="XLS"
+                  />
                 </CCol>
-
-                <CCol xl='8' className='d-xl-flex d-sm-block justify-content-end'>
+                <CCol xl='10' className='d-xl-flex d-sm-block justify-content-end'>
                   <CRow>
-                    <CCol sm='6' xs='6' xl='5' className='flex-shrink-0 flex-grow-0' >
+                    <CCol sm='6' xs='6' xl='4' className='flex-shrink-0 flex-grow-0'>
+                      <CFormText>Search</CFormText>
+                      <Input value={globalFilterValue} className='' onChange={(e)=>onGlobalFilterChange(e)} placeholder="Keyword Search"/>
+                    </CCol>
+                    <CCol sm='6' xs='6' xl='4' className='flex-shrink-0 flex-grow-0' >
                         <CFormText>Filter by Plant</CFormText>
                         <Dropdown
                           value={queryFilter.plantId}
@@ -503,7 +494,7 @@ const handleSubmitChangeQty = (rowIndex, rowData) => {
                           style={{ width: '100%', borderRadius: '5px', padding: '1.75px' }}
                         />
                     </CCol>
-                    <CCol sm='6' xs='6' xl='7' className=''>
+                    <CCol sm='6' xs='6' xl='4' className=''>
                         <CFormText>Filter by Date</CFormText>
                         <DateRangePicker 
                           format="yyyy-MM-dd" 
@@ -551,6 +542,8 @@ const handleSubmitChangeQty = (rowIndex, rowData) => {
                       <Column className='' sortable field='supplierName'  header="Vendor Name" />
                       <Column className='' sortable field='plantName'  header="Plant"/>
                       <Column className='' sortable field=''  header="Status Received" body={statusReceivedBodyTemplate} style={{width: "1%"}}/>
+                      <Column className='' sortable field=''  header="Updated Date" body={updatedDateBodyTemplate} />
+                      <Column className='' sortable field=''  header="Updated Time" body={updatedTimeBodyTemplate} />
                       <Column className='' sortable field=''  header="Materials" body={materialsBodyTemplate} />
                       <Column className='' sortable field=''  header="Arrival" body={arrivalsBodyTemplate} />
                   

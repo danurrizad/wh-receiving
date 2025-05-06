@@ -1,29 +1,18 @@
-import React, { useState, useEffect, useRef} from 'react'
-import CIcon from '@coreui/icons-react'
-import * as icon from '@coreui/icons'
-import { CButton, CButtonGroup, CCard, CCardBody, CCardHeader, CCardTitle, CCol, CContainer, CFormInput, CFormLabel, CFormText, CInputGroup, CModal, CModalBody, CModalFooter, CModalHeader, CModalTitle, CRow, CTable, CTableBody, CTableDataCell, CTableHead, CTableHeaderCell, CTableRow, CToaster, CTooltip } from '@coreui/react'
+import React, { useState, useEffect} from 'react'
+import { CAccordion, CAccordionBody, CAccordionHeader, CAccordionItem, CButton, CCard, CCardBody, CCardHeader, CCardTitle, CCol, CContainer, CFormLabel, CFormText, CModal, CModalBody, CModalHeader, CModalTitle, CRow, CTooltip } from '@coreui/react'
 import {  DateRangePicker, Input } from 'rsuite';
-import { handleExport } from '../../utils/ExportToExcel'
-import BarcodeScannerComponent from "react-qr-barcode-scanner";
-import Receiving from '../receiving/Receiving';
 import useReceivingDataService from '../../services/ReceivingDataServices'
 import { Dropdown } from 'primereact/dropdown'
-import { InputText } from 'primereact/inputtext'
-import { useToast } from '../../App';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
-import { FilterMatchMode, FilterOperator } from 'primereact/api';
-import { FaArrowUpRightFromSquare, FaCircleCheck, FaCircleExclamation, FaCircleXmark, FaInbox, FaTruckArrowRight } from 'react-icons/fa6';
-import Swal from 'sweetalert2'
-import { Row } from 'primereact/row';
-import { ColumnGroup } from 'primereact/columngroup';
+import { FilterMatchMode } from 'primereact/api';
+import { FaArrowUpRightFromSquare, FaCircleCheck, FaCircleExclamation, FaCircleXmark, FaInbox } from 'react-icons/fa6';
 import CustomTableLoading from '../../components/LoadingTemplate';
-import useVerify from '../../hooks/UseVerify';
+import { Button } from 'primereact/button';
+import { exportExcelInquiryVendor } from '../../utils/ExportToExcel';
 
 
 const InquiryVendor = () => {
-  const colorMode = localStorage.getItem('coreui-free-react-admin-template-theme')
-  const { plantId } = useVerify()
   const [ loading, setLoading ] = useState(false)
   const { getDNInquiryVendorData } = useReceivingDataService()
   const [ dataDNInquery, setDataDNInquery ] = useState([])
@@ -38,15 +27,13 @@ const InquiryVendor = () => {
     global: { value: null, matchMode: FilterMatchMode.CONTAINS },
   })
 
-  // useEffect(()=>{
-  //   if(plantId !== null){
-  //     console.log("TES ANCOK")
-  //     setQueryFilter({
-  //       ...queryFilter,
-  //       plantId: plantId
-  //     })
-  //   }
-  // }, [plantId])
+  const [ showModalInput, setShowModalInput] = useState({
+    state: false,
+    enableSubmit: false
+  })
+  const [ formUpdate, setFormUpdate ] = useState({})
+  const [ dataMaterialsByDNInquery, setDataMaterialsByDNInquery ] = useState([])
+  const [ dataDN, setDataDN ] = useState([])
 
   const handleChangeRangeDate = (value) => {
     if(value !== null){
@@ -59,14 +46,6 @@ const InquiryVendor = () => {
         ...queryFilter,
         rangeDate: [null, null]
       })
-    }
-  }
-
-  const handleChangeFilterPlant = (e) => {
-    if(e.value !== undefined){
-      setQueryFilter({ ...queryFilter, plantId: e.target.value})
-    } else{
-      setQueryFilter({ ...queryFilter, plantId: ""})
     }
   }
 
@@ -122,8 +101,6 @@ const InquiryVendor = () => {
   useEffect(()=>{
     getDNInquery(queryFilter.plantId, queryFilter.rangeDate[0], queryFilter.rangeDate[1])
   }, [queryFilter])
- 
-
 
   const planTimeBodyTemplate = (rowData) => {
     const timeFrom = rowData?.arrivalPlanTime?.split("T")[1].slice(0, 5) || ""
@@ -182,14 +159,6 @@ const InquiryVendor = () => {
       </CTooltip>
     )
   }
-
-  const delayTimeBodyTemplate = (rowData) => {
-    const delayTime = rowData.delayTime
-    const status = rowData.status
-    return(
-      <p>{status === 'on schedule' ? '-' : delayTime}</p>
-    )
-  }
     
   const renderCustomEmptyMsg = () => {
       return(
@@ -199,6 +168,63 @@ const InquiryVendor = () => {
         </div>
       )
     }
+
+  const materialsBodyTemplate = (rowBody) => {
+    return(
+      <div className='d-flex align-items-center justify-content-center'>
+        <CButton onClick={() => handleClickOpenMaterials(rowBody)} color='info' className='d-flex justify-content-center align-items-center p-2 '>
+          <FaArrowUpRightFromSquare style={{ color: "white" }} size={13} />
+        </CButton>
+      </div>
+    )
+  }
+
+  const remainBodyTemplate = (rowBody, {rowIndex}) => {
+    const colorText = rowBody.remain < 0 ? "red" : "black" 
+    return(
+      <p style={{color: colorText}}>
+        {rowBody.remain}
+      </p>
+    )
+  }
+
+  const statusQtyBodyTemplate = (rowData, rowIndex) => {
+    return(
+      <div className='d-flex justify-content-center'>
+        <CTooltip 
+          content={ 
+            rowData.status === "not complete" ? "NOT DELIVERED" : 
+            rowData.status === "partial" ? "NOT COMPLETED" : 
+            rowData.status === "completed" ? "COMPLETED" : 
+            "COMPLETED"
+          } 
+          placement="top"
+          >
+          <CButton style={{ border: 0}}>
+            { rowData.status === "not complete" ? <FaCircleXmark style={{ color: "#FF0000", fontSize: "24px"}}/> : 
+              rowData.status === "partial" ? <FaCircleExclamation style={{ color: "#FFD43B", fontSize: "24px"}}/> : 
+              rowData.status === "completed" ? <FaCircleCheck style={{ color: "#00DB42", fontSize: "24px"}}/> : 
+              <FaCircleCheck style={{ color: "#00DB42", fontSize: "24px"}}/>
+            }
+            
+          </CButton>
+        </CTooltip>
+      </div>
+    )
+  }
+
+  const handleClickOpenMaterials = (data) => {
+    setShowModalInput({...showModalInput, state: true})
+    setFormUpdate({
+      vendorName: data.supplierName
+    })
+    setDataDN(data.DeliveryNotes)
+    let materials = []
+    data.DeliveryNotes.map((data)=>{
+      materials.push(data.Materials)
+    })
+    setDataMaterialsByDNInquery(materials)
+  }
 
   
   return (
@@ -210,15 +236,24 @@ const InquiryVendor = () => {
             </CCardHeader>
             <CCardBody>
               <CRow className='d-flex align-items-end'>
-                
-                <CCol md='12' xl='3' className=''>
-                    <CFormText>Search</CFormText>
-                    <Input value={globalFilterValue} className='' onChange={(e)=>onGlobalFilterChange(e)} placeholder="Keyword Search"/>
+                <CCol sm='6' xs='12' xl='2' className='flex-shrink-0' style={{ border: "2px solid yellow"}}>
+                  <Button
+                      type="button"
+                      label="Export To Excel"
+                      icon="pi pi-file-excel"
+                      severity="success"
+                      className="rounded-2 me-2 mb-1 py-2 text-white"
+                      onClick={()=>exportExcelInquiryVendor(dataDNInquery)}
+                      data-pr-tooltip="XLS"
+                    />
                 </CCol>
-
-                <CCol xl='9' className='d-xl-fle d-sm-block justify-content-end'>
+                <CCol xl='10' className='d-xl-fle d-sm-block justify-content-end'>
                   <CRow>
-                    <CCol sm='6' xs='6' xl='4' className='flex-shrink-0 '>
+                    <CCol md='12' xl='3' className=''>
+                      <CFormText>Search</CFormText>
+                      <Input value={globalFilterValue} className='' onChange={(e)=>onGlobalFilterChange(e)} placeholder="Keyword Search"/>
+                    </CCol>
+                    <CCol sm='6' xs='6' xl='3' className='flex-shrink-0  '>
                         <CFormText>Filter by Status</CFormText>
                         <Dropdown
                           value={queryFilter.status}
@@ -231,13 +266,12 @@ const InquiryVendor = () => {
                           style={{ width: '100%', borderRadius: '5px', padding: '1.75px' }}
                         />
                     </CCol>
-                    <CCol sm='6' xs='6' xl='4' className='flex-shrink-0 flex-grow-0' >
+                    <CCol sm='6' xs='6' xl='3' className='flex-shrink-0 flex-grow-0' >
                         <CFormText>Filter by Plant</CFormText>
                         <Dropdown
                           value={queryFilter.plantId}
                           options={plants}
                           onChange={(e)=>{
-                            console.log("E :", e)
                             setQueryFilter({ ...queryFilter, plantId: e.value !== undefined ? e.target.value : ""})
                           }}
                           placeholder="All plant"
@@ -245,7 +279,7 @@ const InquiryVendor = () => {
                           style={{ width: '100%', borderRadius: '5px', padding: '1.75px' }}
                         />
                     </CCol>
-                    <CCol sm='6' xs='6' xl='4' className='' >
+                    <CCol sm='6' xs='6' xl='3' className='' >
                         <CFormText>Filter by Date</CFormText>
                         <DateRangePicker 
                           format="yyyy-MM-dd" 
@@ -270,7 +304,7 @@ const InquiryVendor = () => {
                       className='p-datatable-gridlines p-datatable-sm custom-datatable'
                       style={{ minHeight: "200px"}}
                       removableSort
-                      globalFilterFields={['Plant.plantName', 'Supplier.supplierName', 'truckStation', '']}
+                      globalFilterFields={['plantName', 'supplierName', 'truckStation', '']}
                       filters={queryFilter}
                       size='small'
                       emptyMessage={renderCustomEmptyMsg}
@@ -287,12 +321,14 @@ const InquiryVendor = () => {
                     >
                       <Column className='' header="No" body={(rowBody, {rowIndex})=>rowIndex+1}/>
                       <Column className='' sortable field='movementDate' header="Movement Date"/>
-                      <Column className='' sortable field='Supplier.supplierName' header="Vendor Name"/>
+                      <Column className='' sortable field='supplierName' header="Vendor Name"/>
+                      <Column className='' sortable field='rit' header="Rit" />
                       <Column className='' sortable field='truckStation' header="Truck Station" />
-                      <Column className='' sortable field='Plant.plantName' header="Plant"/>
+                      <Column className='' sortable field='plantName' header="Plant"/>
                       <Column className='' sortable field='' header="Planning" body={planTimeBodyTemplate}/>
                       <Column className='' sortable field='' header="Arrival" body={actualTimeBodyTemplate}/>
                       <Column className='' sortable field='' header="Status" body={statusVendorBodyTemplate}/>
+                      <Column className='' sortable field='' header="Delivery Note" body={materialsBodyTemplate}/>
                   
                     </DataTable>
                   </CCardBody>
@@ -301,6 +337,73 @@ const InquiryVendor = () => {
             </CCardBody>
           </CCard>
         </CRow>
+
+        {/* -------------------------------------------MODAL----------------------------------------------------------- */}
+      <CModal 
+        visible={showModalInput.state}
+        onClose={() => setShowModalInput({state: false, enableSubmit: false})}
+        size='xl'
+        backdrop="static"
+      >
+        <CModalHeader>
+          <CModalTitle>List Materials Received</CModalTitle>
+        </CModalHeader>
+        <CModalBody> 
+          <CRow>
+            <CCol>
+              <CFormText>VENDOR NAME</CFormText>  
+              <CFormLabel>{formUpdate.vendorName}</CFormLabel>
+            </CCol>
+          </CRow>
+          <CRow className='pt-1'>
+            <CAccordion style={{ 
+              '--cui-accordion-active-bg': '#6482AD',
+              '--cui-accordion-active-color': 'white',
+              '--cui-accordion-btn-focus-box-shadow': 'none',
+              '--cui-accordion-btn-active-color': 'white'
+              }}
+            >
+              {dataDN?.length !== 0 && dataDN?.map((data, index)=>{
+                return(
+                  <CAccordionItem itemKey={index+1} key={index}>
+                    <CAccordionHeader>DN: {data.dnNumber} | STATUS: <div style={{ color: data.completeItems !== data.totalItems && 'red', padding: "0 5px"}}> {data.completeItems} </div> / {data.totalItems}</CAccordionHeader>
+                    <CAccordionBody>
+                      <DataTable
+                        className="p-datatable-sm custom-datatable text-nowrap"
+                        loading={loading}
+                        loadingIcon={<CustomTableLoading/>}
+                        tableStyle={{ minWidth: '50rem' }}
+                        removableSort
+                        size="small"
+                        scrollable
+                        scrollHeight="50vh"
+                        showGridlines
+                        paginator
+                        rows={10}
+                        rowsPerPageOptions={[10, 25, 50]}
+                        paginatorTemplate="CurrentPageReport FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown"
+                        currentPageReportTemplate="Showing {first} to {last} of {totalRecords}"
+                        value={dataMaterialsByDNInquery[index]}
+                        filterDisplay="row"
+                      >
+                        <Column header="No" body={(rowBody, {rowIndex})=>rowIndex+1} />
+                        <Column field='materialNo'  header="Material No" />
+                        <Column field='description'  header="Material Description" />
+                        <Column field='address'  header="Rack Address" />
+                        <Column field="reqQuantity" header="Req. Qty" body={(data) => <div className="text-center">{data.reqQuantity}</div>} />
+                        <Column field="actQuantity" header="Act. Qty" body={(data) => <div className="text-center">{data.actQuantity}</div>} />
+                        <Column field="remain" header="Remain" body={remainBodyTemplate} align="center" />
+                        <Column field='status'  header="Status" body={statusQtyBodyTemplate} />
+                      </DataTable>
+                    </CAccordionBody>
+                  </CAccordionItem>
+                )
+              })}
+            </CAccordion>
+          </CRow>
+          <CRow  className='mt-1 px-2'></CRow>
+        </CModalBody>
+      </CModal>
     </CContainer>
   )
 }
