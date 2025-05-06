@@ -602,3 +602,13 @@ td input.p-inputtext.p-component {
 .max-width-50px{
   max-width: 50px;
 }
+
+@supports (-ms-ime-align: auto) {
+  .sidebar-logo {
+    width: 50%;
+  }
+}
+
+.edge-browser .sidebar-logo {
+  width: 50%;
+}
