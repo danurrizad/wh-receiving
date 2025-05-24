@@ -284,9 +284,14 @@ const VendorSetup = () => {
           formData.append('importDate', importDate)
 
           const response = await uploadMasterData(`upload-delivery-schedule/${warehouseId}`, formData)
-          addToast("File uploaded", 'success', 'success')
-
-
+          addToast(response.data.message, 'success', 'success')
+          if (response?.data?.errors) {
+            response.data.errors.forEach((err) => {
+              addToast(err.error, 'danger', 'error')
+            });
+          }
+          setModalUpload(false)
+          getScheduleAll(optionsPlant.selected, selectedOptionsDay)
         } catch (error) {
           console.error("Error response upload :", error)          
         } finally{
