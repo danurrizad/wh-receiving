@@ -63,7 +63,7 @@ const AppHeaderDropdown = ({ colorMode, imgProfile, name, roleName}) => {
       <CDropdownToggle placement="bottom-end" className="py-0 pe-0 d-flex align-items-center" caret={false}>
         <CAvatar src={imgProfile ? imgProfile : colorMode === 'light' ? profile : profileDark} size="md" />
         <CNavLink className="d-flex flex-column justify-content-center h-100" style={{ textDecoration: 'none' }}>
-          <span style={{ fontSize: '', marginTop: '0px'}}>{name === 'Danur SiPalingGhanzzz' ? 'Danur' : name}</span>
+          <span style={{ fontSize: '', marginTop: '0px'}}>{name}</span>
           <span style={{ fontSize: '10px', marginTop: '0px' }}>{roleName.toUpperCase()}</span>
         </CNavLink>
       </CDropdownToggle>
