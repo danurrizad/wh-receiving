@@ -225,24 +225,24 @@ const Dashboard = () => {
   }
 
   // auto fetch in every 10 seconds
-  // useEffect(() => {
-  //   const intervalId = setInterval(() => {
-  //     fetchChartReceivingData();
-  //   }, 10000);
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      fetchChartReceivingData();
+    }, 10000);
   
-  //   return () => clearInterval(intervalId); // Cleanup on unmount
-  // }, [selectedStatus, optionsSelectVendor.selected, currentPage, limitPerPage, queryFilter, pagination]); 
+    return () => clearInterval(intervalId); // Cleanup on unmount
+  }, [selectedStatus, optionsSelectVendor.selected, currentPage, limitPerPage, queryFilter, pagination]); 
 
-  // useEffect(() => {
-  //   async function fetchFirstLoad() {
-  //     setLoading(true)
-  //     await fetchChartReceivingData();
-  //     setLoading(false)
-  //   } 
+  useEffect(() => {
+    async function fetchFirstLoad() {
+      setLoading(true)
+      await fetchChartReceivingData();
+      setLoading(false)
+    } 
 
-  //   fetchFirstLoad()
+    fetchFirstLoad()
 
-  // }, [selectedStatus, queryFilter.plantId, optionsSelectVendor.selected]);   
+  }, [selectedStatus, queryFilter.plantId, optionsSelectVendor.selected]);   
 
   const handleClickOpenMaterials = (data) => {
     setShowModalInput({...showModalInput, state: true})
