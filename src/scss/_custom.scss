@@ -408,11 +408,12 @@ td input.p-inputtext.p-component {
   height: 42px;
 }
 
-.page-link:hover{
+.page-link:hover, .p-selectable-row:hover[aria-selected="false"]{
   // color: rgb(100, 130, 173);
   // border-color: rgb(100, 130, 173);
   color: #697077;
-  background-color: #DDE1E6;
+  background-color: #DDE1E6 !important;
+  // background-color: yellow !important;
   cursor: pointer;
   text-decoration: none;
   border-radius: 10px;
@@ -470,6 +471,8 @@ td input.p-inputtext.p-component {
 .p-dropdown{
   align-items: center;
 }
+
+
 
 // .custom-table.p-datatable.p-component.p-datatable-responsive-scroll.p-datatable-gridlines.p-datatable-sm{
 //   height: 100%;
@@ -544,6 +547,10 @@ td input.p-inputtext.p-component {
   cursor: not-allowed !important;
 }
 
+.cursor-not-allowed{
+  cursor: not-allowed !important;
+}
+
 .p-selectbutton .p-button{
   width: 100px;
 }
@@ -594,4 +601,14 @@ td input.p-inputtext.p-component {
 
 .max-width-50px{
   max-width: 50px;
+}
+
+@supports (-ms-ime-align: auto) {
+  .sidebar-logo {
+    width: 50%;
+  }
+}
+
+.edge-browser .sidebar-logo {
+  width: 50%;
 }

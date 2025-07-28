@@ -13,7 +13,6 @@ const AppContent = () => {
       <Suspense 
         fallback={
         <div style={{ height: "100vh"}}>
-          {/* <CustomTableLoading /> */}
           <LoadingTWIIS/>
         </div>
         }>

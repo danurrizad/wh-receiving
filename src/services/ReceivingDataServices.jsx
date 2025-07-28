@@ -28,9 +28,9 @@ const useReceivingDataService = () => {
         }
     }
 
-    const getDNByDateData = async(importDate, arrivalDate) => {
+    const getDNByDateData = async(importDate, deliveryDate) => {
         try {
-            const response = await axiosJWT.get(`/delivery-note-date?importDate=${importDate}&arrivalDate=${arrivalDate}`, {
+            const response = await axiosJWT.get(`/delivery-note-date?importDate=${importDate}&deliveryDate=${deliveryDate}`, {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
@@ -51,6 +51,19 @@ const useReceivingDataService = () => {
             return response
         } catch (error) {
             handleError(error, "Error fetching file:")
+        }
+    }
+
+    const getDNInquiryVendorData = async(plantId, startDate, endDate, status) => {
+        try {
+            const response = await axiosJWT.get(`/vendor-arrival?plantId=${plantId}&startDate=${startDate}&endDate=${endDate}&status=${status}`, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            })
+            return response
+        } catch (error) {
+            handleError(error, "Error fetching data: ")
         }
     }
 
@@ -92,6 +105,7 @@ const useReceivingDataService = () => {
         getMaterialByDNData,
         getDNByDateData,
         getDNInqueryData,
+        getDNInquiryVendorData,
         submitMaterialByDNData,
         submitUpdateMaterialByDNData
         // getReceivingData,

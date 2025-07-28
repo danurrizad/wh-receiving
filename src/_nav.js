@@ -55,7 +55,7 @@ const useNavigation = () => {
     {
       component: CNavItem,
       name: 'Maps Truck Station',
-      to: '/dashboard/map-truck',
+      to: '/map-truck',
       icon: <CIcon icon={icon.cilMap} customClassName="nav-icon" />,
     },
     {
@@ -64,23 +64,42 @@ const useNavigation = () => {
     },
     {
       component: CNavGroup,
-      name: 'Receiving Input',
+      name: 'Input',
       to: '/order',
       icon: <CIcon icon={icon.cilTablet} customClassName="nav-icon" />,
       items: [
         {
           component: CNavItem,
-          name: 'Input Receiving',
-          to: '/input',
+          name: 'Vendor Arrival',
+          to: '/input-vendor',
           icon: <CIcon icon={icon.cilMinus} customClassName="nav-icon" />,
         },
         {
           component: CNavItem,
-          name: 'Inquiry Receiving',
-          to: '/inquiry',
+          name: 'Delivery Note',
+          to: '/input',
           icon: <CIcon icon={icon.cilMinus} customClassName="nav-icon" />,
         },
       ],
+    },
+    {
+      component: CNavGroup,
+      name: 'Inquiry',
+      icon: <CIcon icon={icon.cilPenAlt} customClassName="nav-icon" />,
+      items: [
+        {
+          component: CNavItem,
+          name: 'Vendor Arrival',
+          to: '/inquiry-vendor',
+          icon: <CIcon icon={icon.cilMinus} customClassName="nav-icon" />,
+        },
+        {
+          component: CNavItem,
+          name: 'Delivery Note',
+          to: '/inquiry',
+          icon: <CIcon icon={icon.cilMinus} customClassName="nav-icon" />,
+        },
+      ]
     },
    
     // {

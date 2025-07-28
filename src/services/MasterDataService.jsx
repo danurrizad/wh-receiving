@@ -19,12 +19,16 @@ const useMasterDataService = () => {
         .join('<br>')
 
       addToast(error.response?.data?.message + duplicates, 'danger', 'error')
-      // MySwal.fire({
-      //   icon: 'error',
-      //   title: 'Duplicate Data',
-      //   html: `<p>${error.response.data.message}</p><p>${duplicates}</p>`,
-      // })
-    } else {
+    } 
+    else if (error.response?.data?.errors){
+      const errors = error.response.data.errors
+        .map((err) => `Row: ${err.rowNumber}, Data: ${err.data.join(', ')}`)
+        .join('<br>')
+
+      addToast(error.response?.data?.message + errors, 'danger', 'error')
+    } 
+    
+    else {
       // Tampilkan pesan error biasa
       // MySwal.fire('Error', `${error.response?.data?.message || 'Terjadi kesalahan'}`, 'error')
       addToast(error.response?.data?.message, 'danger', 'error')

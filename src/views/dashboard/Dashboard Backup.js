@@ -1,24 +1,36 @@
 import React, { useState, useEffect,useRef } from 'react'
 import '../../scss/_tabels.scss'
 import Select from 'react-select'
+import Flatpickr from 'react-flatpickr'
 import 'flatpickr/dist/flatpickr.css'
+import { DatePicker, DateRangePicker, Input } from 'rsuite';
+import { IconField } from 'primereact/iconfield'
+import { InputIcon } from 'primereact/inputicon'
+import { InputText } from 'primereact/inputtext'
+import { Dropdown } from 'primereact/dropdown'
 import 'primereact/resources/themes/nano/theme.css'
 import 'primereact/resources/primereact.min.css'
-import 'primeicons/primeicons.css';
+import 'primeicons/primeicons.css'; // Icon bawaan PrimeReact
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import 'primeicons/primeicons.css';
-import { FilterMatchMode } from 'primereact/api';
-import { cilCog} from '@coreui/icons';
-import { FaArrowUpRightFromSquare, FaCircleCheck, FaCircleExclamation, FaCircleXmark, FaInbox } from 'react-icons/fa6';
+import { FilterMatchMode, FilterOperator } from 'primereact/api';
+import useReceivingDataService from '../../services/ReceivingDataServices.jsx'
+import { cilChart,cilCog} from '@coreui/icons';
+import { FaAnglesLeft, FaAnglesRight, FaArrowUpRightFromSquare, FaChevronLeft, FaChevronRight, FaCircleCheck, FaCircleExclamation, FaCircleInfo, FaCircleXmark, FaInbox } from 'react-icons/fa6';
 import {
+  CAvatar,
   CModal ,
   CModalHeader,
   CModalTitle,
   CModalBody,
   CButton,
+  CButtonGroup,
+  CPagination,
+  CPaginationItem,
   CCard,
   CCardBody,
+  CBadge,
   CCardHeader,
   CCardText,
   CCardTitle,
@@ -26,15 +38,24 @@ import {
   CContainer,
   CFormLabel,
   CFormText,
+  CProgress,
   CTooltip,
   CRow,
-  CAccordion,
-  CAccordionItem,
-  CAccordionHeader,
-  CAccordionBody,
+  CTable,
+  CTableBody,
+  CTableDataCell,
+  CTableHead,
+  CTableHeaderCell,
+  CTableRow,
+  CFormInput,
 } from '@coreui/react'
-import useDashboardReceivingService from '../../services/DashboardService'
-import useMasterDataService from '../../services/MasterDataService'
+import {
+  cilCalendar,
+} from '@coreui/icons'
+import useDashboardReceivingService from '../../services/DashboardService.jsx'
+import useChartData from '../../services/ChartDataServices.jsx'
+import usePieChartDataService from '../../services/PieChartDataService.jsx.jsx'
+import useMasterDataService from '../../services/MasterDataService.jsx'
 import {
   Chart as ChartJS,
   ArcElement,
@@ -49,10 +70,11 @@ import {
 } from 'chart.js';
 import ChartDataLabels from "chartjs-plugin-datalabels";
 import annotationPlugin from "chartjs-plugin-annotation";
+import { Bar, Pie } from 'react-chartjs-2';
 import CIcon from '@coreui/icons-react'
-import CustomTableLoading from '../../components/LoadingTemplate'
-import useVerify from '../../hooks/UseVerify.jsx'
-
+import { useToast } from '../../App.js'
+import CustomTableLoading from '../../components/LoadingTemplate.js'
+import useBarChartDataService from '../../services/BarChartDataService.jsx';
 
 
 ChartJS.register(
@@ -72,28 +94,36 @@ ChartJS.register(
 
 const Dashboard = () => {
   const colorMode = localStorage.getItem('coreui-free-react-admin-template-theme')
-  const { plantId } = useVerify()
+  const addToast = useToast()
   const [loading, setLoading] = useState(false)
   const { getMasterData } = useMasterDataService()
-  const { getChartReceiving } = useDashboardReceivingService()
   const apiPlant = 'plant-public'
+  const { getCardStatusArrival,getChartReceiving } = useDashboardReceivingService()
 
   const [optionsSelectVendor, setOptionsSelectVendor] = useState({
     list: [],
     selected: ""
   }); // State untuk opsi vendor
+  const [plant, setPlant] = useState([])
+  const [visiblePages, setVisiblePages] = useState([])
   const [plants, setPlants] = useState([]); // Plants fetched from API
+  const [selectedPlant, setSelectedPlant] = useState({ value: 'all', label: 'All' });
   const [selectedStatus, setSelectedStatus] = useState(null);
   const [dataSchedules, setDataSchedules] = useState([]); // Menyimpan data dari API
+  const [dataChartSchedules, setDataChartSchedules] = useState(dataSchedules.slice(1, 10)); // Synchronized chart data
 
   const [pagination, setPagination] = useState({ page: 0, rows: 10 });
+  const totalPage = Math.ceil(dataSchedules.length / pagination.rows)
   const [filteredData, setFilteredData] = useState([]);
+
+  const [isVisible, setIsVisible] = useState(true); // State to control visibility
 
   //  const [totalPages, setTotalPages] = useState(1);
    const [currentPage, setCurrentPage] = useState(1);
    const [limitPerPage, setLimitPerPage] = useState({name: 12, code: 12})
    const [isFilterVisible, setIsFilterVisible] = useState(false);
    
+   const vendorScheduleRef = useRef(null);
    const [ showModalInput, setShowModalInput] = useState({
       state: false,
       enableSubmit: false
@@ -107,24 +137,34 @@ const Dashboard = () => {
   });
   const [ dataMaterialsByDNInquery, setDataMaterialsByDNInquery ] = useState([])
   const [ dataDN, setDataDN ] = useState([])
+  const [ optionsSelectDN, setOptionsSelectDN ] = useState({})
  
   const [queryFilter, setQueryFilter] = useState({
-    plantId: plantId ? plantId : "",
+    plantId: "",
     rangeDate: [
+      // new Date("2025-02-14"),
+      // new Date("2025-02-15"),
       new Date(new Date().setHours(0, 0, 0, 1)),  // Today at 00:00
       new Date(new Date().setHours(23, 59, 59, 999))  // Today at 23:59
     ],
     global: { value: null, matchMode: FilterMatchMode.CONTAINS },
   })
 
-  useEffect(()=>{
-    if(plantId !== null || plantId){
-      setQueryFilter({
-        ...queryFilter,
-        plantId: plantId ? plantId : ""
-      })
+  const onChangeFilterVendor = (e) => {
+    if(e !== null){
+      const value = e.value;
+      let _filters = { ...queryFilter };
+  
+      _filters['global'].value = value;
+      setQueryFilter(_filters);
+      setOptionsSelectVendor({...optionsSelectVendor, selected: e !== null ? value : ""});
+    } else{
+      let _filters = { ...queryFilter };
+      _filters['global'].value = null;
+      setQueryFilter(_filters);
+      setOptionsSelectVendor({...optionsSelectVendor, selected: e !== null ? value : ""});
     }
-  }, [plantId])
+};
 
   const onChangeFilterStatus = (e) => {
     if(e !== null){
@@ -158,11 +198,9 @@ const Dashboard = () => {
     }
   };
 
-
   // Call fetchPlants on component mount
   useEffect(() => {
     fetchPlants();
-    // fetchOptionsVendor();
   }, []);
 
   const calculateSummary = (data) => {
@@ -171,107 +209,149 @@ const Dashboard = () => {
       overdue: data.filter((data)=>data.status === 'overdue').length,
       delayed: data.filter((data)=>data.status === 'delayed').length,
       remaining: data.filter((data)=>data.status === 'scheduled').length,
+      onRequest: data.filter((data)=>data.status === 'no schedule').length
     })
   }
   
 
-  const fetchChartReceivingData = async () => {
+  const fetchChartReceivingData = async (status, vendorId) => {
     try {
+      
+      // setLoading(true)
+      const [fromDate, fromMonth, fromYear] = queryFilter.rangeDate[0].toLocaleDateString('en-GB').split("/").map(Number)
+      const [toDate, toMonth, toYear] = queryFilter.rangeDate[1].toLocaleDateString('en-GB').split("/").map(Number)
+
+      const formattedFrom = `${fromYear}-${fromMonth}-${fromDate}`
+      const formattedTo = `${toYear}-${toMonth}-${toDate}`
+      
       const response = await getChartReceiving(
         queryFilter.plantId, 
-        selectedStatus !== null ? selectedStatus : "", 
-        optionsSelectVendor.selected
+        // status !== null ? status?.value : "", // status kosong
+        "",
+        vendorId,
+        formattedFrom, 
+        formattedTo,
+        // currentPage,
+        // limitPerPage
       );
-      
       if (response) {
-        const allResponse = response.data
-        setDataSchedules(allResponse)
+        
+        const allResponse = response.data.sort((a, b) => {
+          const [aHours, aMinutes] = a.arrivalPlanTime ? a.arrivalPlanTime.split(":").map(Number) : [ 23, 59];
+          const [bHours, bMinutes] = b.arrivalPlanTime ? b.arrivalPlanTime.split(":").map(Number) : [ 23, 59];
+          
+          return aHours * 60 + aMinutes - (bHours * 60 + bMinutes);
+      });
+      
+        const filteredResponse = response.data.filter((data)=>data.status !== 'no schedule')
+
+        setDataSchedules(allResponse); // Simpan data dari API ke state
+        updateChartData(filteredData.length > 0 ? filteredData : allResponse, pagination.page, pagination.rows);
         calculateSummary(allResponse)
+
+        // add options in vendor select
+        const vendorOptions = allResponse
+        ? Array.from(
+            new Map(
+              allResponse
+                .filter(vendor => vendor.vendorName) // Skip missing names
+                .map(vendor => [
+                  vendor.vendorName,
+                  {
+                    label: vendor.vendorName,
+                    value: vendor.vendorName,
+                  }
+                ])
+            ).values()
+          )
+        : []; // Return empty array if response.data is not valid
+        
+        setOptionsSelectVendor({ ...optionsSelectVendor, list: vendorOptions});
       }
     } catch (error) {
       console.error("Error fetching chart data:", error);
       setDataSchedules([])
+      updateChartData([])
       calculateSummary([])
     } 
   };
   
-  const fetchOptionsVendor = async() => {
-    try {
-      const response = await getChartReceiving(
-        queryFilter.plantId, 
-        selectedStatus !== null ? selectedStatus : "", 
-        optionsSelectVendor.selected
-      );
-      const responseDashboard = response.data
-       const vendorOptions = responseDashboard
-       ? Array.from(
-           new Map(
-            responseDashboard
-               .filter(vendor => vendor.vendorName) // Skip missing names
-               .map(vendor => [
-                 vendor.vendorName,
-                 {
-                   label: vendor.vendorName,
-                   value: Number(vendor.supplierId),
-                 }
-               ])
-           ).values()
-         )
-       : []
-       setOptionsSelectVendor({ ...optionsSelectVendor, list: vendorOptions});
-    } catch (error) {
-      
-    }
-  }
 
   // auto fetch in every 10 seconds
-  // useEffect(() => {
-  //   const intervalId = setInterval(() => {
-  //     fetchChartReceivingData();
-  //   }, 10000);
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      // addToast("10 detik")
+      fetchChartReceivingData(selectedStatus, optionsSelectVendor.selected);
+    }, 10000);
   
-  //   return () => clearInterval(intervalId); // Cleanup on unmount
-  // }, [selectedStatus, optionsSelectVendor.selected, currentPage, limitPerPage, queryFilter, pagination]); 
+    return () => clearInterval(intervalId); // Cleanup on unmount
+  }, [selectedStatus, optionsSelectVendor.selected, currentPage, limitPerPage, queryFilter, pagination]); 
 
-  // useEffect(() => {
-  //   async function fetchFirstLoad() {
-  //     setLoading(true)
-  //     await fetchChartReceivingData();
-  //     setLoading(false)
-  //   } 
+  useEffect(() => {
+    async function fetchFirstLoad() {
+      setLoading(true)
+      await fetchChartReceivingData(selectedStatus, optionsSelectVendor.selected);
+      setLoading(false)
+    } 
 
-  //   fetchFirstLoad()
+    fetchFirstLoad()
 
-  // }, [selectedStatus, queryFilter.plantId, optionsSelectVendor.selected]);   
+  }, [queryFilter.plantId, optionsSelectVendor.selected, queryFilter.rangeDate]);  
 
   const handleClickOpenMaterials = (data) => {
     setShowModalInput({...showModalInput, state: true})
+    
+    const dataDN = data?.deliveryNotes
+    const optionsDN = data.deliveryNotes.map((dn)=>{
+      return{
+        label: dn.dnNumber,
+        value: dn.dnNumber
+      }
+    })
+    setOptionsSelectDN({...optionsSelectDN, list: optionsDN, selected: optionsDN[0]?.value})
+    setDataDN(dataDN)
+    setDataMaterialsByDNInquery(dataDN.length !== 0 ? dataDN[0].Materials : [])
+
     setFormUpdate({
-      vendorName: data.vendorName
+      dnNumber: optionsDN[0]?.value,
+      totalDN: dataDN.length,
+      vendorName: data.vendorName,
+      rit: data.rit,
+      // incomingIds: dataMaterials.map((data)=>data.incomingId),
+      // receivedQuantities: dataMaterials.map((data)=>data.receivedQuantity),
+      // statuses: dataMaterials.map((data)=>data.status),
+      // remains: dataMaterials.map((data)=>data.remain)
     })
-    setDataDN(data.DeliveryNotes)
-    let materials = []
-    data.DeliveryNotes.map((data)=>{
-      materials.push(data.Materials)
-    })
-    setDataMaterialsByDNInquery(materials)
   }
+
+
+  const handleChangeOptionsDN = (e) => {
+    const matchesDN = dataDN.find((data)=>data.dnNumber === e.value)
+    setDataMaterialsByDNInquery(matchesDN.Materials)
+    setOptionsSelectDN({...optionsSelectDN, selected: e.value})
+  }
+
+  const { setChartData, getChartOption } = useChartData({ dataChartSchedules, handleClickOpenMaterials });
+  const { setPieChartData, getPieChartOption } = usePieChartDataService({ dataChartSchedules });
+  const { setBarChartData, getBarChartOptions } = useBarChartDataService({ dataChartSchedules });
+
+  
+
+  const [ showCard, setShowCard ] = useState({
+    schedule: true,
+    receiving: true
+  })
   
   const planTimeBodyTemplate = (rowData) => {
+    const timeFrom = rowData.arrivalPlanTime !== null ? rowData.arrivalPlanTime : "";
+    const timeTo = rowData.departurePlanTime !== null ? rowData.departurePlanTime : "";
     return (
       <div>
-        {rowData.planTime}
+        {timeFrom} - {timeTo}
       </div>
     );
   };
   
-  const actualTimeBodyTemplate = (rowData) => {
-    return(
-      <div>
-        {rowData?.arrivedTime?.split("T")[1].slice(0, 5)}
-      </div>
-    )
-  }
 
   const remainBodyTemplate = (rowBody, {rowIndex}) => {
     const colorText = rowBody.remain < 0 ? "red" : "black" 
@@ -289,6 +369,7 @@ const Dashboard = () => {
       status === "scheduled" ? "#6E9CFF" : 
       status === "overdue" ? "#FBC550" : 
       status === "on schedule" ? "#43AB43" : 
+      status === "no schedule" ? "gray" : 
       "transparent"
     return(
       <CTooltip 
@@ -296,7 +377,8 @@ const Dashboard = () => {
           status === "delayed" ? "Vendor belum tiba dan melebihi jadwal" : 
           status === "scheduled" ? "Vendor belum tiba" : 
           status === "overdue" ? "Vendor telah tiba dengan melebihi jadwal" : 
-          status === "on schedule" ? "Vendor telah tiba tepat waktu" : 
+          status === "on scheduled" ? "Vendor telah tiba tepat waktu" : 
+          status === "no schedule" ? "Tidak ada jadwal" : 
           ""
         } 
         placement="top"
@@ -314,26 +396,24 @@ const Dashboard = () => {
               cursor: "pointer"
             }}
           >
-            {status}
+            {status === 'no schedule' ? "on request" : status}
           </button>
         </CTooltip>
     )
   }
 
   const statusMaterialBodyTemplate = (rowBody) => {
-    const complete = rowBody.completeItems
-    const total = rowBody.totalItems || 0
+    const complete = rowBody.statusMaterial?.split(" / ")[0] || "0"
+    const total = rowBody.statusMaterial?.split(" / ")[1] || "0"
     const color = 
       (complete !== total && colorMode === 'light') ? "red" : 
       (complete !== total && colorMode === 'dark') ? "#F64242" : 
       (complete === total && colorMode === 'light') ? "black" : 
       (complete === total && colorMode === 'dark') ? "white" : 
       "white"
-    // return rowBody.itemReceived
     return(
-      <div className='d-flex align-items-center justify-content-between gap-2'>
-        { total !== 0 && <span style={{color: color, fontWeight: colorMode === 'dark' && 'bold'}}>{complete}<span style={{color: colorMode === 'light' ? "black" : "white"}}> / {total}</span></span>}
-        { total !== 0 && materialsBodyTemplate(rowBody) }
+      <div>
+        {rowBody.statusMaterial !== '0 / 0' ? <span style={{color: color, fontWeight: colorMode === 'dark' && 'bold'}}>{complete}<span style={{color: colorMode === 'light' ? "black" : "white"}}> / {total}</span></span> : <span style={{ fontWeight: colorMode === 'dark' && "bold"}}>0 / 0</span>}
       </div>
     )
   }
@@ -374,7 +454,7 @@ const Dashboard = () => {
         }
 
         const selectStatusStyles = {
-          option: (base, {data}) => ({
+          option: (base, {data, isDisabled, isSelected}) => ({
             ...base,
             backgroundColor: data.color,
             display: 'flex',
@@ -404,10 +484,13 @@ const Dashboard = () => {
           }),
           placeholder: (base) => ({
             ...base,
+            // color: "red", // Warna merah untuk placeholder
+            // fontWeight: "bold",
           }),
           singleValue: (base, state) => ({
             ...base,
             color: "white",
+            // color: state.data.value === "delayed" ? "red" : "green", // Warna sesuai status
             backgroundColor: 
               state.data.value === "delayed" ? "#F64242" : 
               state.data.value === "scheduled" ? "#6E9CFF" : 
@@ -429,6 +512,12 @@ const Dashboard = () => {
           })
         };
 
+        const handleScrollToVendorSchedule = () => {
+          if (vendorScheduleRef.current) {
+            vendorScheduleRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
+          }
+        };
+
         const toggleFilterVisibility = () => {
           setIsFilterVisible(!isFilterVisible);
         };
@@ -437,7 +526,7 @@ const Dashboard = () => {
             return(
               <div className='empty-msg w-100 d-flex h-100 flex-column align-items-center justify-content-center py-3' style={{ color: "black", opacity: "50%"}}>
                 <FaInbox size={40}/>
-                <p>NO SCHEDULES FOUND</p>
+                <p>NO SCHEDULES FOUND FROM {queryFilter.rangeDate[0].toLocaleDateString('en-CA')} UNTIL {queryFilter.rangeDate[1].toLocaleDateString('en-CA')}</p>
               </div>
             )
           }
@@ -457,11 +546,17 @@ const Dashboard = () => {
                 { label: "OVERDUE", value: "overdue", color: '#FBC550' },
               ],
             },
-            
+            {
+              label: 'REQUEST',
+              options: [
+                { label: "ON REQUEST", value: "no schedule", color: "gray"}
+              ]
+            }
           ];
     
           const handlePageChange = (event) => {
             setPagination({ page: event.page, rows: event.rows });
+            updateChartData(filteredData.length > 0 ? filteredData : dataSchedules, event.page, event.rows);
           };
           
           const handleFilter = (event) => {
@@ -473,11 +568,32 @@ const Dashboard = () => {
                 });
               });
               setFilteredData(filtered);
+              updateChartData(filtered, pagination.page, pagination.rows);
             }
           };
           
-          
+          const updateChartData = (data, page, rows) => {
+            const paginatedData = data.slice(page * rows, (page + 1) * rows);
+            setDataChartSchedules(paginatedData);
+          };
 
+          const styleSelect = {
+            option: (styles, { data, isDisabled, isFocused, isSelected }) => {
+              return {
+                ...styles,
+                backgroundColor: rgb(72, 96, 129),
+                color: colorMode === 'dark' ? 'white' : "black",
+                ':active': {
+                  ...styles[':active'],
+                  backgroundColor: !isDisabled
+                    ? isSelected
+                      ? 'lightgrey'
+                      : 'white'
+                    : undefined,
+                },
+              };
+            },
+          }
       
   return (
   <CContainer fluid>
@@ -497,10 +613,26 @@ const Dashboard = () => {
             padding: "10px",
         }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%" }}>
+            {/* <CTooltip content="Scroll to Vendor Schedule">
+              <button
+                className="btn d-flex align-items-center justify-content-center me-2 btn-toggle"
+                style={{
+                  // backgroundColor: "white",
+                  borderRadius: "50%",
+                  width: "40px",
+                  height: "40px",
+                }}
+                onClick={handleScrollToVendorSchedule}
+              >
+                <CIcon icon={cilChart} size="lg" className='icon-toggle'/>
+              </button>
+            </CTooltip> */}
             <CTooltip content="Toggle Filter Visibility">
               <button
                 className="btn d-flex align-items-center justify-content-center btn-toggle"
                 style={{
+                  // backgroundColor: "#B0B0B0",
+                  // backgroundColor: "white",
                   borderRadius: "50%",
                   width: "40px",
                   height: "40px",
@@ -511,7 +643,7 @@ const Dashboard = () => {
               </button>
             </CTooltip>
             <CCardTitle className="text-center fs-4" style={{ flexGrow: 1 }}>
-              VENDOR ARRIVAL MONITORING
+              MATERIAL RECEIVING MONITORING
             </CCardTitle>
           </div>
         </CCardHeader>
@@ -538,7 +670,6 @@ const Dashboard = () => {
                       control: (base) => {
                         return ({
                           ...base,
-                          width: '100%',
                           maxWidth: '100%',
                           borderRadius: '5px',
                           padding: '2px',
@@ -607,7 +738,7 @@ const Dashboard = () => {
                     className='select-vendor'
                     options={optionsSelectVendor?.list} 
                     value={optionsSelectVendor?.list?.find((option)=>option.value===optionsSelectVendor?.selected) || ""}
-                    onChange={(e)=>setOptionsSelectVendor({ ...optionsSelectVendor, selected: e ? e.value : ""})}
+                    onChange={onChangeFilterVendor}
                     isClearable 
                     placeholder="Vendor name" 
                     styles={{
@@ -650,7 +781,29 @@ const Dashboard = () => {
                     }}
                   />
                 </div>
-               
+                {/* <div className="flatpickr-wrapper d-flex flex-column align-items-end" style={{ position: "relative", width: "100%" }}> */}
+                <div>
+                  <CFormText>Filter by Date</CFormText>
+                  <DateRangePicker 
+                    format='yyyy-MM-dd' character=" – "
+                    showOneCalendar 
+                    placeholder='All time' 
+                    position='start' 
+                    value={queryFilter.rangeDate} 
+                    onChange={(e)=>{
+                      setCurrentPage(1)
+                      setQueryFilter({ 
+                        ...queryFilter, 
+                        rangeDate: e !== null ? [
+                          new Date(e[0].setHours(0, 0, 0, 1)), 
+                          new Date(e[1].setHours(23, 59, 59, 59))
+                        ] : [
+                          new Date(), 
+                          new Date()
+                        ]
+                      })
+                    }}/>
+                </div>
               </CCol>
             </CRow>
           )}
@@ -665,7 +818,8 @@ const Dashboard = () => {
                 </CCardText>
               </div>
             </CCard>
-
+          {/* </CCol>
+          <CCol sm={2}> */}
             <CCard className=" bg-transparent p-0 overflow-hidden w-100 h-75 status-red" style={{ border: "3px solid #F64242", boxShadow: "none" }}>
               <div className="text-muted small text-center d-flex align-items-center p-0 overflow-hidden h-100" style={{ backgroundColor: "#F64242" }}>
                 <h6 style={{ color: "white", fontSize: "12px", width: "100%" }}>DELAYED PLAN</h6>
@@ -674,7 +828,8 @@ const Dashboard = () => {
                 </CCardText>
               </div>
             </CCard>
-
+          {/* </CCol>
+          <CCol sm={3}> */}
             <CCard className=" bg-transparent p-0 overflow-hidden  w-100 h-75 status-yellow  " style={{ border: "3px solid #FBC550", boxShadow: "none" }}>
               <div className="text-muted small text-center d-flex align-items-center p-0 overflow-hidden h-100" style={{ backgroundColor: "#FBC550" }}>
                 <h6 style={{ color: "black", fontSize: "12px", width: "100%" }}>OVERDUE ARRIVAL</h6>
@@ -683,7 +838,8 @@ const Dashboard = () => {
                 </CCardText>
               </div>
             </CCard>
-
+          {/* </CCol>
+          <CCol sm={3}> */}
             <CCard className=" bg-transparent p-0 overflow-hidden  w-100 h-75 status-green  " style={{ border: "3px solid #49C05F", boxShadow: "none" }}>
               <div className="text-muted small text-center d-flex align-items-center p-0 overflow-hidden h-100" style={{ backgroundColor: "#49C05F" }}>
                 <h6 style={{ color: "white", fontSize: "12px", width: "100%" }}>ON SCHEDULE </h6>
@@ -692,8 +848,46 @@ const Dashboard = () => {
                 </CCardText>
               </div>
             </CCard>
-            
+          {/* </CCol>
+          <CCol sm={2}> */}
+            <CCard className=" bg-transparent p-0 overflow-hidden  w-100 h-75 status-gray  " style={{ border: "3px solid gray", boxShadow: "none" }}>
+              <div className="text-muted small text-center d-flex align-items-center p-0 overflow-hidden h-100" style={{ backgroundColor: "gray" }}>
+                <h6 style={{ color: "white", fontSize: "12px", width: "100%" }}>ON REQUEST</h6>
+                <CCardText className="fs-4 fw-bold text-status w-50" style={{ borderRadius: "4px"}}>
+                  {cardData.onRequest}
+                </CCardText>
+              </div>
+            </CCard>
           </CCol>
+            {/* <CCard className=" bg-transparent" style={{ border: "2px solid #FBC550" }}>
+              <CCardHeader className="text-muted small text-center" style={{ backgroundColor: "#FBC550" }}>
+                <h6 style={{ color: "black", fontSize: "12px" }}>OVERDUE ARRIVAL</h6>
+              </CCardHeader>
+              <CCardBody className="text-center">
+                <CCardText className="fs-3 fw-bold"style={{ color: "black" }}>{cardData.overdue}</CCardText>
+              </CCardBody>
+            </CCard>
+
+            <CCard className="bg-transparent" style={{ border: "2px solid #F64242" }}>
+              <CCardHeader className="text-muted small text-center" style={{ backgroundColor: "#F64242" }}>
+                <h6 style={{ color: "white", fontSize: "12px" }}>DELAYED PLAN</h6>
+              </CCardHeader>
+              <CCardBody className="text-center ">
+                <CCardText className="fs-3 fw-bold" style={{ color: "black" }}> 
+                  {cardData.delayed}
+                </CCardText>
+              </CCardBody>
+            </CCard>
+
+            <CCard className=" bg-transparent" style={{ border: "2px solid #6E9CFF" }} >
+              <CCardHeader className="text-muted small text-center" style={{ backgroundColor: "transparent", borderBottom: "2px solid #6E9CFF" }}>
+                <h6 style={{ color: "#6E9CFF", fontSize: "12px" }}>REMAINING</h6>
+              </CCardHeader>
+              <CCardBody className="text-center">
+                <CCardText className="fs-3 fw-bold" style={{ color: "black" }}>{cardData.remaining}</CCardText>
+              </CCardBody>
+            </CCard>     */}
+
             
           </CRow>
           <CRow style={{ minHeight: "300px", backgroundColor: "transparent"}}>
@@ -714,7 +908,6 @@ const Dashboard = () => {
                   rows={pagination.rows}
                   tableStyle={{ minWidth: '50rem', height: "100%" }}
                   value={filteredData.length > 0 ? filteredData : dataSchedules} // Sync filter
-                  // value={dataSchedules} // Sync filter
                   first={pagination.page * pagination.rows}
                   filterDisplay="row"
                   className="custom-table dashboard"
@@ -727,14 +920,21 @@ const Dashboard = () => {
                   }} // Track filtering
                 >
                   <Column className='' header="No" body={(rowBody, { rowIndex }) => rowIndex + 1}></Column>
+                  {/* <Column className='' field='dnNumber'  header="DN No"></Column> */}
+                  {/* <Column className='' field='arrivalPlanDate' sortable  header="Plan Date" ></Column> */}
                   <Column className='' field='arrivalPlanTime' sortable header="Plan Time" body={planTimeBodyTemplate} ></Column>
+                  {/* <Column className='' field='vendorCode'  header="Vendor Code"></Column> */}
                   <Column className='' field='vendorName'  header="Vendor Name" ></Column>
+                  {/* <Column className='' field='statusMaterial'  header="Status Received" body={statusMaterialBodyTemplate}></Column> */}
                   <Column className='' field='truckStation'  header="Truck Station" ></Column>
                   <Column className='' field='rit'  header="Rit" ></Column>
-                  <Column className='' field='plantName'  header="Plant" ></Column>
-                  <Column className='' field='arrivedTime'  header="Arriv. Time" body={actualTimeBodyTemplate}></Column>
-                  <Column className='' field='statusMaterial'  header="Item Received" body={statusMaterialBodyTemplate}></Column>
+                  {/* <Column className='' field='arrivalActualDate'  header="Arriv. Date" ></Column> */}
+                  <Column className='' field='arrivalActualTime'  header="Arriv. Time" ></Column>
+                  {/* <Column className='' field='deliveryNotes.departureActualDate'  header="Departure Date" /> */}
+                  {/* <Column className='' field='departureActualTime'  headernput="Dept. Time" ></Column> */}
                   <Column className='' field='status'  header="Status Arrival" body={statusVendorBodyTemplate} ></Column>
+                  {/* <Column className='' field=''  header="Materials" body={materialsBodyTemplate} ></Column> */}
+              
                 </DataTable>
               </CCardBody>
             </CCard>
@@ -757,51 +957,48 @@ const Dashboard = () => {
                     <CFormText>VENDOR NAME</CFormText>  
                     <CFormLabel>{formUpdate.vendorName}</CFormLabel>
                   </CCol>
+                  <CCol sm='3'>
+                    <CFormText>TOTAL DN</CFormText>  
+                    <CFormLabel>{formUpdate.totalDN}</CFormLabel>
+                  </CCol>
+                  <CCol sm='3'>
+                    <CFormText>DN NO</CFormText>  
+                    <Select 
+                      options={optionsSelectDN.list} 
+                      onChange={handleChangeOptionsDN} 
+                      value={optionsSelectDN?.list?.find((opt)=>opt.value === optionsSelectDN.selected)}
+                    />
+                    {/* <CFormLabel>{formUpdate.dnNumber}</CFormLabel> */}
+                  </CCol>
                 </CRow>
                 <CRow className='pt-1'>
-                  <CAccordion style={{ 
-                    '--cui-accordion-active-bg': '#6482AD',
-                    '--cui-accordion-active-color': 'white',
-                    '--cui-accordion-btn-focus-box-shadow': 'none',
-                    }}
+                  <DataTable
+                    className="p-datatable-sm custom-datatable text-nowrap"
+                    loading={loading}
+                    loadingIcon={<CustomTableLoading/>}
+                    tableStyle={{ minWidth: '50rem' }}
+                    removableSort
+                    size="small"
+                    scrollable
+                    scrollHeight="50vh"
+                    showGridlines
+                    paginator
+                    rows={10}
+                    rowsPerPageOptions={[10, 25, 50]}
+                    paginatorTemplate="CurrentPageReport FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown"
+                    currentPageReportTemplate="Showing {first} to {last} of {totalRecords}"
+                    value={dataMaterialsByDNInquery}
+                    filterDisplay="row"
                   >
-                    {dataDN?.length !== 0 && dataDN?.map((data, index)=>{
-                      return(
-                        <CAccordionItem itemKey={index+1} key={index}>
-                          <CAccordionHeader>DN: {data.dnNumber} | STATUS: <div style={{ color: data.completeItems !== data.totalItems && 'red', padding: "0 5px"}}> {data.completeItems} </div> / {data.totalItems}</CAccordionHeader>
-                          <CAccordionBody>
-                            <DataTable
-                              className="p-datatable-sm custom-datatable text-nowrap"
-                              loading={loading}
-                              loadingIcon={<CustomTableLoading/>}
-                              tableStyle={{ minWidth: '50rem' }}
-                              removableSort
-                              size="small"
-                              scrollable
-                              scrollHeight="50vh"
-                              showGridlines
-                              paginator
-                              rows={10}
-                              rowsPerPageOptions={[10, 25, 50]}
-                              paginatorTemplate="CurrentPageReport FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown"
-                              currentPageReportTemplate="Showing {first} to {last} of {totalRecords}"
-                              value={dataMaterialsByDNInquery[index]}
-                              filterDisplay="row"
-                            >
-                              <Column header="No" body={(rowBody, {rowIndex})=>rowIndex+1} />
-                              <Column field='materialNo'  header="Material No" />
-                              <Column field='description'  header="Material Description" />
-                              <Column field='address'  header="Rack Address" />
-                              <Column field="reqQuantity" header="Req. Qty" body={(data) => <div className="text-center">{data.reqQuantity}</div>} />
-                              <Column field="actQuantity" header="Act. Qty" body={(data) => <div className="text-center">{data.actQuantity}</div>} />
-                              <Column field="remain" header="Remain" body={remainBodyTemplate} align="center" />
-                              <Column field='status'  header="Status" body={statusQtyBodyTemplate} />
-                            </DataTable>
-                          </CAccordionBody>
-                        </CAccordionItem>
-                      )
-                    })}
-                  </CAccordion>
+                    <Column header="No" body={(rowBody, {rowIndex})=>rowIndex+1} />
+                    <Column field='materialNo'  header="Material No" />
+                    <Column field='description'  header="Material Description" />
+                    <Column field='address'  header="Rack Address" />
+                    <Column field="reqQuantity" header="Req. Qty" body={(data) => <div className="text-center">{data.reqQuantity}</div>} />
+                    <Column field="actQuantity" header="Act. Qty" body={(data) => <div className="text-center">{data.actQuantity}</div>} />
+                    <Column field="remain" header="Remain" body={remainBodyTemplate} align="center" />
+                    <Column field='status'  header="Status" body={statusQtyBodyTemplate} />
+                  </DataTable>
                 </CRow>
                 <CRow  className='mt-1 px-2'></CRow>
               </CModalBody>
@@ -809,6 +1006,73 @@ const Dashboard = () => {
           </CCardBody>   
        </CCard>
       </CRow>
+        
+        {/* {isVisible && (
+        <CRow ref={vendorScheduleRef} className='mb-3 mt-5 '>
+          <CCard  className='px-0 ' style={{maxHeight: `${showCard.schedule ? "2000px" : "50px"}`, overflow: "hidden", transitionDuration: '500ms', border: "1px solid #6482AD"}}>
+            <CCardHeader style={{ position: "relative", cursor: "pointer", backgroundColor: "#6482AD", color: "white"}} onClick={()=>setShowCard({ ...showCard, schedule: !showCard.schedule})}>
+              <CCardTitle className='text-center fs-4'> DETAIL VENDOR ARRIVAL SCHEDULE </CCardTitle>
+            </CCardHeader>
+            <CCardBody>
+              <CRow>
+
+                <CCol xs={12} sm={12}  >
+                  <CCard className='p-3' style={{ maxHeight:"70vh", overflow: "auto"  }} >
+                    <CRow>
+                      <CCol className='d-flex gap-2'>
+                        <CTooltip content="Vendor belum tiba" placement="top">
+                          <button style={{ backgroundColor: "transparent"}}>
+                            <h6><CBadge style={{width: "160px", border: "2px solid #6F9CFF", backgroundColor: "transparent", color: "#6F9CFF"}}>SCHEDULED PLAN</CBadge> </h6>
+                          </button>
+                        </CTooltip>
+
+                        <CTooltip content="Vendor telah tiba" placement="top">
+                          <button style={{ backgroundColor: "transparent"}}>
+                            <h6><CBadge style={{width: "160px", border: "2px solid #6F9CFF", backgroundColor: "#6F9CFF"}}>ARRIVED</CBadge> </h6>
+                          </button>
+                        </CTooltip>
+
+                        <CTooltip content="Vendor belum tiba dan melebihi jadwal" placement="top">
+                          <button style={{ backgroundColor: "transparent"}}>
+                            <h6><CBadge style={{width: "160px", border: "2px solid #FF0000", backgroundColor: "#FF0000"}}>DELAYED PLAN</CBadge></h6>
+                          </button>
+                        </CTooltip>
+
+                        <CTooltip content="Kedatangan terlambat" placement="top">
+                          <button style={{ backgroundColor: "transparent"}}>
+                            <h6><CBadge style={{width: "160px", border: "2px solid #FBC550", backgroundColor: "#FBC550", color: "black"}}>OVERDUE ARRIVAL</CBadge> </h6>
+                          </button>
+                        </CTooltip>
+                        
+                        <CTooltip content="Kedatangan tepat waktu" placement="top">
+                          <button style={{ backgroundColor: "transparent"}}>
+                            <h6><CBadge style={{width: "160px", border: "2px solid #49C05F", backgroundColor: "#49C05F"}}>ON SCHEDULE ARRIVAL</CBadge></h6>
+                          </button>
+                        </CTooltip>
+                        
+                      </CCol>
+                    </CRow>
+                    <hr style={{ border: "1px solid #D3D4D4"}}></hr>
+                    <CRow className='' style={{ overflow: "auto", height: "2000px"}}>
+                      <div style={{height: "100%"}}>
+                        <Bar 
+                          options={getChartOption()} 
+                          data={setChartData()} 
+                          height={600}
+                        />
+                      </div>
+                    </CRow>
+                  </CCard>
+                </CCol>
+              </CRow>
+            </CCardBody>
+          </CCard>
+        </CRow>
+      )} */}
+
+
+  {/* Modal List Materials */}
+
   </CContainer>
   )
 }

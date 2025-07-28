@@ -182,7 +182,6 @@ const Dashboard = () => {
         startDate.toLocaleDateString("en-CA"),
         endDate.toLocaleDateString("en-CA")
       );
-      console.log({ responseDNinquery: response });
       setDataDNInquery(response.data.data);
     } catch (error) {
       console.error("Error fetching DN Inquiry:", error);
@@ -524,7 +523,6 @@ const Dashboard = () => {
                       position="start"
                       value={queryFilter.rangeDate}
                       onChange={(e) => {
-                        console.log(e);
                         setQueryFilter({
                           ...queryFilter,
                           rangeDate:

@@ -320,7 +320,7 @@ const header = () => (
                   <Input value={globalFilterValue} onChange={onGlobalFilterChange} placeholder='Keyword search'/>
                 </div>
                 <div>
-                  <CFormText>Filter by Arrival Plan</CFormText>
+                  <CFormText>Filter by Delivery Date</CFormText>
                   <DatePicker 
                     format='yyyy-MM-dd'
                     value={filterQuery.dateArrival ? filterQuery.dateArrival : null} 
@@ -378,7 +378,7 @@ const header = () => (
                     <Column field="addressRackName" sortable header="Rack Address"></Column>
                     <Column field="planningQuantity" sortable header="Req. Qty"></Column>
                     <Column field="uom" sortable header="UoM"></Column>
-                    <Column field="arrivalPlanDate" sortable header="Arrival Date Plan"></Column>
+                    <Column field="deliveryDate" sortable header="Delivery Date"></Column>
                     {/* <Column field="importBy" sortable header="Import By"></Column>
                     <Column field="importDate" sortable header="Import Date"></Column> */}
                     {visibleColumns.map((col, index) => (
